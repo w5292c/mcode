@@ -1,0 +1,10 @@
+/* The following line enables emulation of UART */
+#cmakedefine MCODE_EMULATE_UART
+
+/* The following line enables I80 interface emulation */
+#cmakedefine MCODE_EMULATE_I80
+
+/* The following line adds emulated LCD1 device to I80 bus */
+#cmakedefine MCODE_EMULATE_I80_LCD1
+
+#cmakedefine USE_EMULATION_LAYER
