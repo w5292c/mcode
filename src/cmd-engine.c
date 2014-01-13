@@ -1,8 +1,11 @@
 #include "cmd-engine.h"
 
 #include "main.h"
+#include "hw-i80.h"
 #include "line-editor-uart.h"
 
+#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 static const char *TheHelpString =
@@ -11,12 +14,19 @@ static const char *TheHelpString =
 "> W <CMD> <DAT> - write <CMD> with <DAT> to I80\n"
 "> R <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\n";
 
+static void cmd_engine_on_write_ready (int length);
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
+static unsigned char glob_ch_to_val (unsigned char ch);
 static void cmd_engine_on_cmd_ready (const char *aString);
+static unsigned char glob_get_byte (const unsigned char *pData);
+static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
 
 void cmd_engine_init (void)
 {
+  hw_i80_init ();
+  hw_i80_set_read_callback (cmd_engine_on_read_ready);
+  hw_i80_set_write_callback (cmd_engine_on_write_ready);
   line_editor_uart_init ();
   line_editor_uart_set_callback (cmd_engine_on_cmd_ready);
   line_editor_uart_start ();
@@ -24,6 +34,7 @@ void cmd_engine_init (void)
 
 void cmd_engine_deinit (void)
 {
+  hw_i80_deinit ();
   line_editor_uart_deinit ();
 }
 
@@ -46,13 +57,13 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     /* WRITE command */
     cmd_engine_write (&aString[2]);
-    start_uart_editor = 1;
+    start_uart_editor = 0;
   }
   else if (!strncmp (aString, "R ", 2))
   {
     /* READ command */
     cmd_engine_read (&aString[2]);
-    start_uart_editor = 1;
+    start_uart_editor = 0;
   }
   else if (*aString)
   {
@@ -108,20 +119,115 @@ void cmd_engine_read (const char *aCommand)
     }
   }
 
-  if (success)
+  if (success && dataLength)
   {
-    /**@todo Implement reading. */
-    /*printf ("Cmd: [0x%2.2X], length: [%d]\n", command, dataLength);*/
+    /* execute the command on success and if we have non-zero data length */
+    hw_i80_read (command, dataLength);
   }
   else
   {
-    hw_uart_write_string ("Wrong args, format: R X1 X2: Read X2 (<= 10) bytes, X1 cmd\n");
+    hw_uart_write_string ("Wrong args, format: R CC LL\n");
+    line_editor_uart_start ();
   }
+}
+
+void cmd_engine_on_read_ready (int length, const unsigned char *pData)
+{
+  int i;
+  char buffer[16];
+
+  snprintf (buffer, 16, "Got %d bytes:", length);
+  hw_uart_write_string (buffer);
+  hw_uart_write_string ("\n>> ");
+  for (i = 0; i < length; ++i)
+  {
+    snprintf (buffer, 16, "%2.2X%s", pData[i], (i == length - 1) ? "" : " ");
+    hw_uart_write_string (buffer);
+  }
+  if (length)
+  {
+    hw_uart_write_string ("\n");
+  }
+  line_editor_uart_start ();
 }
 
 void cmd_engine_write (const char *aCommand)
 {
-  hw_uart_write_string ("Writing, arguments: [");
-  hw_uart_write_string (aCommand);
-  hw_uart_write_string ("]...\nDone.\n");
+  int index = 0;
+  int success = 1;
+  int dataLength = 0;
+  unsigned char command;
+  unsigned char buffer[16];
+
+  memset (buffer, 0, 16);
+
+  /* parse arguments */
+  const unsigned char ch0 = aCommand[0];
+  const unsigned char ch1 = aCommand[1];
+  const unsigned char ch2 = aCommand[2];
+
+  if (ch0 && ch1 && isxdigit (ch0) && isxdigit (ch1) && (' ' == ch2))
+  {
+    command = glob_get_byte (aCommand);
+    aCommand += 3;
+
+    while (*aCommand)
+    {
+      unsigned char chH = aCommand[0];
+      unsigned char chL = aCommand[1];
+      if (chH && chL && isxdigit (chH) && isxdigit (chL))
+      {
+        buffer[dataLength++] = (glob_ch_to_val (chH) << 4) | glob_ch_to_val (chL);
+        aCommand += 2;
+      }
+      else
+      {
+        success = 0;
+        break;
+      }
+    }
+  }
+  else
+  {
+    success = 0;
+  }
+
+  if (success)
+  {
+    /* pass the request to the I80 bus */
+    hw_i80_write (command, dataLength, buffer);
+  }
+  else
+  {
+    hw_uart_write_string ("Wrong args, format: W CC X1[X2[X3..XA]]\n");
+    line_editor_uart_start ();
+  }
+}
+
+void cmd_engine_on_write_ready (int length)
+{
+  line_editor_uart_start ();
+}
+
+static unsigned char glob_ch_to_val (unsigned char ch)
+{
+  unsigned char value = ch;
+
+  /* 'A' (10): 0x41, 0x61 */
+  if (value > '9')
+  {
+    value = (value & (~0x20));
+    value += 10 - 'A';
+  }
+  else
+  {
+    value -= '0';
+  }
+
+  return value;
+}
+
+unsigned char glob_get_byte (const unsigned char *pData)
+{
+  return (glob_ch_to_val (pData[0]) << 4) | glob_ch_to_val (pData[1]);
 }
