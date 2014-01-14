@@ -35,11 +35,6 @@ static hw_i80_write_callback TheWriteCallback = NULL;
 
 void hw_i80_init (void)
 {
-/*
-#define PINA    _SFR_IO8(0x19)
-#define DDRA    _SFR_IO8(0x1A)
-#define PORTA   _SFR_IO8(0x1B)
-*/
   /* make all the A-port pins as inputs */
   DDRA = 0x00U;
   /* disable pull-up resistors */
@@ -53,6 +48,16 @@ void hw_i80_init (void)
 
 void hw_i80_deinit (void)
 {
+  /* make all the A-port pins as inputs */
+  DDRA = 0x00U;
+  /* disable pull-up resistors */
+  PORTA = 0x00U;
+  /* Configure B-port, outputs: CS, WR, RD, RS, RESET */
+  /**@todo check if we need to store configuration for other pins */
+  DDRB = ((1U << DDB0)|(1U << DDB1)|(1U << DDB2)|(1U << DDB3)|(1U << DDB4));
+  /* Reset all B-port outputs to inactive state (1) */
+  PORTB = ((1U << PB0)|(1U << PB1)|(1U << PB2)|(1U << PB3)|(1U << PB4));
+  _NOP ();
 }
 
 void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
@@ -65,8 +70,48 @@ void hw_i80_set_write_callback (hw_i80_write_callback aCallback)
   TheWriteCallback = aCallback;
 }
 
-void hw_i80_write (unsigned char cmd, int length, const unsigned char *data)
+void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
 {
+  /* activate CS */
+  PORTB &= ~(1U << PB0);
+
+  /* activate D/CX */
+  PORTB &= ~(1U << PB3);
+  /* configure PORTA as outputs */
+  DDRA = 0xFFU;
+  /* send the command ID to the port A */
+  PORTA = cmd;
+  /* activate WR */
+  PORTB &= (1U << PB1);
+  /* some delay, todo: check if this is required */
+  _NOP (); _NOP (); _NOP (); _NOP ();
+  /* deactivate WR */
+  PORTB |= (1U << PB1);
+  /* deactivate D/CX */
+  PORTB |= (1U << PB3);
+  /* some delay, todo: check if this is required */
+  _NOP (); _NOP (); _NOP (); _NOP ();
+
+  /* write cycle */
+  int i;
+  for (i = 0; i < length; ++i)
+  {
+    const unsigned char data = pData[i];
+    PORTA = data;
+    PORTB &= ~(1U << PB1);
+    /* some delay, todo: check if this is required */
+    _NOP (); _NOP (); _NOP (); _NOP ();
+    PORTB |= (1U << PB1);
+    /* some delay, todo: check if this is required */
+    _NOP (); _NOP (); _NOP (); _NOP ();
+  }
+
+  /* clean-up */
+  /* configure PORTA as inputs */
+  DDRA = 0x00U;
+  PORTA = 0x00U;
+  /* deactivate CS */
+  PORTB |= (1U << PB0);
 }
 
 void hw_i80_read (unsigned char cmd, int length)
@@ -102,7 +147,7 @@ void hw_i80_read (unsigned char cmd, int length)
   PORTA = 0x00U;
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
-#if 1 /* incorrect read request, todo: check if this is required */
+#if 0 /* incorrect read request, todo: check if this is required */
   /* activate WRX and RDX pins */
   PORTB &= ~((1U << PB1)|(1U << PB2));
   /* some delay, todo: check if this is required */
