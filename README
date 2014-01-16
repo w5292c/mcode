@@ -3,5 +3,14 @@ This is a test application that runs on ATMega32A for testing LCD modules connec
 Here is how we can build for emulator:
 $ mkdir build
 $ cd build
-$ cmake -DMCODE_EMULATE_UART=ON -DMCODE_EMULATE_I80=ON -DMCODE_EMULATE_I80_LCD1=ON ..
+$ cmake ../targets/pc/
 $ make
+
+For AVR, configuration can be done line this:
+$ mkdir build
+$ cd build
+$ cmake ../targets/avr/
+$ make
+
+Possible configuration flags:
+$ cmake -DMCODE_EMULATE_UART=OFF -DMCODE_EMULATE_I80=ON -DMCODE_EMULATE_I80_LCD1=ON ../targets/pc/
