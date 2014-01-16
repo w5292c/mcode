@@ -2,7 +2,8 @@ cmake_minimum_required (VERSION 2.6)
 
 project (console-test C)
 
-set (SRC_LIST src/main.c
+set (SRC_LIST
+  src/main-x86.c
   src/hw-i80.c
   src/hw-uart.c
   src/cmd-engine.c
