@@ -1,9 +1,8 @@
+#include "scheduler.h"
 #include "cmd-engine.h"
 
 #include <stdio.h>
 #include <signal.h>
-
-static exit_request = 0;
 
 static void main_at_exit (void);
 static void main_sigint_handler (int signo);
@@ -19,16 +18,13 @@ int main (void)
   }
   atexit (main_at_exit);
 
+  mcode_scheduler_init ();
   cmd_engine_init ();
 
-  /* main dummy loop */
-  while (!exit_request)
-  {
-    /* 0.1s = 100ms = 100000 us */
-    usleep(100000);
-  }
+  mcode_scheduler_start ();
 
   cmd_engine_deinit ();
+  mcode_scheduler_deinit ();
   pthread_exit (NULL);
   return 0;
 }
@@ -43,12 +39,12 @@ void main_sigint_handler (int signo)
   if (SIGINT == signo)
   {
     printf ("MAIN: got exit signal\n");
-    exit_request = 1;
+    mcode_scheduler_stop ();
   }
 }
 
 void main_request_exit (void)
 {
   printf ("MAIN: exit request\n");
-  exit_request = 1;
+  mcode_scheduler_stop ();
 }
