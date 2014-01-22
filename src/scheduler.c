@@ -29,7 +29,9 @@ void mcode_scheduler_start (void)
       if (tick)
       {
         (*tick) ();
+#ifdef __X86__
         usleep(1000);
+#endif /* __X86__ */
       }
     }
   }

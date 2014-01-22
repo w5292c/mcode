@@ -10,7 +10,9 @@
 
 static const char *TheHelpString =
 "Supported cmds:\n"
+#if __linux__ == 1
 "> exit/quit - exit\n"
+#endif /* __linux__ == 1 */
 "> W <CMD> <DAT> - write <CMD> with <DAT> to I80\n"
 "> R <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\n";
 
@@ -42,17 +44,19 @@ void cmd_engine_on_cmd_ready (const char *aString)
 {
   int start_uart_editor = 1;
 
-  if (!strcmp (aString, "quit") || !strcmp (aString, "exit"))
+  if (!strcmp (aString, "help"))
+  {
+    /* HELP command */
+    hw_uart_write_string (TheHelpString);
+  }
+#ifdef __linux__
+  else if (!strcmp (aString, "quit") || !strcmp (aString, "exit"))
   {
     /* EXIT command */
     main_request_exit ();
     start_uart_editor = 0;
   }
-  else if (!strcmp (aString, "help"))
-  {
-    /* HELP command */
-    hw_uart_write_string (TheHelpString);
-  }
+#endif /* __X86__ */
   else if (!strncmp (aString, "W ", 2))
   {
     /* WRITE command */

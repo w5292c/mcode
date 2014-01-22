@@ -14,3 +14,12 @@ $ make
 
 Possible configuration flags:
 $ cmake -DMCODE_EMULATE_UART=OFF -DMCODE_EMULATE_I80=ON -DMCODE_EMULATE_I80_LCD1=ON ../targets/pc/
+
+Flashing devices:
+$ sudo avrdude -p m32 -c jtagmkI -P /dev/ttyUSB0 -n
+
+Creating the hex file:
+$ avr-objcopy -j .text -j .data -O ihex ./console-test demo.hex
+$ avr-objcopy -j .eeprom --change-section-lma .eeprom=0 -O ihex ./console-test demo_eeprom.hex
+$ avr-objcopy -O ihex -j .fuse ./console-test outfile.fuses.hex
+Info link: http://www.nongnu.org/avr-libc/user-manual/group__demo__project.html

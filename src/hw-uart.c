@@ -9,6 +9,8 @@
 #include <stdlib.h>
 
 #ifndef MCODE_EMULATE_UART
+#include <avr/interrupt.h>
+
 #define HW_UART_WRITE_BUFFER_LENGTH (128)
 
 static hw_uart_char_event TheCallback = NULL;
@@ -26,6 +28,16 @@ void hw_uart_init (void)
   memset (TheWriteBuffer, 0, HW_UART_WRITE_BUFFER_LENGTH);
 
   mcode_scheduler_add (hw_uart_tick);
+
+#ifdef __AVR_MEGA__
+  /* Set baud rate */
+  UBRRH = (unsigned char)0;
+  UBRRL = (unsigned char)3;
+  /* Enable receiver and transmitter */
+  UCSRB = (1<<RXEN)|(1<<TXEN);
+  /* Set frame format: 8data, 2stop bit */
+  UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
+#endif /* __AVR_MEGA__ */
 }
 
 void hw_uart_deinit (void)
@@ -84,6 +96,23 @@ static void hw_uart_tick (void)
   }
 #endif /* test code */
 }
+
+#ifdef __AVR_ATmega32__
+/* USART, Rx Complete */
+ISR(USART_RXC_vect)
+{
+}
+
+/* USART Data Register Empty */
+ISR(USART_UDRE_vect)
+{
+}
+
+/* USART, Tx Complete */
+ISR(USART_TXC_vect)
+{
+}
+#endif /* __AVR_ATmega32__ */
 
 #else /* MCODE_EMULATE_UART */
 #include "emu-hw-uart.h"
