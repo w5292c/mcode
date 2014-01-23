@@ -11,9 +11,14 @@
 #ifndef MCODE_EMULATE_UART
 #include <avr/interrupt.h>
 
+#define HW_UART_READ_BUFFER_LENGTH (64)
 #define HW_UART_WRITE_BUFFER_LENGTH (128)
 
 static hw_uart_char_event TheCallback = NULL;
+
+static uint8_t TheCurrentBuffer = 0;
+static unsigned char TheReadBuffer1[HW_UART_READ_BUFFER_LENGTH];
+static unsigned char TheReadBuffer2[HW_UART_READ_BUFFER_LENGTH];
 
 static unsigned int TheWriteBufferEnd = 0;
 static unsigned int TheWriteBufferStart = 0;
@@ -25,12 +30,15 @@ void hw_uart_init (void)
 {
   TheWriteBufferEnd = 0;
   TheWriteBufferStart = 0;
+  TheCurrentBuffer = 0;
+  memset (TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
+  memset (TheReadBuffer2, 0, HW_UART_READ_BUFFER_LENGTH);
   memset (TheWriteBuffer, 0, HW_UART_WRITE_BUFFER_LENGTH);
 
   mcode_scheduler_add (hw_uart_tick);
 
 #ifdef __AVR_MEGA__
-  /* Set baud rate */
+  /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
   UBRRL = (unsigned char)3;
   /* Enable receiver and transmitter */
