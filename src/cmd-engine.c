@@ -2,6 +2,7 @@
 
 #include "main.h"
 #include "hw-i80.h"
+#include "hw-leds.h"
 #include "line-editor-uart.h"
 
 #include <stdio.h>
@@ -19,6 +20,7 @@ static const char *TheHelpString =
 static void cmd_engine_on_write_ready (int length);
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
+static void cmd_engine_set_led (const char *aCommand);
 static unsigned char glob_ch_to_val (unsigned char ch);
 static void cmd_engine_on_cmd_ready (const char *aString);
 static unsigned char glob_get_byte (const unsigned char *pData);
@@ -68,6 +70,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
     /* READ command */
     cmd_engine_read (&aString[2]);
     start_uart_editor = 0;
+  }
+  else if (!strncmp (aString, "L ", 2))
+  {
+    cmd_engine_set_led (&aString[2]);
   }
   else if (*aString)
   {
@@ -132,6 +138,28 @@ void cmd_engine_read (const char *aCommand)
   {
     hw_uart_write_string ("Wrong args, format: R CC LL\n");
     line_editor_uart_start ();
+  }
+}
+
+void cmd_engine_set_led (const char *aCommand)
+{
+  int on;
+  int index;
+  const int n = sscanf (aCommand, "%d %d", &index, &on);
+
+  if (2 == n)
+  {
+#ifdef __AVR_MEGA__
+    mcode_hw_leds_set (index, on);
+#else /* __AVR_MEGA__ */
+    char buffer[100];
+    snprintf (buffer, sizeof (buffer), "Setting LED#%d: %s\n", index, on ? "ON" : "OFF");
+    hw_uart_write_string (buffer);
+#endif /* __AVR_MEGA__ */
+  }
+  else
+  {
+    hw_uart_write_string ("Wrong args, format: L IND ON\n");
   }
 }
 
