@@ -12,9 +12,8 @@ void mcode_hw_leds_init (void)
 {
   /* configure PB2, PB3 as outputs */
   DDRB |= ((1U << DDB2)|(1U << DDB3));
-  /* set PB2 and reset PB3 */
-  PORTB |= (1U << PB2);
-  PORTB &= ~(1U << PB3);
+  /* turn both LEDs OFF */
+  PORTB &= ~((1U << PB3)|(1U << PB2));
 }
 
 void mcode_hw_leds_deinit (void)

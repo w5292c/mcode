@@ -3,8 +3,10 @@
 #include "main.h"
 #include "hw-i80.h"
 #include "hw-leds.h"
+#include "hw-uart.h"
 #include "line-editor-uart.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -23,7 +25,7 @@ static void cmd_engine_write (const char *aCommand);
 static void cmd_engine_set_led (const char *aCommand);
 static unsigned char glob_ch_to_val (unsigned char ch);
 static void cmd_engine_on_cmd_ready (const char *aString);
-static unsigned char glob_get_byte (const unsigned char *pData);
+static unsigned char glob_get_byte (const char *pData);
 static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
 
 void cmd_engine_init (void)
@@ -143,9 +145,10 @@ void cmd_engine_read (const char *aCommand)
 
 void cmd_engine_set_led (const char *aCommand)
 {
-  int on;
-  int index;
-  const int n = sscanf (aCommand, "%d %d", &index, &on);
+  int on = 0;
+  int index = 0;
+  const int n = 2;
+//sscanf (aCommand, "%d %d", &index, &on);
 
   if (2 == n)
   {
@@ -185,7 +188,7 @@ void cmd_engine_on_read_ready (int length, const unsigned char *pData)
 
 void cmd_engine_write (const char *aCommand)
 {
-  int index = 0;
+  /*int index = 0;*/
   int success = 1;
   int dataLength = 0;
   unsigned char command;
@@ -259,7 +262,7 @@ static unsigned char glob_ch_to_val (unsigned char ch)
   return value;
 }
 
-unsigned char glob_get_byte (const unsigned char *pData)
+unsigned char glob_get_byte (const char *pData)
 {
   return (glob_ch_to_val (pData[0]) << 4) | glob_ch_to_val (pData[1]);
 }

@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
-add_definitions( "-mmcu=atmega32" )
+add_definitions( "-mmcu=atmega32 -g -Os -Wall -Wstrict-prototypes" )
+set ( CMAKE_EXE_LINKER_FLAGS "-mmcu=atmega32" )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
@@ -14,13 +15,14 @@ project (console-test C)
 
 set (SRC_LIST
   ${MCODE_TOP}/src/main-avr.c
-  ${MCODE_TOP}/src/hw-i80.c
+#  ${MCODE_TOP}/src/hw-i80.c
   ${MCODE_TOP}/src/hw-leds.c
   ${MCODE_TOP}/src/hw-uart.c
-  ${MCODE_TOP}/src/avr-fuses.c
   ${MCODE_TOP}/src/scheduler.c
-  ${MCODE_TOP}/src/cmd-engine.c
-  ${MCODE_TOP}/src/line-editor-uart.c)
+#  ${MCODE_TOP}/src/avr-fuses.c
+#  ${MCODE_TOP}/src/cmd-engine.c
+#  ${MCODE_TOP}/src/line-editor-uart.c
+)
 
 option ( MCODE_EMULATE_UART "Enable UART emulation" OFF )
 option ( MCODE_EMULATE_I80 "Enable I80 interface emulation" OFF )
@@ -60,7 +62,7 @@ endif ()
 add_custom_command (
   TARGET console-test
   POST_BUILD
-  COMMAND avr-objcopy -O ihex -j .text -j .data console-test console-test.flash.hex
+  COMMAND avr-objcopy -O ihex -j .text -j .bss -j .data console-test console-test.flash.hex
   COMMAND avr-objcopy -O ihex -j .eeprom console-test console-test.eeprom.hex
   COMMAND avr-objcopy -O ihex -j .fuse console-test console-test.fuse.hex
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -69,9 +71,7 @@ add_custom_command (
 
 #[ALL]
 add_custom_target(flash
-  echo "Starting..."
-  COMMAND sudo avrdude -p m32 -c jtagmkI -P /dev/ttyUSB0 -n
-  COMMAND echo "Done."
+  COMMAND sudo avrdude -B 8 -p m32 -c jtagmkI -P /dev/ttyUSB0 -U flash:w:console-test.flash.hex
   DEPENDS console-test ${PROJECT_BINARY_DIR}/console-test.flash.hex
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   COMMENT "Flashing..."

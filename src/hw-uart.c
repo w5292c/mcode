@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #ifndef MCODE_EMULATE_UART
+#include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
 #define HW_UART_READ_BUFFER_LENGTH (64)
@@ -35,8 +36,6 @@ void hw_uart_init (void)
   memset (TheReadBuffer2, 0, HW_UART_READ_BUFFER_LENGTH);
   memset (TheWriteBuffer, 0, HW_UART_WRITE_BUFFER_LENGTH);
 
-  mcode_scheduler_add (hw_uart_tick);
-
 #ifdef __AVR_MEGA__
   /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
@@ -44,8 +43,9 @@ void hw_uart_init (void)
   /* Enable receiver and transmitter */
   UCSRB = (1<<RXEN)|(1<<TXEN);
   /* Set frame format: 8data, 2stop bit */
-  UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
+  UCSRC = (1<<URSEL)|(3<<UCSZ0);
 #endif /* __AVR_MEGA__ */
+  mcode_scheduler_add (hw_uart_tick);
 }
 
 void hw_uart_deinit (void)
@@ -61,18 +61,68 @@ void hw_uart_start_read (void)
 {
 }
 
+static int8_t vtoch (uint8_t value)
+{
+  value = value & 0x0FU;
+  if (value < 10 && value >= 0)
+  {
+    return '0' + value;
+  }
+  else if (value >= 10 && value < 16)
+  {
+    return 'A' + value - 10;
+  }
+  else
+  {
+    return '@';
+  }
+}
+
+void hw_uart_write_uint (unsigned int value)
+{
+  value = value & 0xFFFFU;
+  char buffer[6];
+  buffer[0] = '#';
+  buffer[1] = vtoch (0x0FU & (value >> 12));
+  buffer[2] = vtoch (0x0FU & (value >>  8));
+  buffer[3] = vtoch (0x0FU & (value >>  4));
+  buffer[4] = vtoch (0x0FU & value);
+  buffer[5] = 0;
+  hw_uart_write_string (buffer);
+}
+
 void hw_uart_write_string (const char *aString)
 {
-  if (TheWriteBufferStart)
+/*  if (TheWriteBufferStart)
   {
     memmove (&TheWriteBuffer[0], &TheWriteBuffer[TheWriteBufferStart], TheWriteBufferStart);
 
     TheWriteBufferEnd -= TheWriteBufferStart;
     TheWriteBufferStart = 0;
+  }*/
+
+  uint8_t ch;
+  while (0 != (ch = *aString))
+  {
+    while ( !( UCSRA & (1<<UDRE)) ) ;
+    UDR = ch;
+
+    ++aString;
   }
 
-  int length = strlen (aString);
-  if (length)
+#if 0
+  uint8_t i;
+  const uint8_t length = strlen (aString);
+  for (i = 0; i < length; ++i)
+  {
+    /* Wait for empty transmit buffer */
+    while ( !( UCSRA & (1<<UDRE)) ) ;
+    /* Put data into buffer, sends the data */
+    UDR = aString[i];
+  }
+#endif
+
+/*  if (length)
   {
     const int freeBufferLength = HW_UART_WRITE_BUFFER_LENGTH - (TheWriteBufferEnd - TheWriteBufferStart);
     if (length > freeBufferLength)
@@ -82,17 +132,30 @@ void hw_uart_write_string (const char *aString)
 
     memcpy (&TheWriteBuffer[TheWriteBufferEnd], aString, length);
     TheWriteBufferEnd += length;
+  }*/
+}
+
+void hw_uart_write_string_P (const char *aString)
+{
+  uint8_t ch;
+  while (0 != (ch = pgm_read_byte (aString)))
+  {
+    while ( !( UCSRA & (1<<UDRE)) );
+    UDR = ch;
+
+    ++aString;
   }
+/* pgm_read_byte */
 }
 
 static void hw_uart_tick (void)
 {
-  const int bufferBytes = (TheWriteBufferEnd - TheWriteBufferStart);
+/*  const int bufferBytes = (TheWriteBufferEnd - TheWriteBufferStart);
   if (bufferBytes)
   {
     fprintf (stdout, "%c", (char)TheWriteBuffer[TheWriteBufferStart++]);
     fflush (stdout);
-  }
+  }*/
 
 #if 0 /* test code */
   static int n = 0;

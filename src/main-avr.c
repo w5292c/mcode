@@ -1,16 +1,40 @@
-#include "cmd-engine.h"
+#include "hw-leds.h"
+#include "hw-uart.h"
+#include "scheduler.h"
+
+#include <avr/io.h>
+
+static void main_tick (void);
 
 int main (void)
 {
-/*  cmd_engine_init ();*/
+  mcode_scheduler_init ();
+  hw_uart_init ();
 
-  /* main dummy loop */
-  while (1)
-  {
-    /* 0.1s = 100ms = 100000 us */
-/*    usleep(100000);*/
-  }
+  /* init LEDs */
+  mcode_hw_leds_init ();
+  mcode_hw_leds_set (0, 0);
+  mcode_hw_leds_set (1, 1);
 
-/*  cmd_engine_deinit ();*/
+  hw_uart_write_string ("main: ready\r\nvalue: ");
+  hw_uart_write_uint (0x12afu);
+  hw_uart_write_string ("\r\n");
+
+  mcode_scheduler_add (main_tick);
+
+  /* start never exits */
+  mcode_scheduler_start ();
   return 0;
+}
+
+void main_tick (void)
+{
+  static int n = 0;
+
+  if (n++ == 0x1FFF)
+  {
+    mcode_hw_leds_set (0, !mcode_hw_leds_get (0));
+    mcode_hw_leds_set (1, !mcode_hw_leds_get (1));
+    n = 0;
+  }
 }
