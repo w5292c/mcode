@@ -23,3 +23,6 @@ $ avr-objcopy -j .text -j .data -O ihex ./console-test demo.hex
 $ avr-objcopy -j .eeprom --change-section-lma .eeprom=0 -O ihex ./console-test demo_eeprom.hex
 $ avr-objcopy -O ihex -j .fuse ./console-test outfile.fuses.hex
 Info link: http://www.nongnu.org/avr-libc/user-manual/group__demo__project.html
+
+Creating archive:
+$ tar --exclude-vcs --exclude=console-test/data/atmega32a.pdf -cjf console-test.tar.bz2 console-test/
