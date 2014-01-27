@@ -87,6 +87,11 @@ void emu_lcd1_hw_i80_write (unsigned char cmd, int length, const unsigned char *
   }
 }
 
+void emu_lcd1_hw_i80_reset (void)
+{
+  hw_uart_write_string_P (PSTR("LCD1: reset module\r\n"));
+}
+
 void hw_lcd1_get_regs_data(I80LcdRegsData *pData)
 {
 }

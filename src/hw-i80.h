@@ -13,4 +13,6 @@ void hw_i80_set_write_callback (hw_i80_write_callback aCallback);
 void hw_i80_read (unsigned char cmd, int length);
 void hw_i80_write (unsigned char cmd, int length, const unsigned char *data);
 
+void hw_i80_reset (void);
+
 #endif /* MC_CODE_I80_H */

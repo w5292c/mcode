@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <avr/pgmspace.h>
 
+static void cmd_engine_reset (void);
 static void cmd_engine_on_write_ready (int length);
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
@@ -52,6 +53,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #if __linux__ == 1
     hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n");
 #endif /* __linux__ == 1 */
+    hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> L <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
     hw_uart_write_string_P (PSTR("> W <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P (PSTR("> R <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
@@ -79,6 +81,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strncmp_P (aString, PSTR("L "), 2))
   {
     cmd_engine_set_led (&aString[2]);
+  }
+  else if (!strcmp_P (aString, PSTR("reset")))
+  {
+    cmd_engine_reset ();
   }
   else if (*aString)
   {
@@ -167,6 +173,11 @@ void cmd_engine_set_led (const char *aCommand)
   {
     hw_uart_write_string_P (PSTR("Wrong args, format: L IND 0/1\r\n"));
   }
+}
+
+void cmd_engine_reset (void)
+{
+  hw_i80_reset ();
 }
 
 void cmd_engine_on_read_ready (int length, const unsigned char *pData)

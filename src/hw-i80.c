@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <avr/cpufunc.h>
+#include <util/delay_basic.h>
 
 /* HW configuration:
 |---------------------------------------------------------------------------|
@@ -192,6 +193,14 @@ void hw_i80_read (unsigned char cmd, int length)
   }
 }
 
+void hw_i80_reset (void)
+{
+  PORTD &= ~(1U << PD7);
+  _delay_loop_2 (0xFFFFU);
+  PORTD |= (1U << PD7);
+  _delay_loop_2 (0xFFFFU);
+}
+
 #else /* MCODE_EMULATE_I80 */
 #include "emu-hw-i80.h"
 
@@ -201,5 +210,6 @@ void hw_i80_set_read_callback (hw_i80_read_callback aCallback) { emu_hw_i80_set_
 void hw_i80_set_write_callback (hw_i80_write_callback aCallback) { emu_hw_i80_set_write_callback (aCallback); }
 void hw_i80_read (unsigned char cmd, int length) { emu_hw_i80_read (cmd, length); }
 void hw_i80_write (unsigned char cmd, int length, const unsigned char *data) { emu_hw_i80_write (cmd, length, data); }
+void hw_i80_reset (void) { emu_hw_i80_reset (); }
 
 #endif /* MCODE_EMULATE_I80 */

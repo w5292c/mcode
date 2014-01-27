@@ -68,3 +68,12 @@ void emu_hw_i80_read (unsigned char cmd, int length)
   hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_read: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
+
+void emu_hw_i80_reset (void)
+{
+#ifdef MCODE_EMULATE_I80_LCD1
+  emu_lcd1_hw_i80_reset ();
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_reset: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}
