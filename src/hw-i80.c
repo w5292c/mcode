@@ -119,6 +119,11 @@ void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
   PORTA = 0x00U;
   /* deactivate CS */
   PORTC |= (1U << PC0);
+
+  if (TheWriteCallback)
+  {
+    (*TheWriteCallback) (length);
+  }
 }
 
 void hw_i80_read (unsigned char cmd, int length)
