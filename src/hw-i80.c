@@ -12,22 +12,24 @@
 |---------------------------------------------------------------------------|
 |  # | LCD Pin | UC Pin | Comment                                           |
 |----|---------|--------|---------------------------------------------------|
-|  1 |      D0 |     A0 |                                                   |
-|  2 |      D1 |     A1 |                                                   |
-|  3 |      D2 |     A2 |                                                   |
-|  4 |      D3 |     A3 |                                                   |
-|  5 |      D4 |     A4 |                                                   |
-|  6 |      D5 |     A5 |                                                   |
-|  7 |      D6 |     A6 |                                                   |
-|  8 |      D7 |     A7 |                                                   |
+|  1 |      D0 |    PA0 |                                                   |
+|  2 |      D1 |    PA1 |                                                   |
+|  3 |      D2 |    PA2 |                                                   |
+|  4 |      D3 |    PA3 |                                                   |
+|  5 |      D4 |    PA4 |                                                   |
+|  6 |      D5 |    PA5 |                                                   |
+|  7 |      D6 |    PA6 |                                                   |
+|  8 |      D7 |    PA7 |                                                   |
 |----|---------|--------|---------------------------------------------------|
-|  9 |      CS |     B0 | TBC                                               |
-| 10 |      WR |     B1 | TBC                                               |
-| 11 |      RD |     B2 | TBC                                               |
-| 12 |   A0/RS |     B3 | TBC                                               |
-| 13 |   RESET |     B4 | TBC                                               |
+|  9 |      CS |    PC0 | TBC; Prev pin: PB0                                |
+| 10 |      WR |    PC1 | TBC; Prev pin: PB1                                |
+| 11 |      RD |    PC6 | TBC; Prev pin: PB2                                |
+| 12 |   A0/RS |    PC7 | TBC; Prev pin: PB3                                |
+| 13 |   RESET |    PD7 | TBC; Prev pin: PB4                                |
 |---------------------------------------------------------------------------|
 */
+/* Available pins: PC0, PC1, PC6, PC7, PD7 */
+
 #define HW_I80_READ_BUFFER_LENGTH (16)
 static unsigned char TheReadBuffer[HW_I80_READ_BUFFER_LENGTH];
 static hw_i80_read_callback TheReadCallback = NULL;
@@ -39,10 +41,12 @@ void hw_i80_init (void)
   DDRA = 0x00U;
   /* disable pull-up resistors */
   PORTA = 0x00U;
-  /* Configure B-port, outputs: CS, WR, RD, RS, RESET */
-  DDRB = ((1U << DDB0)|(1U << DDB1)|(1U << DDB2)|(1U << DDB3)|(1U << DDB4));
-  /* Reset all B-port outputs to inactive state (1) */
-  PORTB = ((1U << PB0)|(1U << PB1)|(1U << PB2)|(1U << PB3)|(1U << PB4));
+  /* Configure C and D-ports, outputs: CS, WR, RD, RS, RESET */
+  DDRD = (1U << DDD7);
+  DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
+  /* Reset all C and D-port outputs to inactive state (1) */
+  PORTD = (1U << PD7);
+  PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7));
   _NOP ();
 }
 
@@ -52,11 +56,13 @@ void hw_i80_deinit (void)
   DDRA = 0x00U;
   /* disable pull-up resistors */
   PORTA = 0x00U;
-  /* Configure B-port, outputs: CS, WR, RD, RS, RESET */
+  /* Configure C and D-port, outputs: CS, WR, RD, RS, RESET */
   /**@todo check if we need to store configuration for other pins */
-  DDRB = ((1U << DDB0)|(1U << DDB1)|(1U << DDB2)|(1U << DDB3)|(1U << DDB4));
-  /* Reset all B-port outputs to inactive state (1) */
-  PORTB = ((1U << PB0)|(1U << PB1)|(1U << PB2)|(1U << PB3)|(1U << PB4));
+  DDRD = (1U << DDD7);
+  DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
+  /* Reset all C and D-port outputs to inactive state (1) */
+  PORTD = (1U << PD7);
+  PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7));
   _NOP ();
 }
 
@@ -73,22 +79,22 @@ void hw_i80_set_write_callback (hw_i80_write_callback aCallback)
 void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
 {
   /* activate CS */
-  PORTB &= ~(1U << PB0);
+  PORTC &= ~(1U << PC0);
 
   /* activate D/CX */
-  PORTB &= ~(1U << PB3);
+  PORTC &= ~(1U << PC7);
   /* configure PORTA as outputs */
   DDRA = 0xFFU;
   /* send the command ID to the port A */
   PORTA = cmd;
   /* activate WR */
-  PORTB &= (1U << PB1);
+  PORTC &= ~(1U << PC1);
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate WR */
-  PORTB |= (1U << PB1);
+  PORTC |= (1U << PC1);
   /* deactivate D/CX */
-  PORTB |= (1U << PB3);
+  PORTC |= (1U << PC7);
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
 
@@ -98,10 +104,10 @@ void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
   {
     const unsigned char data = pData[i];
     PORTA = data;
-    PORTB &= ~(1U << PB1);
+    PORTC &= ~(1U << PC1);
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
-    PORTB |= (1U << PB1);
+    PORTC |= (1U << PC1);
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
   }
@@ -111,7 +117,7 @@ void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
   DDRA = 0x00U;
   PORTA = 0x00U;
   /* deactivate CS */
-  PORTB |= (1U << PB0);
+  PORTC |= (1U << PC0);
 }
 
 void hw_i80_read (unsigned char cmd, int length)
@@ -123,25 +129,25 @@ void hw_i80_read (unsigned char cmd, int length)
   }
 
   /* activate CS */
-  PORTB &= ~(1U << PB0);
+  PORTC &= ~(1U << PC0);
 
   /* activate D/CX */
-  PORTB &= ~(1U << PB3);
+  PORTC &= ~(1U << PC7);
 
   /* configure PORTA as outputs */
   DDRA = 0xFFU;
   /* send the command ID to the port A */
   PORTA = cmd;
   /* activate WR */
-  PORTB &= (1U << PB1);
+  PORTC &= ~(1U << PC1);
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate WR */
-  PORTB |= (1U << PB1);
+  PORTC |= (1U << PC1);
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate D/CX */
-  PORTB |= (1U << PB3);
+  PORTC |= (1U << PC7);
   /* confugure PORTA as input, do not enable pull-up resistors */
   DDRA = 0x00U;
   PORTA = 0x00U;
@@ -149,11 +155,11 @@ void hw_i80_read (unsigned char cmd, int length)
   _NOP (); _NOP (); _NOP (); _NOP ();
 #if 0 /* incorrect read request, todo: check if this is required */
   /* activate WRX and RDX pins */
-  PORTB &= ~((1U << PB1)|(1U << PB2));
+  PORTC &= ~((1U << PC1)|(1U << PC6));
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate WRX and RDX */
-  PORTB |= ((1U << PB1)|(1U << PB2));
+  PORTC |= ((1U << PC1)|(1U << PC6));
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
 #endif /* end: incorrect read request, todo: check if this is required */
@@ -163,21 +169,21 @@ void hw_i80_read (unsigned char cmd, int length)
   for (i = 0; i < length; ++i)
   {
     /* correct reads, activate RDX */
-    PORTB &= ~(1U << PB2);
+    PORTC &= ~(1U << PC6);
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
     /* Now, read the PORTA */
     unsigned char data = PINA;
     TheReadBuffer[i] = data;
     /* and deactivate RDX */
-    PORTB |= (1U << PB2);
+    PORTC |= (1U << PC6);
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
   }
 
   /* now, move to the idle state */
   /* deactivate CS */
-  PORTB |= (1U << PB0);
+  PORTC |= (1U << PC0);
 
   /* and finally, notify the client */
   if (TheReadCallback)

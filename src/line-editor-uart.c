@@ -49,55 +49,52 @@ void line_editor_uart_callback (unsigned int aChar)
 {
   if (line_editor_cursor >= 0)
   {
-    /* correct buffer position */
-    if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1 || (8 == aChar || 127 == aChar))
+    /* there is enough space for appending another character */
+    if (10 != aChar && 13 != aChar)
     {
-      /* there is enough space for appending another character */
-      if (10 != aChar && 13 != aChar)
+      /* non-enter character, check if it is printable and append to the buffer */
+      if (aChar < 256 && isprint (aChar))
       {
-        /* non-enter character, check if it is printable and append to the buffer */
-        if (aChar < 256 && isprint (aChar))
+        /* we have a alpha-numeric character, append it to the buffer */
+        if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1)
         {
-          /* we have a alpha-numeric character, append it to the buffer */
           line_editor_buffer[line_editor_cursor] = (char)aChar;
           hw_uart_write_string (&line_editor_buffer[line_editor_cursor]);
           ++line_editor_cursor;
         }
-        else if (127 == aChar || 8 == aChar)
+        else
         {
-          /* 'delete' character */
-          if (line_editor_cursor > 0)
-          {
-            --line_editor_cursor;
-            line_editor_buffer[line_editor_cursor] = 0;
-            hw_uart_write_string_P (PSTR("\010 \010"));
-          }
+          hw_uart_write_string ("\007");
         }
       }
-      else
+      else if (127 == aChar || 8 == aChar)
       {
-        /* 'enter' character */
-        hw_uart_write_string_P (PSTR("\r\n"));
-        line_editor_buffer[line_editor_cursor] = 0;
-        if (TheCallback)
+        /* 'delete' character */
+        if (line_editor_cursor > 0)
         {
-          (*TheCallback) (line_editor_buffer);
+          --line_editor_cursor;
+          line_editor_buffer[line_editor_cursor] = 0;
+          hw_uart_write_string_P (PSTR("\010 \010"));
         }
-        line_editor_cursor = 0;
-        memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
       }
     }
     else
     {
-      /* the input buffer is full, there is no space for appending another character. */
-      /* in this case, we are moving to an error state (negative cursor position). */
-      line_editor_cursor = -1;
+      /* 'enter' character */
+      hw_uart_write_string_P (PSTR("\r\n"));
+      line_editor_buffer[line_editor_cursor] = 0;
+      if (TheCallback)
+      {
+        (*TheCallback) (line_editor_buffer);
+      }
+      line_editor_cursor = 0;
+      memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
     }
   }
   else
   {
     /* negative index, some errors have been happened, wait for 'enter' in order to reset recording */
-    if (10 == aChar)
+    if (10 == aChar || 13 == aChar)
     {
       line_editor_cursor = 0;
       memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);

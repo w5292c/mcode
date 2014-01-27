@@ -193,13 +193,13 @@ void cmd_engine_on_read_ready (int length, const unsigned char *pData)
 
 void cmd_engine_write (const char *aCommand)
 {
-  /*int index = 0;*/
   int success = 1;
   int dataLength = 0;
   unsigned char command;
-  unsigned char buffer[16];
+#define MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH (32)
+  unsigned char buffer[MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH];
 
-  memset (buffer, 0, 16);
+  memset (buffer, 0, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH);
 
   /* parse arguments */
   const unsigned char ch0 = aCommand[0];
@@ -213,9 +213,9 @@ void cmd_engine_write (const char *aCommand)
 
     while (*aCommand)
     {
-      unsigned char chH = aCommand[0];
-      unsigned char chL = aCommand[1];
-      if (chH && chL && isxdigit (chH) && isxdigit (chL))
+      volatile uint8_t chH = aCommand[0];
+      volatile uint8_t chL = aCommand[1];
+      if (chH && chL && isxdigit (chH) && isxdigit (chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1))
       {
         buffer[dataLength++] = (glob_ch_to_val (chH) << 4) | glob_ch_to_val (chL);
         aCommand += 2;
