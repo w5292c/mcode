@@ -12,12 +12,12 @@
 #include <stdlib.h>
 
 static const char *TheHelpString =
-"Supported cmds:\n"
+"Supported cmds:\r\n"
 #if __linux__ == 1
-"> exit/quit - exit\n"
+"> exit/quit - exit\r\n"
 #endif /* __linux__ == 1 */
-"> W <CMD> <DAT> - write <CMD> with <DAT> to I80\n"
-"> R <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\n";
+"> W <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"
+"> R <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n";
 
 static void cmd_engine_on_write_ready (int length);
 static void cmd_engine_read (const char *aCommand);
@@ -80,7 +80,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (*aString)
   {
     /* got unrecognized non-empty command */
-    hw_uart_write_string("ENGINE: unrecognized command. Type 'help'.\n");
+    hw_uart_write_string("ENGINE: unrecognized command. Type 'help'.\r\n");
   }
 
   if (start_uart_editor)
@@ -138,7 +138,7 @@ void cmd_engine_read (const char *aCommand)
   }
   else
   {
-    hw_uart_write_string ("Wrong args, format: R CC LL\n");
+    hw_uart_write_string ("Wrong args, format: R CC LL\r\n");
     line_editor_uart_start ();
   }
 }
@@ -156,13 +156,13 @@ void cmd_engine_set_led (const char *aCommand)
     mcode_hw_leds_set (index, on);
 #else /* __AVR_MEGA__ */
     char buffer[100];
-    snprintf (buffer, sizeof (buffer), "Setting LED#%d: %s\n", index, on ? "ON" : "OFF");
+    snprintf (buffer, sizeof (buffer), "Setting LED#%d: %s\r\n", index, on ? "ON" : "OFF");
     hw_uart_write_string (buffer);
 #endif /* __AVR_MEGA__ */
   }
   else
   {
-    hw_uart_write_string ("Wrong args, format: L IND ON\n");
+    hw_uart_write_string ("Wrong args, format: L IND ON\r\n");
   }
 }
 
@@ -173,7 +173,7 @@ void cmd_engine_on_read_ready (int length, const unsigned char *pData)
 
   snprintf (buffer, 16, "Got %d bytes:", length);
   hw_uart_write_string (buffer);
-  hw_uart_write_string ("\n>> ");
+  hw_uart_write_string ("\r\n>> ");
   for (i = 0; i < length; ++i)
   {
     snprintf (buffer, 16, "%2.2X%s", pData[i], (i == length - 1) ? "" : " ");
@@ -181,7 +181,7 @@ void cmd_engine_on_read_ready (int length, const unsigned char *pData)
   }
   if (length)
   {
-    hw_uart_write_string ("\n");
+    hw_uart_write_string ("\r\n");
   }
   line_editor_uart_start ();
 }
@@ -234,7 +234,7 @@ void cmd_engine_write (const char *aCommand)
   }
   else
   {
-    hw_uart_write_string ("Wrong args, format: W CC X1[X2[X3..XA]]\n");
+    hw_uart_write_string ("Wrong args, format: W CC X1[X2[X3..XA]]\r\n");
     line_editor_uart_start ();
   }
 }

@@ -8,3 +8,6 @@
 #cmakedefine MCODE_EMULATE_I80_LCD1
 
 #cmakedefine USE_EMULATION_LAYER
+
+/* This setting enables synchronous UART write */
+#cmakedefine MCODE_HW_UART_SYNC_WRITE

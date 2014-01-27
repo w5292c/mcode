@@ -50,10 +50,10 @@ void line_editor_uart_callback (unsigned int aChar)
   if (line_editor_cursor >= 0)
   {
     /* correct buffer position */
-    if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1)
+    if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1 || (8 == aChar || 127 == aChar))
     {
       /* there is enough space for appending another character */
-      if (10 != aChar)
+      if (10 != aChar && 13 != aChar)
       {
         /* non-enter character, check if it is printable and append to the buffer */
         if (aChar < 256 && isprint (aChar))
@@ -65,7 +65,7 @@ void line_editor_uart_callback (unsigned int aChar)
           /*hw_uart_write_string ();
           printf ("%c", aChar);*/
         }
-        else if (127 == aChar)
+        else if (127 == aChar || 8 == aChar)
         {
           /* 'delete' character */
           if (line_editor_cursor > 0)
@@ -80,7 +80,7 @@ void line_editor_uart_callback (unsigned int aChar)
       else
       {
         /* 'enter' character */
-        hw_uart_write_string ("\n");
+        hw_uart_write_string ("\r\n");
         line_editor_buffer[line_editor_cursor] = 0;
         if (TheCallback)
         {

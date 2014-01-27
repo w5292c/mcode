@@ -1,8 +1,11 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "scheduler.h"
+#include "cmd-engine.h"
+#include "line-editor-uart.h"
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 static void main_tick (void);
 
@@ -21,7 +24,11 @@ int main (void)
   hw_uart_write_string ("\r\n");
 
   mcode_scheduler_add (main_tick);
+  line_editor_uart_init ();
+  cmd_engine_init ();
 
+  /* now, enable the interrupts */
+  sei ();
   /* start never exits */
   mcode_scheduler_start ();
   return 0;

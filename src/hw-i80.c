@@ -187,6 +187,8 @@ void hw_i80_read (unsigned char cmd, int length)
 }
 
 #else /* MCODE_EMULATE_I80 */
+#include "emu-hw-i80.h"
+
 void hw_i80_init (void) { emu_hw_i80_init (); }
 void hw_i80_deinit (void) { emu_hw_i80_deinit (); }
 void hw_i80_set_read_callback (hw_i80_read_callback aCallback) { emu_hw_i80_set_read_callback (aCallback); }
