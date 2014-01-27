@@ -13,13 +13,14 @@
 #include <avr/pgmspace.h>
 
 static void cmd_engine_reset (void);
+static uint8_t glob_is_hex_ch (unsigned char ch);
 static void cmd_engine_on_write_ready (int length);
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
 static void cmd_engine_set_led (const char *aCommand);
 static unsigned char glob_ch_to_val (unsigned char ch);
-static void cmd_engine_on_cmd_ready (const char *aString);
 static unsigned char glob_get_byte (const char *pData);
+static void cmd_engine_on_cmd_ready (const char *aString);
 static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
 
 void cmd_engine_init (void)
@@ -152,26 +153,40 @@ void cmd_engine_read (const char *aCommand)
   }
 }
 
+/**
+ * Set-LED command handler
+ * @param[in] aCommand - The command parameters
+ * @note The command parameters should go in the following format: "X Y";
+ * X may be either 0 or 1 (LED index) and Y may be either 0 or 1 (OFF or ON).
+ */
 void cmd_engine_set_led (const char *aCommand)
 {
-  int on = 0;
-  int index = 0;
-  const int n = sscanf_P (aCommand, PSTR("%d %d"), &index, &on);
-  if (2 == n)
+  uint8_t success = 0;
+  if (3 == strlen (aCommand))
   {
+    const uint8_t ch0 = aCommand[0];
+    const uint8_t ch2 = aCommand[2];
+
+    if (glob_is_hex_ch (ch0) && glob_is_hex_ch (ch2) && ' ' == aCommand[1])
+    {
+      const uint8_t on = glob_ch_to_val (ch2);
+      const uint8_t index = glob_ch_to_val (ch0);
 #ifdef __AVR_MEGA__
-    mcode_hw_leds_set (index, on);
+      mcode_hw_leds_set (index, on);
 #else /* __AVR_MEGA__ */
-    hw_uart_write_string_P (PSTR("Setting LED"));
-    hw_uart_write_uint (index);
-    hw_uart_write_string_P (PSTR(": "));
-    hw_uart_write_string_P (on ? PSTR("ON") : PSTR("OFF"));
-    hw_uart_write_string_P (PSTR("\r\n"));
+      hw_uart_write_string_P (PSTR("Setting LED"));
+      hw_uart_write_uint (index);
+      hw_uart_write_string_P (PSTR(": "));
+      hw_uart_write_string_P (on ? PSTR("ON") : PSTR("OFF"));
+      hw_uart_write_string_P (PSTR("\r\n"));
 #endif /* __AVR_MEGA__ */
+      success = 1;
+    }
   }
-  else
+
+  if (!success)
   {
-    hw_uart_write_string_P (PSTR("Wrong args, format: L IND 0/1\r\n"));
+    hw_uart_write_string_P (PSTR("Wrong args, format: L I 0/1\r\n> I - the LED index [0..1]\r\n> 0/1 - turm OFF/ON\r\n"));
   }
 }
 
@@ -258,6 +273,20 @@ void cmd_engine_write (const char *aCommand)
 void cmd_engine_on_write_ready (int length)
 {
   line_editor_uart_start ();
+}
+
+uint8_t glob_is_hex_ch (unsigned char ch)
+{
+  /* first, check if the character is a number */
+  uint8_t res = (ch <= '9' && ch >= '0');
+  if (!res)
+  {
+    /* convert to the upper case */
+    ch &= ~0x20;
+    /* and check if the character is [A-F] */
+    res = (ch >= 'A' && ch <= 'F');
+  }
+  return res;
 }
 
 static unsigned char glob_ch_to_val (unsigned char ch)
