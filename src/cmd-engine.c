@@ -128,7 +128,7 @@ void cmd_engine_read (const char *aCommand)
     {
       char *end = NULL;
       dataLength = strtoul (aCommand, &end, 16);
-      success = ((dataLength < 11) && end && !(*end));
+      success = ((dataLength < 17) && end && !(*end));
       if (!success)
       {
         dataLength = 0;
