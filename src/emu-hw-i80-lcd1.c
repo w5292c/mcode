@@ -1,9 +1,11 @@
 #include "emu-hw-i80-lcd1.h"
 
+#include "hw-uart.h"
 #include "mcode-config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <avr/pgmspace.h>
 
 #ifndef MCODE_WMU_HW_I80_LCD1_H
 #error "This file can only be used in MCODE_WMU_HW_I80_LCD1_H mode"
@@ -40,7 +42,9 @@ void emu_lcd1_hw_i80_set_write_callback (hw_i80_write_callback aCallback)
 
 void emu_lcd1_hw_i80_read (unsigned char cmd, int length)
 {
-  printf ("READ request, command: 0x%X\n", cmd);
+  hw_uart_write_string_P (PSTR("READ request, command: "));
+  hw_uart_write_uint (cmd);
+  hw_uart_write_string_P (PSTR("\r\n"));
 
   if (TheReadCallback)
   {
@@ -62,12 +66,20 @@ void emu_lcd1_hw_i80_read (unsigned char cmd, int length)
 void emu_lcd1_hw_i80_write (unsigned char cmd, int length, const unsigned char *data)
 {
   int i;
-  printf ("WRITE request, CMD: [0x%2.2x], length %d, data:\n>> ", cmd, length);
+  hw_uart_write_string_P (PSTR("WRITE request, CMD: ["));
+  hw_uart_write_uint (cmd);
+  hw_uart_write_string_P (PSTR("], length: "));
+  hw_uart_write_uint (length);
+  hw_uart_write_string_P (PSTR(", data:\r\n"));
   for (i = 0; i < length; i++)
   {
-    printf ("%2.2X%s", data[i], (i == (length -1)) ? "" : " ");
+    hw_uart_write_uint (data[i]);
+    if (i != (length -1))
+    {
+      hw_uart_write_string_P (PSTR(" "));
+    }
   }
-  printf ("\n");
+  hw_uart_write_string_P (PSTR("\r\n"));
 
   if (TheWriteCallback)
   {

@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <avr/pgmspace.h>
 
 #define LINE_EDITOR_UART_BUFFER_LENGTH (64)
 static char line_editor_buffer[LINE_EDITOR_UART_BUFFER_LENGTH] = {0};
@@ -19,7 +20,6 @@ void line_editor_uart_init (void)
   if (!line_editor_initialized)
   {
     memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
-    hw_uart_init ();
     hw_uart_set_callback (line_editor_uart_callback);
     line_editor_initialized = 1;
   }
@@ -42,7 +42,7 @@ void line_editor_uart_set_callback (line_editor_uart_ready aCallback)
 
 void line_editor_uart_start (void)
 {
-  hw_uart_write_string ("# ");
+  hw_uart_write_string_P (PSTR("# "));
 }
 
 void line_editor_uart_callback (unsigned int aChar)
@@ -62,8 +62,6 @@ void line_editor_uart_callback (unsigned int aChar)
           line_editor_buffer[line_editor_cursor] = (char)aChar;
           hw_uart_write_string (&line_editor_buffer[line_editor_cursor]);
           ++line_editor_cursor;
-          /*hw_uart_write_string ();
-          printf ("%c", aChar);*/
         }
         else if (127 == aChar || 8 == aChar)
         {
@@ -72,15 +70,14 @@ void line_editor_uart_callback (unsigned int aChar)
           {
             --line_editor_cursor;
             line_editor_buffer[line_editor_cursor] = 0;
-            hw_uart_write_string ("\010 \010");
-            /*printf ("\010 \010");*/
+            hw_uart_write_string_P (PSTR("\010 \010"));
           }
         }
       }
       else
       {
         /* 'enter' character */
-        hw_uart_write_string ("\r\n");
+        hw_uart_write_string_P (PSTR("\r\n"));
         line_editor_buffer[line_editor_cursor] = 0;
         if (TheCallback)
         {

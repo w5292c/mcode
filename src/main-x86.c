@@ -1,3 +1,4 @@
+#include "hw-uart.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
 
@@ -13,7 +14,7 @@ int main (void)
   /* override the signal handler */
   if (SIG_ERR == signal(SIGINT, main_sigint_handler))
   {
-    fprintf (stderr, "Error: cannot override signal handler\n");
+    hw_uart_write_string_P (PSTR("Error: cannot override signal handler\r\n"));
     return -1;
   }
   atexit (main_at_exit);
@@ -38,13 +39,13 @@ void main_sigint_handler (int signo)
 {
   if (SIGINT == signo)
   {
-    printf ("MAIN: got exit signal\n");
+    hw_uart_write_string_P (PSTR("MAIN: got exit signal\r\n"));
     mcode_scheduler_stop ();
   }
 }
 
 void main_request_exit (void)
 {
-  printf ("MAIN: exit request\n");
+  hw_uart_write_string_P (PSTR("MAIN: exit request\r\n"));
   mcode_scheduler_stop ();
 }

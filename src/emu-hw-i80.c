@@ -1,5 +1,6 @@
 #include "emu-hw-i80.h"
 
+#include "hw-uart.h"
 #include "mcode-config.h"
 
 #ifdef MCODE_EMULATE_I80_LCD1
@@ -15,7 +16,7 @@ void emu_hw_i80_init (void)
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_init ();
 #else /* MCODE_EMULATE_I80_LCD1 */
-  printf ("Warning: emu_hw_i80_init: no device connected\n");
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_init: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
@@ -24,7 +25,7 @@ void emu_hw_i80_deinit (void)
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_deinit ();
 #else /* MCODE_EMULATE_I80_LCD1 */
-  printf ("Warning: emu_hw_i80_deinit: no device connected\n");
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_deinit: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
@@ -33,7 +34,9 @@ void emu_hw_i80_set_read_callback (hw_i80_read_callback aCallback)
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_set_read_callback (aCallback);
 #else /* MCODE_EMULATE_I80_LCD1 */
-  printf ("Warning: emu_hw_i80_set_read_callback (%p): no device connected\n", aCallback);
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_set_read_callback ("));
+  hw_uart_write_uint (aCallback);
+  hw_uart_write_string_P (PSTR("): no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
@@ -42,7 +45,9 @@ void emu_hw_i80_set_write_callback (hw_i80_write_callback aCallback)
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_set_write_callback (aCallback);
 #else /* MCODE_EMULATE_I80_LCD1 */
-  printf ("Warning: emu_hw_i80_set_write_callback (%p): no device connected\n", aCallback);
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_set_write_callback ("));
+  hw_uart_write_uint (aCallback);
+  hw_uart_write_string_P (PSTR("): no device connected\r\n");
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
@@ -51,7 +56,7 @@ void emu_hw_i80_write (unsigned char cmd, int length, const unsigned char *data)
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_write (cmd, length, data);
 #else /* MCODE_EMULATE_I80_LCD1 */
-  printf ("Warning: emu_hw_i80_write: no device connected\n");
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
@@ -60,6 +65,6 @@ void emu_hw_i80_read (unsigned char cmd, int length)
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_read (cmd, length);
 #else /* MCODE_EMULATE_I80_LCD1 */
-  printf ("Warning: emu_hw_i80_read: no device connected\n");
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_read: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }

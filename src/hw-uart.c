@@ -205,8 +205,10 @@ static void hw_uart_tick (void)
   const int bufferBytes = (TheWriteBufferEnd - TheWriteBufferStart);
   if (bufferBytes)
   {
-    fprintf (stdout, "%c", (char)TheWriteBuffer[TheWriteBufferStart++]);
+#if 0
+    fprintf (stdout, PSTR("%c"), (char)TheWriteBuffer[TheWriteBufferStart++]);
     fflush (stdout);
+#endif /* 0 */
   }
 #endif /* MCODE_HW_UART_SYNC_WRITE */
 
@@ -214,7 +216,7 @@ static void hw_uart_tick (void)
   static int n = 0;
   if (++n == 20)
   {
-    hw_uart_write_string ("2 secs passed.\n");
+    hw_uart_write_string_P (PSTR("2 secs passed.\n"));
     line_editor_uart_start ();
     n = 0;
   }
