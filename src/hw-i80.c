@@ -48,14 +48,14 @@ inline static void hw_i80_deactivate_rd (void) { PORTC |= (1 << PC6); }
 inline static void hw_i80_activate_rd_wr (void) { PORTC &= ~((1 << PC1)|(1 << PC6)); }
 inline static void hw_i80_deactivate_rd_wr (void) { PORTC |= ((1 << PC1)|(1 << PC6)); }
 
-inline static void hw_i80_activate_cmd (void) { PORTC &= ~(1 << PC7); } /* PORTC &= ~(1U << PC7) */
-inline static void hw_i80_activate_data (void) { PORTC |= (1 << PC7); } /* PORTC |= (1U << PC7) */
+inline static void hw_i80_activate_cmd (void) { PORTC &= ~(1 << PC7); } /* 0 */
+inline static void hw_i80_activate_data (void) { PORTC |= (1 << PC7); } /* 1 */
 
 inline static void hw_i80_activate_reset (void) { PORTD &= ~(1 << PD7); }
 inline static void hw_i80_deactivate_reset (void) { PORTD |= (1 << PD7); }
 
-inline static void hw_i80_set_data_port_in (void) { DDRA = UINT8_C(0x00); PORTA = UINT8_C(0x00); }
-inline static void hw_i80_set_data_port_out (void) { DDRA = UINT8_C(0xFF); }
+inline static void hw_i80_set_data_port_in (void) { DDRA = UINT8_C(0x00); PORTA = UINT8_C(0xFF); }
+inline static void hw_i80_set_data_port_out (void) { PORTA = UINT8_C(0xFF); DDRA = UINT8_C(0xFF); }
 
 inline static uint8_t hw_i80_read_data (void) { return PINA; }
 inline static void hw_i80_write_data (uint8_t data) { PORTA = data; }
