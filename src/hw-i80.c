@@ -36,35 +36,51 @@ static unsigned char TheReadBuffer[HW_I80_READ_BUFFER_LENGTH];
 static hw_i80_read_callback TheReadCallback = NULL;
 static hw_i80_write_callback TheWriteCallback = NULL;
 
+inline static void hw_i80_activate_cs (void) { PORTC &= ~(1 << PC0); }
+inline static void hw_i80_deactivate_cs (void) { PORTC |= (1 << PC0); }
+
+inline static void hw_i80_activate_wr (void) { PORTC &= ~(1 << PC1); }
+inline static void hw_i80_deactivate_wr (void) { PORTC |= (1 << PC1); }
+
+inline static void hw_i80_activate_rd (void) { PORTC &= ~(1 << PC6); }
+inline static void hw_i80_deactivate_rd (void) { PORTC |= (1 << PC6); }
+
+inline static void hw_i80_activate_rd_wr (void) { PORTC &= ~((1 << PC1)|(1 << PC6)); }
+inline static void hw_i80_deactivate_rd_wr (void) { PORTC |= ((1 << PC1)|(1 << PC6)); }
+
+inline static void hw_i80_activate_cmd (void) { PORTC &= ~(1 << PC7); } /* PORTC &= ~(1U << PC7) */
+inline static void hw_i80_activate_data (void) { PORTC |= (1 << PC7); } /* PORTC |= (1U << PC7) */
+
+inline static void hw_i80_activate_reset (void) { PORTD &= ~(1 << PD7); }
+inline static void hw_i80_deactivate_reset (void) { PORTD |= (1 << PD7); }
+
+inline static void hw_i80_set_data_port_in (void) { DDRA = UINT8_C(0x00); PORTA = UINT8_C(0x00); }
+inline static void hw_i80_set_data_port_out (void) { DDRA = UINT8_C(0xFF); }
+
+inline static uint8_t hw_i80_read_data (void) { return PINA; }
+inline static void hw_i80_write_data (uint8_t data) { PORTA = data; }
+
+static void hw_i80_setup_ports (void) {
+  /* Configure C and D-ports, outputs: CS, WR, RD, RS, RESET */
+  DDRD = (1U << DDD7); DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
+  /* Reset all C and D-port outputs to inactive state (1) */
+  PORTD = (1U << PD7); PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7)); _NOP ();
+}
+
 void hw_i80_init (void)
 {
-  /* make all the A-port pins as inputs */
-  DDRA = 0x00U;
-  /* disable pull-up resistors */
-  PORTA = 0x00U;
-  /* Configure C and D-ports, outputs: CS, WR, RD, RS, RESET */
-  DDRD = (1U << DDD7);
-  DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
-  /* Reset all C and D-port outputs to inactive state (1) */
-  PORTD = (1U << PD7);
-  PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7));
-  _NOP ();
+  /* setup pins */
+  hw_i80_setup_ports ();
+  /* make all the A-port pins as inputs, disable pull-up resistors */
+  hw_i80_set_data_port_in ();
 }
 
 void hw_i80_deinit (void)
 {
-  /* make all the A-port pins as inputs */
-  DDRA = 0x00U;
-  /* disable pull-up resistors */
-  PORTA = 0x00U;
-  /* Configure C and D-port, outputs: CS, WR, RD, RS, RESET */
-  /**@todo check if we need to store configuration for other pins */
-  DDRD = (1U << DDD7);
-  DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
-  /* Reset all C and D-port outputs to inactive state (1) */
-  PORTD = (1U << PD7);
-  PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7));
-  _NOP ();
+  /* reset pin config to default */
+  hw_i80_setup_ports ();
+  /* make all the A-port pins as inputs, disable pull-up resistors */
+  hw_i80_set_data_port_in ();
 }
 
 void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
@@ -80,22 +96,22 @@ void hw_i80_set_write_callback (hw_i80_write_callback aCallback)
 void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
 {
   /* activate CS */
-  PORTC &= ~(1U << PC0);
+  hw_i80_activate_cs ();
 
   /* activate D/CX */
-  PORTC &= ~(1U << PC7);
+  hw_i80_activate_cmd ();
   /* configure PORTA as outputs */
-  DDRA = 0xFFU;
+  hw_i80_set_data_port_out ();
   /* send the command ID to the port A */
-  PORTA = cmd;
+  hw_i80_write_data (cmd);
   /* activate WR */
-  PORTC &= ~(1U << PC1);
+  hw_i80_activate_wr ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate WR */
-  PORTC |= (1U << PC1);
+  hw_i80_deactivate_wr ();
   /* deactivate D/CX */
-  PORTC |= (1U << PC7);
+  hw_i80_activate_data ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
 
@@ -103,22 +119,22 @@ void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
   int i;
   for (i = 0; i < length; ++i)
   {
-    const unsigned char data = pData[i];
-    PORTA = data;
-    PORTC &= ~(1U << PC1);
+    const uint8_t data = pData[i];
+    hw_i80_write_data (data);
+    hw_i80_activate_wr ();
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
-    PORTC |= (1U << PC1);
+    hw_i80_deactivate_wr ();
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
   }
 
   /* clean-up */
   /* configure PORTA as inputs */
-  DDRA = 0x00U;
-  PORTA = 0x00U;
+  hw_i80_set_data_port_in ();
+
   /* deactivate CS */
-  PORTC |= (1U << PC0);
+  hw_i80_deactivate_cs ();
 
   if (TheWriteCallback)
   {
@@ -135,37 +151,35 @@ void hw_i80_read (unsigned char cmd, int length)
   }
 
   /* activate CS */
-  PORTC &= ~(1U << PC0);
+  hw_i80_activate_cs ();
 
   /* activate D/CX */
-  PORTC &= ~(1U << PC7);
-
+  hw_i80_activate_cmd ();
   /* configure PORTA as outputs */
-  DDRA = 0xFFU;
+  hw_i80_set_data_port_out ();
   /* send the command ID to the port A */
-  PORTA = cmd;
+  hw_i80_write_data (cmd);
   /* activate WR */
-  PORTC &= ~(1U << PC1);
+  hw_i80_activate_wr ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate WR */
-  PORTC |= (1U << PC1);
+  hw_i80_deactivate_wr ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate D/CX */
-  PORTC |= (1U << PC7);
+  hw_i80_activate_data ();
   /* confugure PORTA as input, do not enable pull-up resistors */
-  DDRA = 0x00U;
-  PORTA = 0x00U;
+  hw_i80_set_data_port_in ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
 #if 0 /* incorrect read request, todo: check if this is required */
   /* activate WRX and RDX pins */
-  PORTC &= ~((1U << PC1)|(1U << PC6));
+  hw_i80_activate_rd_wr ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
   /* deactivate WRX and RDX */
-  PORTC |= ((1U << PC1)|(1U << PC6));
+  hw_i80_deactivate_rd_wr ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
 #endif /* end: incorrect read request, todo: check if this is required */
@@ -175,21 +189,21 @@ void hw_i80_read (unsigned char cmd, int length)
   for (i = 0; i < length; ++i)
   {
     /* correct reads, activate RDX */
-    PORTC &= ~(1U << PC6);
+    hw_i80_activate_rd ();
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
     /* Now, read the PORTA */
-    unsigned char data = PINA;
+    unsigned char data = hw_i80_read_data ();
     TheReadBuffer[i] = data;
     /* and deactivate RDX */
-    PORTC |= (1U << PC6);
+    hw_i80_deactivate_rd ();
     /* some delay, todo: check if this is required */
     _NOP (); _NOP (); _NOP (); _NOP ();
   }
 
   /* now, move to the idle state */
   /* deactivate CS */
-  PORTC |= (1U << PC0);
+  hw_i80_deactivate_cs ();
 
   /* and finally, notify the client */
   if (TheReadCallback)
@@ -200,9 +214,9 @@ void hw_i80_read (unsigned char cmd, int length)
 
 void hw_i80_reset (void)
 {
-  PORTD &= ~(1U << PD7);
+  hw_i80_activate_reset ();
   _delay_loop_2 (0xFFFFU);
-  PORTD |= (1U << PD7);
+  hw_i80_deactivate_reset ();
   _delay_loop_2 (0xFFFFU);
 }
 
