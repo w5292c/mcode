@@ -5,7 +5,12 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef __AVR__
 #include <avr/pgmspace.h>
+#else /* __AVR__ */
+#include "emu-common.h"
+#endif /* __AVR__ */
 
 #define LINE_EDITOR_UART_BUFFER_LENGTH (64)
 static char line_editor_buffer[LINE_EDITOR_UART_BUFFER_LENGTH] = {0};

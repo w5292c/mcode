@@ -10,6 +10,9 @@ void emu_hw_uart_deinit (void);
 void emu_hw_uart_set_callback (hw_uart_char_event aCallback);
 
 void emu_hw_uart_start_read (void);
+
+void emu_hw_uart_write_uint (unsigned int value);
 void emu_hw_uart_write_string (const char *aString);
+void emu_hw_uart_write_string_P (const char *aString);
 
 #endif /* MCODE_EMU_HW_UART_H */

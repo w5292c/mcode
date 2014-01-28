@@ -271,5 +271,7 @@ void hw_uart_init (void) { emu_hw_uart_init (); }
 void hw_uart_deinit (void) { emu_hw_uart_deinit (); }
 void hw_uart_set_callback (hw_uart_char_event aCallback) { emu_hw_uart_set_callback (aCallback); }
 void hw_uart_start_read (void) { emu_hw_uart_start_read (); }
+void hw_uart_write_uint (unsigned int value) { emu_hw_uart_write_uint (value); }
 void hw_uart_write_string (const char *aString) { emu_hw_uart_write_string (aString); }
+void hw_uart_write_string_P (const char *aString) { emu_hw_uart_write_string_P (aString); }
 #endif /* MCODE_EMULATE_UART */

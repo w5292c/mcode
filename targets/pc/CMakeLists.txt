@@ -7,12 +7,14 @@ set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 set ( SRC_LIST
   ${MCODE_TOP}/src/main-x86.c
   ${MCODE_TOP}/src/hw-i80.c
+  ${MCODE_TOP}/src/hw-leds.c
   ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/line-editor-uart.c
 )
 
+option ( MCODE_EMULATE_LED "Enable LEDs emulation" ON )
 option ( MCODE_EMULATE_UART "Enable UART emulation" ON )
 option ( MCODE_EMULATE_I80 "Enable I80 interface emulation" ON )
 option ( MCODE_EMULATE_I80_LCD1 "Add LCD1 device to I80 bus" ON )

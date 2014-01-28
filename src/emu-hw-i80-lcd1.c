@@ -5,7 +5,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef __AVR__
 #include <avr/pgmspace.h>
+#else /* __AVR__ */
+#include "emu-common.h"
+#endif /* __AVR__ */
 
 #ifndef MCODE_WMU_HW_I80_LCD1_H
 #error "This file can only be used in MCODE_WMU_HW_I80_LCD1_H mode"

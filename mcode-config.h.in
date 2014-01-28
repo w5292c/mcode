@@ -11,3 +11,6 @@
 
 /* This setting enables synchronous UART write */
 #cmakedefine MCODE_HW_UART_SYNC_WRITE
+
+/* This setting enables LED emulation */
+#cmakedefine MCODE_EMULATE_LED

@@ -1,11 +1,16 @@
 #include "emu-hw-uart.h"
 
+#include "emu-common.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <termios.h>
 #include <pthread.h>
-#include <avr/pgmspace.h>
+
+#ifdef __AVR__
+#error "UART emulation is not supported on AVR targets"
+#endif /* __AVR__ */
 
 static int running_request = 0;
 static pthread_t TheKeyEventThread = 0;
@@ -44,7 +49,7 @@ void emu_hw_uart_deinit (void)
     {
       hw_uart_write_string_P (PSTR("Error: cannot cancel thread, code: "));
       hw_uart_write_uint (failed);
-      hw_uart_write_string_P (PSTR("r\n\"));
+      hw_uart_write_string_P (PSTR("\r\n"));
       exit (-1);
     }
     void *status;
@@ -68,6 +73,11 @@ void emu_hw_uart_start_read (void)
 {
 }
 
+void emu_hw_uart_write_uint (unsigned int value)
+{
+  printf ("#%4.4X", value);
+}
+
 void emu_hw_uart_write_string_P (const char *aString)
 {
   emu_hw_uart_write_string (aString);
@@ -75,7 +85,7 @@ void emu_hw_uart_write_string_P (const char *aString)
 
 void emu_hw_uart_write_string (const char *aString)
 {
-  puts (aString);
+  printf ("%s", aString);
 }
 
 static hw_uart_char_event TheCallback = NULL;

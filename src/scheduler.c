@@ -3,7 +3,11 @@
 #include "hw-uart.h"
 
 #include <string.h>
+#ifdef __AVR__
 #include <avr/pgmspace.h>
+#else /* __AVR__ */
+#include "emu-common.h"
+#endif /* __AVR__ */
 
 #define MCODE_TICKS_COUNT (8)
 

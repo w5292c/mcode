@@ -10,7 +10,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef __AVR__
 #include <avr/pgmspace.h>
+#else /* __AVR__ */
+#include "emu-common.h"
+#endif /* __AVR__ */
 
 static void cmd_engine_reset (void);
 static uint8_t glob_is_hex_ch (unsigned char ch);
@@ -52,7 +57,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     /* HELP command */
     hw_uart_write_string_P (PSTR("Supported cmds:\r\n"));
 #if __linux__ == 1
-    hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n");
+    hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> L <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
@@ -171,15 +176,7 @@ void cmd_engine_set_led (const char *aCommand)
     {
       const uint8_t on = glob_ch_to_val (ch2);
       const uint8_t index = glob_ch_to_val (ch0);
-#ifdef __AVR_MEGA__
       mcode_hw_leds_set (index, on);
-#else /* __AVR_MEGA__ */
-      hw_uart_write_string_P (PSTR("Setting LED"));
-      hw_uart_write_uint (index);
-      hw_uart_write_string_P (PSTR(": "));
-      hw_uart_write_string_P (on ? PSTR("ON") : PSTR("OFF"));
-      hw_uart_write_string_P (PSTR("\r\n"));
-#endif /* __AVR_MEGA__ */
       success = 1;
     }
   }
