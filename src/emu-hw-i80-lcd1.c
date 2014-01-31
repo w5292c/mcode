@@ -23,7 +23,6 @@ typedef struct
 } I80LcdRegsData;
 
 static hw_i80_read_callback TheReadCallback = NULL;
-static hw_i80_write_callback TheWriteCallback = NULL;
 
 static void hw_lcd1_get_regs_data(I80LcdRegsData *pData);
 
@@ -40,12 +39,7 @@ void emu_lcd1_hw_i80_set_read_callback (hw_i80_read_callback aCallback)
   TheReadCallback = aCallback;
 }
 
-void emu_lcd1_hw_i80_set_write_callback (hw_i80_write_callback aCallback)
-{
-  TheWriteCallback = aCallback;
-}
-
-void emu_lcd1_hw_i80_read (unsigned char cmd, int length)
+void emu_lcd1_hw_i80_read (uint8_t cmd, uint8_t length)
 {
   hw_uart_write_string_P (PSTR("READ request, command: "));
   hw_uart_write_uint (cmd);
@@ -68,14 +62,22 @@ void emu_lcd1_hw_i80_read (unsigned char cmd, int length)
   }
 }
 
-void emu_lcd1_hw_i80_write (unsigned char cmd, int length, const unsigned char *data)
+void emu_lcd1_hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data)
 {
   int i;
   hw_uart_write_string_P (PSTR("WRITE request, CMD: ["));
   hw_uart_write_uint (cmd);
   hw_uart_write_string_P (PSTR("], length: "));
   hw_uart_write_uint (length);
-  hw_uart_write_string_P (PSTR(", data:\r\n"));
+  hw_uart_write_string_P (PSTR(", data:"));
+  if (length)
+  {
+    hw_uart_write_string_P (PSTR("\r\n"));
+  }
+  else
+  {
+    hw_uart_write_string_P (PSTR(" <null>"));
+  }
   for (i = 0; i < length; i++)
   {
     hw_uart_write_uint (data[i]);
@@ -85,11 +87,6 @@ void emu_lcd1_hw_i80_write (unsigned char cmd, int length, const unsigned char *
     }
   }
   hw_uart_write_string_P (PSTR("\r\n"));
-
-  if (TheWriteCallback)
-  {
-    (*TheWriteCallback) (length);
-  }
 }
 
 void emu_lcd1_hw_i80_reset (void)

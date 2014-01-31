@@ -7,10 +7,9 @@ void emu_hw_i80_init (void);
 void emu_hw_i80_deinit (void);
 
 void emu_hw_i80_set_read_callback (hw_i80_read_callback aCallback);
-void emu_hw_i80_set_write_callback (hw_i80_write_callback aCallback);
 
-void emu_hw_i80_read (unsigned char cmd, int length);
-void emu_hw_i80_write (unsigned char cmd, int length, const unsigned char *data);
+void emu_hw_i80_read (uint8_t cmd, uint8_t length);
+void emu_hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data);
 
 void emu_hw_i80_reset (void);
 

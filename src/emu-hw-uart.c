@@ -75,7 +75,8 @@ void emu_hw_uart_start_read (void)
 
 void emu_hw_uart_write_uint (unsigned int value)
 {
-  printf ("#%4.4X", value);
+  fprintf (stdout, "#%4.4X", value);
+  fflush (stdout);
 }
 
 void emu_hw_uart_write_string_P (const char *aString)
@@ -85,7 +86,8 @@ void emu_hw_uart_write_string_P (const char *aString)
 
 void emu_hw_uart_write_string (const char *aString)
 {
-  printf ("%s", aString);
+  fprintf (stdout, "%s", aString);
+  fflush (stdout);
 }
 
 static hw_uart_char_event TheCallback = NULL;

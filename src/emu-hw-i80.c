@@ -40,18 +40,7 @@ void emu_hw_i80_set_read_callback (hw_i80_read_callback aCallback)
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
-void emu_hw_i80_set_write_callback (hw_i80_write_callback aCallback)
-{
-#ifdef MCODE_EMULATE_I80_LCD1
-  emu_lcd1_hw_i80_set_write_callback (aCallback);
-#else /* MCODE_EMULATE_I80_LCD1 */
-  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_set_write_callback ("));
-  hw_uart_write_uint (aCallback);
-  hw_uart_write_string_P (PSTR("): no device connected\r\n");
-#endif /* MCODE_EMULATE_I80_LCD1 */
-}
-
-void emu_hw_i80_write (unsigned char cmd, int length, const unsigned char *data)
+void emu_hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data)
 {
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_write (cmd, length, data);
@@ -60,7 +49,7 @@ void emu_hw_i80_write (unsigned char cmd, int length, const unsigned char *data)
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
-void emu_hw_i80_read (unsigned char cmd, int length)
+void emu_hw_i80_read (uint8_t cmd, uint8_t length)
 {
 #ifdef MCODE_EMULATE_I80_LCD1
   emu_lcd1_hw_i80_read (cmd, length);
