@@ -59,10 +59,11 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #if __linux__ == 1
     hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
-    hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
+    hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
+    hw_uart_write_string_P (PSTR("> tlimg - Load large test image\r\n"));
     hw_uart_write_string_P (PSTR("> l <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
     hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P (PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
@@ -106,6 +107,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P (aString, PSTR("timg")))
   {
     cmd_test_image ();
+  }
+  else if (!strcmp_P (aString, PSTR("tlimg")))
+  {
+    cmd_test_image_large ();
   }
   else if (*aString)
   {
