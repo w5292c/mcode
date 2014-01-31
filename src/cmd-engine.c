@@ -19,7 +19,6 @@
 
 static void cmd_engine_reset (void);
 static uint8_t glob_is_hex_ch (unsigned char ch);
-static void cmd_engine_on_write_ready (int length);
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
 static void cmd_engine_set_led (const char *aCommand);
@@ -32,7 +31,6 @@ void cmd_engine_init (void)
 {
   hw_i80_init ();
   hw_i80_set_read_callback (cmd_engine_on_read_ready);
-  hw_i80_set_write_callback (cmd_engine_on_write_ready);
   line_editor_uart_init ();
   line_editor_uart_set_callback (cmd_engine_on_cmd_ready);
 }
@@ -263,12 +261,8 @@ void cmd_engine_write (const char *aCommand)
   else
   {
     hw_uart_write_string_P (PSTR("Wrong args, format: W CC X1[X2[X3..XA]]\r\n"));
-    line_editor_uart_start ();
   }
-}
-
-void cmd_engine_on_write_ready (int length)
-{
+  /* restart the command line prompt */
   line_editor_uart_start ();
 }
 

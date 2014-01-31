@@ -34,7 +34,6 @@
 #define HW_I80_READ_BUFFER_LENGTH (16)
 static unsigned char TheReadBuffer[HW_I80_READ_BUFFER_LENGTH];
 static hw_i80_read_callback TheReadCallback = NULL;
-static hw_i80_write_callback TheWriteCallback = NULL;
 
 inline static void hw_i80_activate_cs (void) { PORTC &= ~(1 << PC0); }
 inline static void hw_i80_deactivate_cs (void) { PORTC |= (1 << PC0); }
@@ -88,12 +87,7 @@ void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
   TheReadCallback = aCallback;
 }
 
-void hw_i80_set_write_callback (hw_i80_write_callback aCallback)
-{
-  TheWriteCallback = aCallback;
-}
-
-void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
+void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *pData)
 {
   /* activate CS */
   hw_i80_activate_cs ();
@@ -135,14 +129,9 @@ void hw_i80_write (unsigned char cmd, int length, const unsigned char *pData)
 
   /* deactivate CS */
   hw_i80_deactivate_cs ();
-
-  if (TheWriteCallback)
-  {
-    (*TheWriteCallback) (length);
-  }
 }
 
-void hw_i80_read (unsigned char cmd, int length)
+void hw_i80_read (uint8_t cmd, uint8_t length)
 {
   if (length > HW_I80_READ_BUFFER_LENGTH)
   {
@@ -226,7 +215,6 @@ void hw_i80_reset (void)
 void hw_i80_init (void) { emu_hw_i80_init (); }
 void hw_i80_deinit (void) { emu_hw_i80_deinit (); }
 void hw_i80_set_read_callback (hw_i80_read_callback aCallback) { emu_hw_i80_set_read_callback (aCallback); }
-void hw_i80_set_write_callback (hw_i80_write_callback aCallback) { emu_hw_i80_set_write_callback (aCallback); }
 void hw_i80_read (unsigned char cmd, int length) { emu_hw_i80_read (cmd, length); }
 void hw_i80_write (unsigned char cmd, int length, const unsigned char *data) { emu_hw_i80_write (cmd, length, data); }
 void hw_i80_reset (void) { emu_hw_i80_reset (); }
