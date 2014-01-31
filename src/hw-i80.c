@@ -173,7 +173,7 @@ void hw_i80_read (unsigned char cmd, int length)
   hw_i80_set_data_port_in ();
   /* some delay, todo: check if this is required */
   _NOP (); _NOP (); _NOP (); _NOP ();
-#if 0 /* incorrect read request, todo: check if this is required */
+#if 1 /* incorrect read request, todo: check if this is required */
   /* activate WRX and RDX pins */
   hw_i80_activate_rd_wr ();
   /* some delay, todo: check if this is required */
