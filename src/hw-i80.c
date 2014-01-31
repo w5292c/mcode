@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <avr/cpufunc.h>
+#include <avr/pgmspace.h>
 #include <util/delay_basic.h>
 
 /* HW configuration:
@@ -34,6 +35,8 @@
 #define HW_I80_READ_BUFFER_LENGTH (16)
 static unsigned char TheReadBuffer[HW_I80_READ_BUFFER_LENGTH];
 static hw_i80_read_callback TheReadCallback = NULL;
+
+static void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash);
 
 inline static void hw_i80_activate_cs (void) { PORTC &= ~(1 << PC0); }
 inline static void hw_i80_deactivate_cs (void) { PORTC |= (1 << PC0); }
@@ -91,6 +94,16 @@ void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
 
 void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *pData)
 {
+  hw_i80_write_imp (cmd, length, pData, 0);
+}
+
+void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *pData)
+{
+  hw_i80_write_imp (cmd, length, pData, 1);
+}
+
+void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash)
+{
   /* activate CS */
   hw_i80_activate_cs ();
 
@@ -115,7 +128,7 @@ void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *pData)
   int i;
   for (i = 0; i < length; ++i)
   {
-    const uint8_t data = pData[i];
+    const uint8_t data = flash ? pgm_read_byte (pData + i) : pData[i];
     hw_i80_write_data (data);
     hw_i80_activate_wr ();
     /* some delay, todo: check if this is required */
