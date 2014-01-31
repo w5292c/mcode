@@ -59,13 +59,13 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #if __linux__ == 1
     hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
+    hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
-    hw_uart_write_string_P (PSTR("> test-img - Load test image\r\n"));
-    hw_uart_write_string_P (PSTR("> L <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
-    hw_uart_write_string_P (PSTR("> W <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
-    hw_uart_write_string_P (PSTR("> R <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
+    hw_uart_write_string_P (PSTR("> l <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
+    hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
+    hw_uart_write_string_P (PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
   }
 #ifdef __linux__
   else if (!strcmp_P (aString, PSTR("quit")) || !strcmp_P (aString, PSTR("exit")))
@@ -75,19 +75,19 @@ void cmd_engine_on_cmd_ready (const char *aString)
     start_uart_editor = 0;
   }
 #endif /* __X86__ */
-  else if (!strncmp_P (aString, PSTR("W "), 2))
+  else if (!strncmp_P (aString, PSTR("w "), 2))
   {
     /* WRITE command */
     cmd_engine_write (&aString[2]);
     start_uart_editor = 0;
   }
-  else if (!strncmp_P (aString, PSTR("R "), 2))
+  else if (!strncmp_P (aString, PSTR("r "), 2))
   {
     /* READ command */
     cmd_engine_read (&aString[2]);
     start_uart_editor = 0;
   }
-  else if (!strncmp_P (aString, PSTR("L "), 2))
+  else if (!strncmp_P (aString, PSTR("l "), 2))
   {
     cmd_engine_set_led (&aString[2]);
   }
@@ -103,7 +103,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     hw_lcd_s95513_turn_off ();
   }
-  else if (!strcmp_P (aString, PSTR("test-img")))
+  else if (!strcmp_P (aString, PSTR("timg")))
   {
     cmd_test_image ();
   }
