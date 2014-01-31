@@ -4,6 +4,8 @@
 #include "hw-i80.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
+#include "hw-lcd-s95513.h"
+#include "cmd-test-image.h"
 #include "line-editor-uart.h"
 
 #include <ctype.h>
@@ -58,6 +60,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
+    hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
+    hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
+    hw_uart_write_string_P (PSTR("> test-img - Load test image\r\n"));
     hw_uart_write_string_P (PSTR("> L <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
     hw_uart_write_string_P (PSTR("> W <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P (PSTR("> R <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
@@ -89,6 +94,18 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P (aString, PSTR("reset")))
   {
     cmd_engine_reset ();
+  }
+  else if (!strcmp_P (aString, PSTR("on")))
+  {
+    hw_lcd_s95513_turn_on ();
+  }
+  else if (!strcmp_P (aString, PSTR("off")))
+  {
+    hw_lcd_s95513_turn_off ();
+  }
+  else if (!strcmp_P (aString, PSTR("test-img")))
+  {
+    cmd_test_image ();
   }
   else if (*aString)
   {
