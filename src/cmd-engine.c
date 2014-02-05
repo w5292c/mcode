@@ -2,6 +2,7 @@
 
 #include "main.h"
 #include "hw-i80.h"
+#include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "hw-lcd-s95513.h"
@@ -28,6 +29,39 @@ static unsigned char glob_ch_to_val (unsigned char ch);
 static unsigned char glob_get_byte (const char *pData);
 static void cmd_engine_on_cmd_ready (const char *aString);
 static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
+
+static const char TheLongTestText[] PROGMEM =
+  "That's it! Now your data is in the Program Space. You can compile, link, and che"
+  "ck the map file to verify that mydata is placed in the correct section. Now that"
+  " your data resides in the Program Space, your code to access (read) the data wil"
+  "l no longer work. The code that gets generated will retrieve the data that is lo"
+  "cated at the address of the mydata array, plus offsets indexed by the i and j va"
+  "riables. However, the final address that is calculated where to the retrieve the"
+  " data points to the Data Space! Not the Program Space where the data is actually"
+  " located. It is likely that you will be retrieving some garbage. The problem is "
+  "that AVR GCC does not intrinsically know that the data resides in the Program Sp"
+  "ace. Introduction. So you have some constant data and you're running out of room"
+  " to store it? Many AVRs have limited amount of RAM in which to store data, but m"
+  "ay have more Flash space available. The AVR is a Harvard architecture processor,"
+  " where Flash is used for the program, RAM is used for data, and they each have s"
+  "eparate address spaces. It is a challenge to get constant data to be stored in t"
+  "he Program Space, and to retrieve that data to use it in the AVR application. Th"
+  "e problem is exacerbated by the fact that the C Language was not designed for Ha"
+  "rvard architectures, it was designed for Von Neumann architectures where code an"
+  "d data exist in the same address space. This means that any compiler for a Harva"
+  "rd architecture processor, like the AVR, has to use other means to operate with "
+  "separate address spaces. Some compilers use non-standard C language keywords, or"
+  " they extend the standard syntax in ways that are non-standard. The AVR toolset "
+  "takes a different approach. GCC has a special keyword, __attribute__ that is use"
+  "d to attach different attributes to things such as function declarations, variab"
+  "les, and types. This keyword is followed by an attribute specification in double"
+  " parentheses. In AVR GCC, there is a special attribute called progmem. This attr"
+  "ibute is use on data declarations, and tells the compiler to place the data in t"
+  "he Program Memory (Flash). Unfortunately, with GCC attributes, they affect only "
+  "the declaration that they are attached to. So in this case, we successfully put "
+  "the string_table variable, the array itself, in the Program Space. This DOES NOT"
+  " put the actual strings themselves into Program Space. At this point, the string"
+  "s are still in the Data Space, which is probably not what you want.";
 
 void cmd_engine_init (void)
 {
@@ -59,10 +93,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #if __linux__ == 1
     hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
+    hw_uart_write_string_P (PSTR("> cls - Clear screen\r\n"));
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
     hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
+    hw_uart_write_string_P (PSTR("> tstr - Show long string\r\n"));
     hw_uart_write_string_P (PSTR("> tlimg - Load large test image\r\n"));
     hw_uart_write_string_P (PSTR("> l <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
     hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
@@ -111,6 +147,14 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P (aString, PSTR("tlimg")))
   {
     cmd_test_image_large ();
+  }
+  else if (!strcmp_P (aString, PSTR("cls")))
+  {
+    console_clear_screen ();
+  }
+  else if (!strcmp_P (aString, PSTR("tstr")))
+  {
+    console_write_string_P (TheLongTestText);
   }
   else if (*aString)
   {

@@ -17,7 +17,9 @@ project (console-test C)
 
 set (SRC_LIST
   ${MCODE_TOP}/src/main-avr.c
+  ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/hw-i80.c
+  ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/hw-leds.c
   ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
