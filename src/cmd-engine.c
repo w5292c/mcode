@@ -45,6 +45,12 @@ static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "mblack on magenta\033[m. This is \033[30;46mblack on cyan\033[m. This is \033[30"
   ";47mblack on white\033[m.";
 
+static const char TheTestEscPositionManagement[] PROGMEM =
+  "Hello world!!! This text will be erased in the next escape command, cool.\033[2J"
+  "Initial text.\033[10;3HThis line starts at 10x3.\033[12;2fAnd this line starts a"
+  "t 12x3.\033[30;10HSTART, 3U\033[3AUP, 6D\033[6BDOWN, 30B\033[30DBACK, 10F/3D\033"
+  "[10C\033[3BFINAL!!!";
+
 static const char TheLongTestText[] PROGMEM =
   "That's it! Now your data is in the Program Space. You can compile, link, and che"
   "ck the map file to verify that mydata is placed in the correct section. Now that"
@@ -117,7 +123,8 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
     hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
     hw_uart_write_string_P (PSTR("> tstr - Show long string\r\n"));
-    hw_uart_write_string_P (PSTR("> esc-str - Show string with test escape sequences\r\n"));
+    hw_uart_write_string_P (PSTR("> esc-pos - Show positioned test\r\n"));
+    hw_uart_write_string_P (PSTR("> esc-color - Show colored strings\r\n"));
     hw_uart_write_string_P (PSTR("> tlimg - Load large test image\r\n"));
     hw_uart_write_string_P (PSTR("> l <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
     hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
@@ -183,9 +190,13 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     console_write_string_P (TheLongTestText);
   }
-  else if (!strcmp_P (aString, PSTR("esc-str")))
+  else if (!strcmp_P (aString, PSTR("esc-color")))
   {
     console_write_string_P (TheTestTextWithEscapeSequences);
+  }
+  else if (!strcmp_P (aString, PSTR("esc-pos")))
+  {
+    console_write_string_P (TheTestEscPositionManagement);
   }
   else if (*aString)
   {

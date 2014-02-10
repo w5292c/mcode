@@ -8,8 +8,8 @@
 #include <string.h>
 #include <avr/pgmspace.h>
 
-static uint8_t TheCurrentLine = 0;
-static uint8_t TheCurrentColumn = 0;
+static int8_t TheCurrentLine = 0;
+static int8_t TheCurrentColumn = 0;
 
 static void console_roll_up (void);
 static void console_clear_line (uint8_t line);
@@ -201,6 +201,10 @@ typedef void (*console_escape_handler) (const char *data);
 static uint8_t console_esc_check_for_end (console_escape_handler *pHandler);
 static void console_escape_ignore (const char *pArgs);
 static void console_escape_set_mode (const char *pArgs);
+static void console_escape_cursor_up (const char *pArgs);
+static void console_escape_cursor_down (const char *pArgs);
+static void console_escape_cursor_forward (const char *pArgs);
+static void console_escape_cursor_backward (const char *pArgs);
 static void console_escape_clear_screen (const char *pArgs);
 static void console_escape_set_cursor_pos (const char *pArgs);
 
@@ -210,24 +214,24 @@ typedef struct
   console_escape_handler m_pHandler;
 } EscapeSequence;
 
-const char EscSuffix0[] PROGMEM = "m";
-const char EscSuffix1[] PROGMEM = "H";
-const char EscSuffix2[] PROGMEM = "f";
-const char EscSuffix3[] PROGMEM = "2J";
-const char EscSuffix4[] PROGMEM = "A";
-const char EscSuffix5[] PROGMEM = "B";
-const char EscSuffix6[] PROGMEM = "C";
-const char EscSuffix7[] PROGMEM = "D";
+const char EscSuffix0[] PROGMEM = "m";  /* set-graphics-mode */
+const char EscSuffix1[] PROGMEM = "H";  /* set-cursor-position */
+const char EscSuffix2[] PROGMEM = "f";  /* set-cursor-position */
+const char EscSuffix3[] PROGMEM = "2J"; /* clear-screen */
+const char EscSuffix4[] PROGMEM = "A";  /* cursor-up */
+const char EscSuffix5[] PROGMEM = "B";  /* cursor-down */
+const char EscSuffix6[] PROGMEM = "C";  /* cursor-forward */
+const char EscSuffix7[] PROGMEM = "D";  /* cursor-backward */
 const char EscSuffixI[] PROGMEM = "I";
 static const EscapeSequence TheEscapeSequesnceHandlers[] PROGMEM = {
   {EscSuffix0, console_escape_set_mode},
   {EscSuffix1, console_escape_set_cursor_pos},
   {EscSuffix2, console_escape_set_cursor_pos},
   {EscSuffix3, console_escape_clear_screen},
-  {EscSuffix4, NULL},
-  {EscSuffix5, NULL},
-  {EscSuffix6, NULL},
-  {EscSuffix7, NULL},
+  {EscSuffix4, console_escape_cursor_up},
+  {EscSuffix5, console_escape_cursor_down},
+  {EscSuffix6, console_escape_cursor_forward},
+  {EscSuffix7, console_escape_cursor_backward},
   {EscSuffixI, console_escape_ignore},
 };
 static uint8_t EscSequenceBuffer[16];
@@ -507,5 +511,62 @@ void console_escape_set_cursor_pos (const char *pArgs)
 
 void console_escape_clear_screen (const char *pArgs)
 {
-  console_clear_screen ();
+  if (!*pArgs)
+  {
+    console_clear_screen ();
+  }
+}
+
+void console_escape_cursor_up (const char *pArgs)
+{
+  uint8_t lines = 0;
+  pArgs = console_next_num_token (pArgs, &lines);
+  if (pArgs && !console_next_num_token (pArgs, NULL))
+  {
+    TheCurrentLine -= lines;
+    if (TheCurrentLine < 0 || TheCurrentLine > 59)
+    {
+      TheCurrentLine = 0;
+    }
+  }
+}
+
+void console_escape_cursor_down (const char *pArgs)
+{
+  uint8_t lines = 0;
+  pArgs = console_next_num_token (pArgs, &lines);
+  if (pArgs && !console_next_num_token (pArgs, NULL))
+  {
+    TheCurrentLine += lines;
+    if (TheCurrentLine > 59 || TheCurrentLine < 0)
+    {
+      TheCurrentLine = 59;
+    }
+  }
+}
+void console_escape_cursor_forward (const char *pArgs)
+{
+  uint8_t columns = 0;
+  pArgs = console_next_num_token (pArgs, &columns);
+  if (pArgs && !console_next_num_token (pArgs, NULL))
+  {
+    TheCurrentColumn += columns;
+    if (TheCurrentColumn > 39 || TheCurrentColumn < 0)
+    {
+      TheCurrentColumn = 39;
+    }
+  }
+}
+void console_escape_cursor_backward (const char *pArgs)
+{
+  uint8_t columns = 0;
+  pArgs = console_next_num_token (pArgs, &columns);
+  if (pArgs && !console_next_num_token (pArgs, NULL))
+  {
+    TheCurrentColumn -= columns;
+    if (TheCurrentColumn < 0 || TheCurrentColumn > 39)
+    {
+      TheCurrentColumn = 0;
+    }
+  }
 }
