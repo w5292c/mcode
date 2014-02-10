@@ -12,7 +12,7 @@ void hw_lcd_s95513_turn_on (void)
   /* set_display_on */
   hw_i80_write (UINT8_C(0x29), 0, NULL);
   /* set_pixel_format: 18bpp */
-  const uint8_t format = 0x66;
+  const uint8_t format = 0x55;
   hw_i80_write (UINT8_C(0x3A), 1, &format);
 }
 

@@ -14,9 +14,13 @@ static void console_roll_up (void);
 static void console_clear_line (uint8_t line);
 static void console_config_lcd_for_pos (uint8_t column, uint8_t line);
 
-/* GGGR RRRR */
+static uint16_t TheOnColor = 0xFFFFU;
+static uint16_t TheOffColor = 0x0000U;
+
+/* 2104 3210 | 3450 1234 */
+/* GGGR RRRR | GGGB BBBB */
 static const uint8_t on_buffer[4] PROGMEM = {
-  0xFFU, 0xFFU, 0xFFU, 0xFFU
+  0xE0U, 0xFFU, 0xFFU, 0xFFU
 };
 static const uint8_t off_buffer[4] PROGMEM = {
   0x00U, 0x00U, 0x00U, 0x00U
@@ -79,12 +83,12 @@ void console_write_byte (uint8_t byte)
       if (line & (1U << (7 - x)))
       {
         /* the pixel is ON */
-        hw_i80_write_P (cmd, 2, on_buffer);
+        hw_i80_write_double (cmd, 2, (const uint8_t *)(&TheOnColor));
       }
       else
       {
         /* the pixel is OFF */
-        hw_i80_write_P (cmd, 2, off_buffer);
+        hw_i80_write_double (cmd, 2, (const uint8_t *)(&TheOffColor));
       }
       cmd = UINT8_C(0x3C);
     }
@@ -107,6 +111,16 @@ void console_write_string_P (const char *pString)
   {
     console_write_byte (ch);
   }
+}
+
+void console_set_color (uint16_t color)
+{
+  TheOnColor = color;
+}
+
+void console_set_bg_color (uint16_t color)
+{
+  TheOffColor = color;
 }
 
 void console_roll_up (void)

@@ -28,7 +28,11 @@ static void cmd_engine_set_led (const char *aCommand);
 static unsigned char glob_ch_to_val (unsigned char ch);
 static unsigned char glob_get_byte (const char *pData);
 static void cmd_engine_on_cmd_ready (const char *aString);
+static uint16_t glob_str_to_uint16 (const char *pHexString);
 static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
+
+static void cmd_engine_set_bg (const char *aParams);
+static void cmd_engine_set_color (const char *aParams);
 
 static const char TheLongTestText[] PROGMEM =
   "That's it! Now your data is in the Program Space. You can compile, link, and che"
@@ -93,6 +97,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #if __linux__ == 1
     hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
+    hw_uart_write_string_P (PSTR("> color xxxx - set text color\r\n"));
+    hw_uart_write_string_P (PSTR("> bg xxxx - set background color\r\n"));
+
     hw_uart_write_string_P (PSTR("> cls - Clear screen\r\n"));
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
@@ -151,6 +158,14 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P (aString, PSTR("cls")))
   {
     console_clear_screen ();
+  }
+  else if (!strncmp_P (aString, PSTR("bg "), 3))
+  {
+    cmd_engine_set_bg (&aString[3]);
+  }
+  else if (!strncmp_P (aString, PSTR("color "), 6))
+  {
+    cmd_engine_set_color (&aString[6]);
   }
   else if (!strcmp_P (aString, PSTR("tstr")))
   {
@@ -367,4 +382,35 @@ static unsigned char glob_ch_to_val (unsigned char ch)
 unsigned char glob_get_byte (const char *pData)
 {
   return (glob_ch_to_val (pData[0]) << 4) | glob_ch_to_val (pData[1]);
+}
+
+void cmd_engine_set_bg (const char *aParams)
+{
+  if (4 == strlen (aParams))
+  {
+    const uint16_t param = glob_str_to_uint16 (aParams);
+    console_set_bg_color (param);
+  }
+  else
+  {
+    hw_uart_write_string_P (PSTR("Wrong args, format: bg XXXX\r\n"));
+  }
+}
+
+void cmd_engine_set_color (const char *aParams)
+{
+  if (4 == strlen (aParams))
+  {
+    const uint16_t param = glob_str_to_uint16 (aParams);
+    console_set_color (param);
+  }
+  else
+  {
+    hw_uart_write_string_P (PSTR("Wrong args, format: color XXXX\r\n"));
+  }
+}
+
+uint16_t glob_str_to_uint16 (const char *pHexString)
+{
+  return glob_get_byte (pHexString) | (((uint16_t)glob_get_byte (pHexString + 2)) << 8);
 }
