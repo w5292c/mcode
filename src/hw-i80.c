@@ -66,7 +66,7 @@ inline static void hw_i80_read_write_delay (void) { _NOP (); }
 
 static void hw_i80_setup_ports (void) {
   /* Configure C and D-ports, outputs: CS, WR, RD, RS, RESET */
-  DDRD = (1U << DDD7); DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
+  DDRD |= (1U << DDD7); DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
   /* Reset all C and D-port outputs to inactive state (1) */
   PORTD = (1U << PD7); PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7)); _NOP ();
 }
