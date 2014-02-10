@@ -208,6 +208,7 @@ static void console_escape_cursor_up (const char *pArgs);
 static void console_escape_cursor_down (const char *pArgs);
 static void console_escape_cursor_forward (const char *pArgs);
 static void console_escape_cursor_backward (const char *pArgs);
+static void console_escape_erase_line (const char *pArgs);
 static void console_escape_clear_screen (const char *pArgs);
 static void console_escape_set_cursor_pos (const char *pArgs);
 static void console_escape_save_cursor_pos (const char *pArgs);
@@ -219,29 +220,35 @@ typedef struct
   console_escape_handler m_pHandler;
 } EscapeSequence;
 
-const char EscSuffix0[] PROGMEM = "m";  /* set-graphics-mode */
-const char EscSuffix1[] PROGMEM = "H";  /* set-cursor-position */
-const char EscSuffix2[] PROGMEM = "f";  /* set-cursor-position */
-const char EscSuffix3[] PROGMEM = "2J"; /* clear-screen */
-const char EscSuffix4[] PROGMEM = "A";  /* cursor-up */
-const char EscSuffix5[] PROGMEM = "B";  /* cursor-down */
-const char EscSuffix6[] PROGMEM = "C";  /* cursor-forward */
-const char EscSuffix7[] PROGMEM = "D";  /* cursor-backward */
-const char EscSuffix8[] PROGMEM = "s";  /* Save the current cursor position */
-const char EscSuffix9[] PROGMEM = "u";  /* Restore the saved cursor position */
-const char EscSuffixI[] PROGMEM = "I";
+const char EscSuffix00[] PROGMEM = "m";  /* set-graphics-mode */
+const char EscSuffix01[] PROGMEM = "H";  /* set-cursor-position */
+const char EscSuffix02[] PROGMEM = "f";  /* set-cursor-position */
+const char EscSuffix03[] PROGMEM = "2J"; /* clear-screen */
+const char EscSuffix04[] PROGMEM = "A";  /* cursor-up */
+const char EscSuffix05[] PROGMEM = "B";  /* cursor-down */
+const char EscSuffix06[] PROGMEM = "C";  /* cursor-forward */
+const char EscSuffix07[] PROGMEM = "D";  /* cursor-backward */
+const char EscSuffix08[] PROGMEM = "s";  /* Save the current cursor position */
+const char EscSuffix09[] PROGMEM = "u";  /* Restore the saved cursor position */
+const char EscSuffix10[] PROGMEM = "h";  /* Set mode, ignore for now */
+const char EscSuffix11[] PROGMEM = "l";  /* Reset mode, ignore for now */
+const char EscSuffix12[] PROGMEM = "p";  /* Set keyboard settings, ignore for now */
+const char EscSuffix13[] PROGMEM = "K";  /* Erase line */
 static const EscapeSequence TheEscapeSequesnceHandlers[] PROGMEM = {
-  {EscSuffix0, console_escape_set_mode},
-  {EscSuffix1, console_escape_set_cursor_pos},
-  {EscSuffix2, console_escape_set_cursor_pos},
-  {EscSuffix3, console_escape_clear_screen},
-  {EscSuffix4, console_escape_cursor_up},
-  {EscSuffix5, console_escape_cursor_down},
-  {EscSuffix6, console_escape_cursor_forward},
-  {EscSuffix7, console_escape_cursor_backward},
-  {EscSuffix8, console_escape_save_cursor_pos},
-  {EscSuffix9, console_escape_restore_cursor_pos},
-  {EscSuffixI, console_escape_ignore},
+  {EscSuffix00, console_escape_set_mode},
+  {EscSuffix01, console_escape_set_cursor_pos},
+  {EscSuffix02, console_escape_set_cursor_pos},
+  {EscSuffix03, console_escape_clear_screen},
+  {EscSuffix04, console_escape_cursor_up},
+  {EscSuffix05, console_escape_cursor_down},
+  {EscSuffix06, console_escape_cursor_forward},
+  {EscSuffix07, console_escape_cursor_backward},
+  {EscSuffix08, console_escape_save_cursor_pos},
+  {EscSuffix09, console_escape_restore_cursor_pos},
+  {EscSuffix13, console_escape_erase_line},
+  {EscSuffix10, console_escape_ignore},
+  {EscSuffix11, console_escape_ignore},
+  {EscSuffix12, console_escape_ignore},
 };
 static uint8_t EscSequenceBuffer[16];
 uint8_t console_handle_escape_sequence (uint8_t byte)
@@ -599,4 +606,28 @@ void console_escape_restore_cursor_pos (const char *pArgs)
     TheSavedLinePos = 0;
     TheSavedColumnPos = 0;
   }
+}
+
+void console_escape_erase_line (const char *pArgs)
+{
+  const uint16_t sCol = 0;
+  const uint16_t eCol = (uint16_t)((39 - TheCurrentColumn) << 3) + 7;
+  const uint16_t sLine = (uint16_t)(TheCurrentLine << 3);
+  const uint16_t eLine = sLine + 7;
+
+  /* clear the line, fill the background color */
+  uint8_t buffer[4];
+  /* set_column_address */
+  buffer[0] = (uint8_t)(UINT8_C (0xFF) & (sCol>>8));
+  buffer[1] = (uint8_t)(UINT8_C (0xFF) & sCol); /* start column */
+  buffer[2] = (uint8_t)(UINT8_C (0xFF) & (eCol>>8));
+  buffer[3] = (uint8_t)(UINT8_C (0xFF) & eCol); /* end column: 0x013f */
+  hw_i80_write (UINT8_C(0x2A), 4, buffer);
+  /* set_page_address */
+  buffer[0] = (uint8_t)(UINT8_C (0xFF) & (sLine>>8));
+  buffer[1] = (uint8_t)(UINT8_C (0xFF) & sLine); /* start page */
+  buffer[2] = (uint8_t)(UINT8_C (0xFF) & (eLine>>8));
+  buffer[3] = (uint8_t)(UINT8_C (0xFF) & eLine); /* end page */
+  hw_i80_write (UINT8_C(0x2B), 4, buffer);
+  hw_i80_write_const (UINT8_C(0x2c), TheOffColor, ((40 - TheCurrentColumn) << 6));
 }

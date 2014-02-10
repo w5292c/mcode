@@ -43,5 +43,6 @@ Console supports the following escape sequences:
  8) "\033[<cols>D" - Move cursor backward <cols> number of columns;
  9) "\033[s" - Save the current cursor position;
 10) "\033[u" - Restore the current cursor position;
+11) "\033[K" - Erase line: clear the current line starting the current cursor position;
 
 Here is the link where some escape sequesnces are listed: http://ascii-table.com/ansi-escape-sequences.php
