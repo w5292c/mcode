@@ -14,6 +14,9 @@ void hw_i80_read (uint8_t cmd, uint8_t length);
 void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data);
 void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *data);
 
+void hw_i80_write_double (uint8_t cmd, uint8_t length, const uint8_t *data);
+void hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data);
+
 void hw_i80_reset (void);
 
 #endif /* MC_CODE_I80_H */

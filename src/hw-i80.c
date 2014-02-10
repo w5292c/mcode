@@ -36,7 +36,7 @@
 static unsigned char TheReadBuffer[HW_I80_READ_BUFFER_LENGTH];
 static hw_i80_read_callback TheReadCallback = NULL;
 
-static void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash);
+static void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash, uint8_t doubleData);
 
 inline static void hw_i80_activate_cs (void) { PORTC &= ~(1 << PC0); }
 inline static void hw_i80_deactivate_cs (void) { PORTC |= (1 << PC0); }
@@ -59,8 +59,13 @@ inline static void hw_i80_deactivate_reset (void) { PORTD |= (1 << PD7); }
 inline static void hw_i80_set_data_port_in (void) { DDRA = UINT8_C(0x00); PORTA = UINT8_C(0xFF); }
 inline static void hw_i80_set_data_port_out (void) { PORTA = UINT8_C(0xFF); DDRA = UINT8_C(0xFF); }
 
+inline static void hw_i80_set_double_data_port_in (void) { DDRA = UINT8_C(0x00); DDRB = UINT8_C(0x00); PORTA = UINT8_C(0xFF); PORTB = UINT8_C(0xFF); }
+inline static void hw_i80_set_double_data_port_out (void) { PORTA = UINT8_C(0xFF); PORTB = UINT8_C(0xFF); DDRA = UINT8_C(0xFF); DDRB = UINT8_C(0xFF); }
+
 inline static uint8_t hw_i80_read_data (void) { return PINA; }
 inline static void hw_i80_write_data (uint8_t data) { PORTA = data; }
+
+inline static void hw_i80_write_data_2 (uint16_t data) { PORTA = (uint8_t)data; PORTB = (uint8_t)(data>>8); }
 
 inline static void hw_i80_read_write_delay (void) { _NOP (); }
 
@@ -76,7 +81,7 @@ void hw_i80_init (void)
   /* setup pins */
   hw_i80_setup_ports ();
   /* make all the A-port pins as inputs, disable pull-up resistors */
-  hw_i80_set_data_port_in ();
+  hw_i80_set_double_data_port_in ();
 }
 
 void hw_i80_deinit (void)
@@ -84,7 +89,7 @@ void hw_i80_deinit (void)
   /* reset pin config to default */
   hw_i80_setup_ports ();
   /* make all the A-port pins as inputs, disable pull-up resistors */
-  hw_i80_set_data_port_in ();
+  hw_i80_set_double_data_port_in ();
 }
 
 void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
@@ -94,23 +99,39 @@ void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
 
 void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *pData)
 {
-  hw_i80_write_imp (cmd, length, pData, 0);
+  hw_i80_write_imp (cmd, length, pData, 0, 0);
 }
 
 void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *pData)
 {
-  hw_i80_write_imp (cmd, length, pData, 1);
+  hw_i80_write_imp (cmd, length, pData, 1, 0);
 }
 
-void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash)
+void hw_i80_write_double (uint8_t cmd, uint8_t length, const uint8_t *data)
 {
+  hw_i80_write_imp (cmd, length, data, 0, 1);
+}
+
+void hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data)
+{
+  hw_i80_write_imp (cmd, length, data, 1, 1);
+}
+
+void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash, uint8_t doubleData)
+{
+  if (doubleData && (length & 0x01))
+  {
+    /* cannot write odd number of bytes to the double-byte interface */
+    return;
+  }
+
   /* activate CS */
   hw_i80_activate_cs ();
 
   /* activate D/CX */
   hw_i80_activate_cmd ();
-  /* configure PORTA as outputs */
-  hw_i80_set_data_port_out ();
+  /* configure PORTA and/or PORTB as outputs */
+  hw_i80_set_double_data_port_out ();
   /* send the command ID to the port A */
   hw_i80_write_data (cmd);
   /* activate WR */
@@ -128,8 +149,18 @@ void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_
   int i;
   for (i = 0; i < length; ++i)
   {
-    const uint8_t data = flash ? pgm_read_byte (pData + i) : pData[i];
-    hw_i80_write_data (data);
+    if (!doubleData)
+    {
+      const uint8_t data = flash ? pgm_read_byte (pData + i) : pData[i];
+      hw_i80_write_data (data);
+    }
+    else
+    {
+      const uint8_t data0 = flash ? pgm_read_byte (pData + i) : pData[i];
+      ++i;
+      const uint8_t data1 = flash ? pgm_read_byte (pData + i) : pData[i];
+      hw_i80_write_data_2 (data0 | (data1<<8));
+    }
     hw_i80_activate_wr ();
     /* some delay, todo: check if this is required */
     hw_i80_read_write_delay ();
@@ -140,7 +171,7 @@ void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_
 
   /* clean-up */
   /* configure PORTA as inputs */
-  hw_i80_set_data_port_in ();
+  hw_i80_set_double_data_port_in ();
 
   /* deactivate CS */
   hw_i80_deactivate_cs ();
