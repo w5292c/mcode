@@ -34,6 +34,17 @@ static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
 static void cmd_engine_set_bg (const char *aParams);
 static void cmd_engine_set_color (const char *aParams);
 
+static const char TheTestTextWithEscapeSequences[] PROGMEM =
+  "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
+  "lack\033[m. This is \033[32;40mgreen on black\033[m. This is \033[33;40myellow o"
+  "n black\033[m. This is \033[34;40mblue on black\033[m. This is \033[35;40mmagent"
+  "a on black\033[m. This is \033[36;40mcyan on black\033[m. This is \033[37;40mwhi"
+  "te on black\033[m. This is \033[33;40myello on black\033[m. This is \033[30;41mb"
+  "lack on red\033[m. This is \033[30;42mblack on green\033[m. This is \033[30;43mb"
+  "lack on yellow\033[m. This is \033[37;44mwhite on blue\033[m. This is \033[30;45"
+  "mblack on magenta\033[m. This is \033[30;46mblack on cyan\033[m. This is \033[30"
+  ";47mblack on white\033[m.";
+
 static const char TheLongTestText[] PROGMEM =
   "That's it! Now your data is in the Program Space. You can compile, link, and che"
   "ck the map file to verify that mydata is placed in the correct section. Now that"
@@ -106,6 +117,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
     hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
     hw_uart_write_string_P (PSTR("> tstr - Show long string\r\n"));
+    hw_uart_write_string_P (PSTR("> esc-str - Show string with test escape sequences\r\n"));
     hw_uart_write_string_P (PSTR("> tlimg - Load large test image\r\n"));
     hw_uart_write_string_P (PSTR("> l <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
     hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
@@ -170,6 +182,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P (aString, PSTR("tstr")))
   {
     console_write_string_P (TheLongTestText);
+  }
+  else if (!strcmp_P (aString, PSTR("esc-str")))
+  {
+    console_write_string_P (TheTestTextWithEscapeSequences);
   }
   else if (*aString)
   {
@@ -412,5 +428,5 @@ void cmd_engine_set_color (const char *aParams)
 
 uint16_t glob_str_to_uint16 (const char *pHexString)
 {
-  return glob_get_byte (pHexString) | (((uint16_t)glob_get_byte (pHexString + 2)) << 8);
+  return glob_get_byte (pHexString + 2) | (((uint16_t)glob_get_byte (pHexString)) << 8);
 }
