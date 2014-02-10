@@ -45,9 +45,24 @@ void console_clear_screen (void)
   TheCurrentLine = 0;
   TheCurrentColumn = 0;
 
-  /* reset the LCD module, this clears the screen */
-  hw_i80_reset ();
+  /* turn the LCD on */
   hw_lcd_s95513_turn_on ();
+
+  /* clear the screen, fill the background color */
+  uint8_t buffer[4];
+  /* set_column_address */
+  buffer[0] = UINT8_C (0x00);
+  buffer[1] = UINT8_C (0x00); /* start column */
+  buffer[2] = UINT8_C (0x01);
+  buffer[3] = UINT8_C (0x3f); /* end column */
+  hw_i80_write (UINT8_C(0x2a), 4, buffer);
+  /* set_page_address */
+  buffer[0] = UINT8_C (0x00);
+  buffer[1] = UINT8_C (0x00); /* start page */
+  buffer[2] = UINT8_C (0x01);
+  buffer[3] = UINT8_C (0xdf); /* end page */
+  hw_i80_write (UINT8_C(0x2B), 4, buffer);
+  hw_i80_write_const_long (UINT8_C(0x2c), TheOffColor, 153600);
 }
 
 void console_write_byte (uint8_t byte)
