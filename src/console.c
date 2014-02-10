@@ -198,9 +198,10 @@ uint8_t console_handle_control_codes (uint8_t byte)
 }
 
 typedef void (*console_escape_handler) (const char *data);
-static console_escape_handler console_esc_check_for_end (void);
+static uint8_t console_esc_check_for_end (console_escape_handler *pHandler);
 static void console_escape_ignore (const char *pArgs);
 static void console_escape_set_mode (const char *pArgs);
+static void console_escape_clear_screen (const char *pArgs);
 static void console_escape_set_cursor_pos (const char *pArgs);
 
 typedef struct
@@ -213,13 +214,21 @@ const char EscSuffix0[] PROGMEM = "m";
 const char EscSuffix1[] PROGMEM = "H";
 const char EscSuffix2[] PROGMEM = "f";
 const char EscSuffix3[] PROGMEM = "2J";
-const char EscSuffix4[] PROGMEM = "m";
-const char EscSuffix5[] PROGMEM = "m";
+const char EscSuffix4[] PROGMEM = "A";
+const char EscSuffix5[] PROGMEM = "B";
+const char EscSuffix6[] PROGMEM = "C";
+const char EscSuffix7[] PROGMEM = "D";
+const char EscSuffixI[] PROGMEM = "I";
 static const EscapeSequence TheEscapeSequesnceHandlers[] PROGMEM = {
   {EscSuffix0, console_escape_set_mode},
   {EscSuffix1, console_escape_set_cursor_pos},
   {EscSuffix2, console_escape_set_cursor_pos},
-  {EscSuffix3, console_escape_ignore},
+  {EscSuffix3, console_escape_clear_screen},
+  {EscSuffix4, NULL},
+  {EscSuffix5, NULL},
+  {EscSuffix6, NULL},
+  {EscSuffix7, NULL},
+  {EscSuffixI, console_escape_ignore},
 };
 static uint8_t EscSequenceBuffer[16];
 uint8_t console_handle_escape_sequence (uint8_t byte)
@@ -259,11 +268,14 @@ uint8_t console_handle_escape_sequence (uint8_t byte)
              makes sense to check for it before reporting an error */
     if (escapeSequenceIndex < sizeof (EscSequenceBuffer) - 1)
     {
+      console_escape_handler pHandler = NULL;
       EscSequenceBuffer[escapeSequenceIndex++] = byte;
-      console_escape_handler pHandler = console_esc_check_for_end ();
-      if (pHandler)
+      if (console_esc_check_for_end (&pHandler))
       {
-        (*pHandler) ((const char *)EscSequenceBuffer);
+        if (pHandler)
+        {
+          (*pHandler) ((const char *)EscSequenceBuffer);
+        }
         escapeSequence = 0;
       }
     }
@@ -294,10 +306,10 @@ uint8_t console_handle_escape_sequence (uint8_t byte)
   return result;
 }
 
-console_escape_handler console_esc_check_for_end (void)
+uint8_t console_esc_check_for_end (console_escape_handler *pHandler)
 {
   uint8_t i;
-  console_escape_handler pHandler = NULL;
+  uint8_t found = 0;
   const uint8_t bufferLength = strlen ((const char *)EscSequenceBuffer);
   const uint8_t n = sizeof (TheEscapeSequesnceHandlers)/sizeof (TheEscapeSequesnceHandlers[0]);
   for (i = 0; i < n; ++i)
@@ -309,14 +321,15 @@ console_escape_handler console_esc_check_for_end (void)
     if (bufferLength >= suffixLength && !strcmp_P ((const char *)(EscSequenceBuffer + bufferLength - suffixLength), pSuffix))
     {
       /* retrieve the handler */
-      pHandler = (console_escape_handler) pgm_read_word (&pSequence->m_pHandler);
+      *pHandler = (console_escape_handler) pgm_read_word (&pSequence->m_pHandler);
       /* remove the suffix from the buffer */
       *(EscSequenceBuffer + bufferLength - suffixLength) = 0;
+      found = 1;
       break;
     }
   }
 
-  return pHandler;
+  return found;
 }
 
 void console_escape_ignore (const char *pArgs)
@@ -427,7 +440,10 @@ const char *console_next_num_token (const char *pString, uint8_t *pValue)
   char ch;
   if (*pString)
   {
-    *pValue = 0;
+    if (pValue)
+    {
+      *pValue = 0;
+    }
     while (1)
     {
       ch = *pString++;
@@ -446,8 +462,11 @@ const char *console_next_num_token (const char *pString, uint8_t *pValue)
       else if (ch >= '0' && ch <= '9')
       {
         /* a decimal digit detected */
-        *pValue *= 10;
-        *pValue += (ch - '0');
+        if (pValue)
+        {
+          *pValue *= 10;
+          *pValue += (ch - '0');
+        }
       }
     }
   }
@@ -460,4 +479,33 @@ void console_escape_set_cursor_pos (const char *pArgs)
   hw_uart_write_string_P (PSTR ("> Set cursor position: ["));
   hw_uart_write_string (pArgs);
   hw_uart_write_string_P (PSTR ("]\r\n"));
+
+  uint8_t valueLine = 0;
+  pArgs = console_next_num_token (pArgs, &valueLine);
+  if (pArgs)
+  {
+    uint8_t valueColumn = 0;
+    pArgs = console_next_num_token (pArgs, &valueColumn);
+    if (pArgs && !console_next_num_token (pArgs, NULL))
+    {
+      if (valueLine < 60 && valueColumn < 40)
+      {
+        TheCurrentLine = valueLine;
+        TheCurrentColumn = valueColumn;
+      }
+      else
+      {
+        hw_uart_write_string_P (PSTR ("Warning: console_escape_set_cursor_pos: wrong cursor pos: "));
+        hw_uart_write_uint (valueColumn);
+        hw_uart_write_string_P (PSTR (", "));
+        hw_uart_write_uint (valueLine);
+        hw_uart_write_string_P (PSTR ("\r\n"));
+      }
+    }
+  }
+}
+
+void console_escape_clear_screen (const char *pArgs)
+{
+  console_clear_screen ();
 }
