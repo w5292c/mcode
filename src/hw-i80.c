@@ -36,6 +36,19 @@
 static unsigned char TheReadBuffer[HW_I80_READ_BUFFER_LENGTH];
 static hw_i80_read_callback TheReadCallback = NULL;
 
+/**
+ *
+ */
+static void hw_i80_parts_begin (void);
+static void hw_i80_parts_write_cmd (uint8_t cmd);
+static void hw_i80_parts_write_repeated_data (uint16_t data, uint16_t length);
+static void hw_i80_parts_write_repeated_data_short (uint16_t data, uint8_t length);
+static void hw_i80_parts_write_repeated_data_long (uint16_t data, uint32_t length);
+static void hw_i80_parts_end (void);
+
+/**
+ *
+ */
 static void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash, uint8_t doubleData);
 
 inline static void hw_i80_activate_cs (void) { PORTC &= ~(1 << PC0); }
@@ -115,6 +128,30 @@ void hw_i80_write_double (uint8_t cmd, uint8_t length, const uint8_t *data)
 void hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data)
 {
   hw_i80_write_imp (cmd, length, data, 1, 1);
+}
+
+void hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length)
+{
+  hw_i80_parts_begin ();
+  hw_i80_parts_write_cmd (cmd);
+  hw_i80_parts_write_repeated_data_short (constValue, length);
+  hw_i80_parts_end ();
+}
+
+void hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length)
+{
+  hw_i80_parts_begin ();
+  hw_i80_parts_write_cmd (cmd);
+  hw_i80_parts_write_repeated_data (constValue, length);
+  hw_i80_parts_end ();
+}
+
+void hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length)
+{
+  hw_i80_parts_begin ();
+  hw_i80_parts_write_cmd (cmd);
+  hw_i80_parts_write_repeated_data_long (constValue, length);
+  hw_i80_parts_end ();
 }
 
 void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_t flash, uint8_t doubleData)
@@ -253,6 +290,90 @@ void hw_i80_reset (void)
   _delay_loop_2 (0xFFFFU);
   hw_i80_deactivate_reset ();
   _delay_loop_2 (0xFFFFU);
+}
+
+void hw_i80_parts_begin (void)
+{
+  /* activate CS */
+  hw_i80_activate_cs ();
+}
+
+void hw_i80_parts_write_cmd (uint8_t cmd)
+{
+  /* activate D/CX */
+  hw_i80_activate_cmd ();
+  /* configure PORTA and/or PORTB as outputs */
+  hw_i80_set_double_data_port_out ();
+  /* send the command ID to the port A */
+  hw_i80_write_data (cmd);
+  /* activate WR */
+  hw_i80_activate_wr ();
+  /* some delay, todo: check if this is required */
+  hw_i80_read_write_delay ();
+  /* deactivate WR */
+  hw_i80_deactivate_wr ();
+  /* deactivate D/CX */
+  hw_i80_activate_data ();
+  /* some delay, todo: check if this is required */
+  hw_i80_read_write_delay ();
+}
+
+void hw_i80_parts_write_repeated_data_short (uint16_t data, uint8_t length)
+{
+  /* write cycle */
+  uint8_t i;
+  for (i = 0; i < length; ++i)
+  {
+    hw_i80_write_data_2 (data);
+    hw_i80_activate_wr ();
+    /* some delay, todo: check if this is required */
+    hw_i80_read_write_delay ();
+    hw_i80_deactivate_wr ();
+    /* some delay, todo: check if this is required */
+    hw_i80_read_write_delay ();
+  }
+}
+
+void hw_i80_parts_write_repeated_data (uint16_t data, uint16_t length)
+{
+  /* write cycle */
+  uint16_t i;
+  for (i = 0; i < length; ++i)
+  {
+    hw_i80_write_data_2 (data);
+    hw_i80_activate_wr ();
+    /* some delay, todo: check if this is required */
+    hw_i80_read_write_delay ();
+    hw_i80_deactivate_wr ();
+    /* some delay, todo: check if this is required */
+    hw_i80_read_write_delay ();
+  }
+}
+
+void hw_i80_parts_write_repeated_data_long (uint16_t data, uint32_t length)
+{
+  /* write cycle */
+  uint32_t i;
+  for (i = 0; i < length; ++i)
+  {
+    hw_i80_write_data_2 (data);
+    hw_i80_activate_wr ();
+    /* some delay, todo: check if this is required */
+    hw_i80_read_write_delay ();
+    hw_i80_deactivate_wr ();
+    /* some delay, todo: check if this is required */
+    hw_i80_read_write_delay ();
+  }
+}
+
+void hw_i80_parts_end (void)
+{
+  /* clean-up */
+  /* configure PORTA/PORTB as inputs */
+  hw_i80_set_double_data_port_in ();
+
+  /* deactivate CS */
+  hw_i80_deactivate_cs ();
 }
 
 #else /* MCODE_EMULATE_I80 */
