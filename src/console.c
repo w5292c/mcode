@@ -8,6 +8,9 @@
 #include <string.h>
 #include <avr/pgmspace.h>
 
+static int8_t TheSavedLinePos = 0;
+static int8_t TheSavedColumnPos = 0;
+
 static int8_t TheCurrentLine = 0;
 static int8_t TheCurrentColumn = 0;
 
@@ -207,6 +210,8 @@ static void console_escape_cursor_forward (const char *pArgs);
 static void console_escape_cursor_backward (const char *pArgs);
 static void console_escape_clear_screen (const char *pArgs);
 static void console_escape_set_cursor_pos (const char *pArgs);
+static void console_escape_save_cursor_pos (const char *pArgs);
+static void console_escape_restore_cursor_pos (const char *pArgs);
 
 typedef struct
 {
@@ -222,6 +227,8 @@ const char EscSuffix4[] PROGMEM = "A";  /* cursor-up */
 const char EscSuffix5[] PROGMEM = "B";  /* cursor-down */
 const char EscSuffix6[] PROGMEM = "C";  /* cursor-forward */
 const char EscSuffix7[] PROGMEM = "D";  /* cursor-backward */
+const char EscSuffix8[] PROGMEM = "s";  /* Save the current cursor position */
+const char EscSuffix9[] PROGMEM = "u";  /* Restore the saved cursor position */
 const char EscSuffixI[] PROGMEM = "I";
 static const EscapeSequence TheEscapeSequesnceHandlers[] PROGMEM = {
   {EscSuffix0, console_escape_set_mode},
@@ -232,6 +239,8 @@ static const EscapeSequence TheEscapeSequesnceHandlers[] PROGMEM = {
   {EscSuffix5, console_escape_cursor_down},
   {EscSuffix6, console_escape_cursor_forward},
   {EscSuffix7, console_escape_cursor_backward},
+  {EscSuffix8, console_escape_save_cursor_pos},
+  {EscSuffix9, console_escape_restore_cursor_pos},
   {EscSuffixI, console_escape_ignore},
 };
 static uint8_t EscSequenceBuffer[16];
@@ -568,5 +577,26 @@ void console_escape_cursor_backward (const char *pArgs)
     {
       TheCurrentColumn = 0;
     }
+  }
+}
+
+void console_escape_save_cursor_pos (const char *pArgs)
+{
+  if (!(*pArgs))
+  {
+    TheSavedLinePos = TheCurrentLine;
+    TheSavedColumnPos = TheCurrentColumn;
+  }
+}
+
+void console_escape_restore_cursor_pos (const char *pArgs)
+{
+  if (!(*pArgs))
+  {
+    TheCurrentLine = TheSavedLinePos;
+    TheCurrentColumn = TheSavedColumnPos;
+
+    TheSavedLinePos = 0;
+    TheSavedColumnPos = 0;
   }
 }

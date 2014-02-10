@@ -48,8 +48,14 @@ static const char TheTestTextWithEscapeSequences[] PROGMEM =
 static const char TheTestEscPositionManagement[] PROGMEM =
   "Hello world!!! This text will be erased in the next escape command, cool.\033[2J"
   "Initial text.\033[10;3HThis line starts at 10x3.\033[12;2fAnd this line starts a"
-  "t 12x3.\033[30;10HSTART, 3U\033[3AUP, 6D\033[6BDOWN, 30B\033[30DBACK, 10F/3D\033"
-  "[10C\033[3BFINAL!!!";
+  "t 12x2.\033[30;10HSTART, 3U\033[3AUP, 6D\033[6BDOWN, 30B\033[30DBACK, 10F/3D\033"
+  "[10C\033[3BFINAL!!!"
+  "\033[40;4H\033[sTest menu:"
+  "\033[u\033[s\033[1B1. Line 1 of the menu;"
+  "\033[u\033[s\033[2B\033[30;47m2. Line 2 of the menu (selected);\033[0m"
+  "\033[u\033[s\033[3B2. Line 3 of the menu;"
+  "\033[u\033[s\033[4B2. Line 4 of the menu;"
+  "\033[u\033[s\033[5B2. Line 5 of the menu;";
 
 static const char TheLongTestText[] PROGMEM =
   "That's it! Now your data is in the Program Space. You can compile, link, and che"

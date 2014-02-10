@@ -30,16 +30,18 @@ $ tar --exclude-vcs --exclude=console-test/data/atmega32a.pdf -cjf console-test.
 Console: escape sequences support
 =================================
 Console supports the following escape sequences:
-1) "\033[[value-1[;value-2[...;value-n]]]m" - Set text/background colors. Supported values:
-   - [0] - reset all attributes to default values;
-   - [30..37] - text font color;
-   - [40..47] - background color;
-2) "\033[<line>;<column>H" - Set cursor position to line/column position;
-3) "\033[<line>;<column>f" - Set cursor position to line/column position;
-4) "\033[2J" - Clear screen, reset cursor positions to the default position (0, 0);
-5) "\033[<lines>A" - Move cursor up <lines> number of lines;
-6) "\033[<lines>B" - Move cursor down <lines> number of lines;
-7) "\033[<cols>C" - Move cursor forward <cols> number of columns;
-8) "\033[<cols>D" - Move cursor backward <cols> number of columns;
+ 1) "\033[[value-1[;value-2[...;value-n]]]m" - Set text/background colors. Supported values:
+    - [0] - reset all attributes to default values;
+    - [30..37] - text font color;
+    - [40..47] - background color;
+ 2) "\033[<line>;<column>H" - Set cursor position to line/column position;
+ 3) "\033[<line>;<column>f" - Set cursor position to line/column position;
+ 4) "\033[2J" - Clear screen, reset cursor positions to the default position (0, 0);
+ 5) "\033[<lines>A" - Move cursor up <lines> number of lines;
+ 6) "\033[<lines>B" - Move cursor down <lines> number of lines;
+ 7) "\033[<cols>C" - Move cursor forward <cols> number of columns;
+ 8) "\033[<cols>D" - Move cursor backward <cols> number of columns;
+ 9) "\033[s" - Save the current cursor position;
+10) "\033[u" - Restore the current cursor position;
 
 Here is the link where some escape sequesnces are listed: http://ascii-table.com/ansi-escape-sequences.php
