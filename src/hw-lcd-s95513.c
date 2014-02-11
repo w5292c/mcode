@@ -25,3 +25,11 @@ void hw_lcd_s95513_turn_off (void)
   /* enter_sleep_mode */
   hw_i80_write (UINT8_C(0x10), 0, NULL);
 }
+
+void hw_lcd_s95513_set_scroll_start (uint16_t start)
+{
+  uint8_t buffer[2];
+  buffer[0] = (uint8_t)(start>>8);
+  buffer[1] = (uint8_t)(start);
+  hw_i80_write (UINT8_C (0x37), 2, buffer);
+}

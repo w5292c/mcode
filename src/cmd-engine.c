@@ -33,6 +33,7 @@ static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
 
 static void cmd_engine_set_bg (const char *aParams);
 static void cmd_engine_set_color (const char *aParams);
+static void cmd_engine_set_scroll_start (const char *aParams);
 
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
@@ -129,6 +130,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
+    hw_uart_write_string_P (PSTR("> scroll <xxxx> - Scroll image\r\n"));
     hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
     hw_uart_write_string_P (PSTR("> tstr - Show long string\r\n"));
     hw_uart_write_string_P (PSTR("> esc-pos - Show positioned test\r\n"));
@@ -193,6 +195,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strncmp_P (aString, PSTR("color "), 6))
   {
     cmd_engine_set_color (&aString[6]);
+  }
+  else if (!strncmp_P (aString, PSTR("scroll "), 7))
+  {
+    cmd_engine_set_scroll_start (&aString[7]);
   }
   else if (!strcmp_P (aString, PSTR("tstr")))
   {
@@ -448,4 +454,16 @@ void cmd_engine_set_color (const char *aParams)
 uint16_t glob_str_to_uint16 (const char *pHexString)
 {
   return glob_get_byte (pHexString + 2) | (((uint16_t)glob_get_byte (pHexString)) << 8);
+}
+
+void cmd_engine_set_scroll_start (const char *aParams)
+{
+  if (4 == strlen (aParams))
+  {
+    hw_lcd_s95513_set_scroll_start (glob_str_to_uint16 (aParams));
+  }
+  else
+  {
+    hw_uart_write_string_P (PSTR("Wrong args, format: scroll <XXXX>\r\n"));
+  }
 }
