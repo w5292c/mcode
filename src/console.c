@@ -8,6 +8,8 @@
 #include <string.h>
 #include <avr/pgmspace.h>
 
+#define CONSOLE_HTAB_SIZE (4)
+
 static int8_t TheSavedLinePos = 0;
 static int8_t TheSavedColumnPos = 0;
 
@@ -220,6 +222,22 @@ uint8_t console_handle_control_codes (uint8_t byte)
     case '\r':
       TheCurrentColumn = 0;
       break;
+    case 9: /*Horizontal Tab */
+      {
+        const uint8_t originalColumn = TheCurrentColumn;
+        TheCurrentColumn = (TheCurrentColumn/CONSOLE_HTAB_SIZE + 1) * CONSOLE_HTAB_SIZE;
+        console_escape_clear_line (TheCurrentLine, originalColumn, TheCurrentColumn);
+        if (TheCurrentColumn >= TheColumnCount)
+        {
+          TheCurrentColumn = 0;
+          /* fall though to next-line */
+        }
+        else
+        {
+          break;
+        }
+      }
+    case 11: /* vertical tab */
     case '\n':
       ++TheCurrentLine;
       if (TheCurrentLine >= TheLineCount)
