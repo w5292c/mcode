@@ -14,6 +14,9 @@ static int8_t TheSavedColumnPos = 0;
 static int8_t TheCurrentLine = 0;
 static int8_t TheCurrentColumn = 0;
 
+static int8_t TheLineCount = 60;
+static int8_t TheColumnCount = 40;
+
 static void console_roll_up (void);
 static void console_clear_line (uint8_t line);
 static uint8_t console_handle_utf8 (uint8_t byte);
@@ -84,16 +87,16 @@ void console_write_byte (uint8_t byte)
   }
 
   /* check the current position */
-  if (TheCurrentColumn >= 40)
+  if (TheCurrentColumn >= TheColumnCount)
   {
     ++TheCurrentLine;
-    if (TheCurrentLine >= 60)
+    if (TheCurrentLine >= TheLineCount)
     {
       /* roll 1 text line up */
       console_roll_up ();
       /* clear the last text line */
-      console_clear_line (59);
-      TheCurrentLine = 59;
+      console_clear_line (TheLineCount - 1);
+      TheCurrentLine = TheLineCount - 1;
     }
     TheCurrentColumn = 0;
   }
@@ -110,7 +113,7 @@ void console_write_byte (uint8_t byte)
     const uint8_t line = mcode_fonts_get_bitmap (byte , y);
     for (x = 0; x < 8; ++x)
     {
-      if (line & (1U << (7 - x)))
+      if (line & (1U << x))
       {
         /* the pixel is ON */
         hw_i80_write_double (cmd, 2, (const uint8_t *)(&TheOnColor));
@@ -163,7 +166,7 @@ void console_clear_line (uint8_t line)
 
 void console_config_lcd_for_pos (uint8_t column, uint8_t line)
 {
-  const uint16_t sCol = (uint16_t)((39 - column)<<3);
+  const uint16_t sCol = (uint16_t)(column << 3);
   const uint16_t eCol = sCol + 7;
   const uint16_t sLine = (uint16_t)(line<<3);
   const uint16_t eLine = sLine + 7;
@@ -496,10 +499,6 @@ const char *console_next_num_token (const char *pString, uint8_t *pValue)
 
 void console_escape_set_cursor_pos (const char *pArgs)
 {
-  hw_uart_write_string_P (PSTR ("> Set cursor position: ["));
-  hw_uart_write_string (pArgs);
-  hw_uart_write_string_P (PSTR ("]\r\n"));
-
   uint8_t valueLine = 0;
   pArgs = console_next_num_token (pArgs, &valueLine);
   if (pArgs)
@@ -508,7 +507,7 @@ void console_escape_set_cursor_pos (const char *pArgs)
     pArgs = console_next_num_token (pArgs, &valueColumn);
     if (pArgs && !console_next_num_token (pArgs, NULL))
     {
-      if (valueLine < 60 && valueColumn < 40)
+      if (valueLine < TheLineCount && valueColumn < TheColumnCount)
       {
         TheCurrentLine = valueLine;
         TheCurrentColumn = valueColumn;
@@ -540,7 +539,7 @@ void console_escape_cursor_up (const char *pArgs)
   if (pArgs && !console_next_num_token (pArgs, NULL))
   {
     TheCurrentLine -= lines;
-    if (TheCurrentLine < 0 || TheCurrentLine > 59)
+    if (TheCurrentLine < 0 || TheCurrentLine >= TheLineCount)
     {
       TheCurrentLine = 0;
     }
@@ -554,9 +553,9 @@ void console_escape_cursor_down (const char *pArgs)
   if (pArgs && !console_next_num_token (pArgs, NULL))
   {
     TheCurrentLine += lines;
-    if (TheCurrentLine > 59 || TheCurrentLine < 0)
+    if (TheCurrentLine >= TheLineCount || TheCurrentLine < 0)
     {
-      TheCurrentLine = 59;
+      TheCurrentLine = TheLineCount - 1;
     }
   }
 }
@@ -567,9 +566,9 @@ void console_escape_cursor_forward (const char *pArgs)
   if (pArgs && !console_next_num_token (pArgs, NULL))
   {
     TheCurrentColumn += columns;
-    if (TheCurrentColumn > 39 || TheCurrentColumn < 0)
+    if (TheCurrentColumn >= TheColumnCount || TheCurrentColumn < 0)
     {
-      TheCurrentColumn = 39;
+      TheCurrentColumn = TheColumnCount - 1;
     }
   }
 }
@@ -580,7 +579,7 @@ void console_escape_cursor_backward (const char *pArgs)
   if (pArgs && !console_next_num_token (pArgs, NULL))
   {
     TheCurrentColumn -= columns;
-    if (TheCurrentColumn < 0 || TheCurrentColumn > 39)
+    if (TheCurrentColumn < 0 || TheCurrentColumn >= TheColumnCount)
     {
       TheCurrentColumn = 0;
     }
@@ -610,8 +609,8 @@ void console_escape_restore_cursor_pos (const char *pArgs)
 
 void console_escape_erase_line (const char *pArgs)
 {
-  const uint16_t sCol = 0;
-  const uint16_t eCol = (uint16_t)((39 - TheCurrentColumn) << 3) + 7;
+  const uint16_t sCol = (uint16_t)(TheCurrentColumn << 3);
+  const uint16_t eCol = UINT16_C(0x13f);
   const uint16_t sLine = (uint16_t)(TheCurrentLine << 3);
   const uint16_t eLine = sLine + 7;
 
@@ -629,5 +628,5 @@ void console_escape_erase_line (const char *pArgs)
   buffer[2] = (uint8_t)(UINT8_C (0xFF) & (eLine>>8));
   buffer[3] = (uint8_t)(UINT8_C (0xFF) & eLine); /* end page */
   hw_i80_write (UINT8_C(0x2B), 4, buffer);
-  hw_i80_write_const (UINT8_C(0x2c), TheOffColor, ((40 - TheCurrentColumn) << 6));
+  hw_i80_write_const (UINT8_C(0x2c), TheOffColor, ((TheColumnCount - TheCurrentColumn) << 6));
 }
