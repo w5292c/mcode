@@ -229,6 +229,13 @@ uint8_t console_handle_control_codes (uint8_t byte)
         TheCurrentLine = TheLineCount - 1;
       }
       break;
+    case 8: /* backspace */
+      if (--TheCurrentColumn < 0)
+      {
+        TheCurrentColumn = 0;
+      }
+      console_escape_clear_line (TheCurrentLine, TheCurrentColumn, TheCurrentColumn + 1);
+      break;
     default:
       break;
     }

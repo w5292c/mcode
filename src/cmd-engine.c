@@ -130,6 +130,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
+    hw_uart_write_string_P (PSTR("> bs - Print <back-space> character\r\n"));
     hw_uart_write_string_P (PSTR("> line - Print a string with a new-line\r\n"));
     hw_uart_write_string_P (PSTR("> scroll <xxxx> - Scroll image\r\n"));
     hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
@@ -212,6 +213,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P (aString, PSTR("esc-pos")))
   {
     console_write_string_P (TheTestEscPositionManagement);
+  }
+  else if (!strcmp_P (aString, PSTR("bs")))
+  {
+    console_write_string_P (PSTR ("\010"));
   }
   else if (!strcmp_P (aString, PSTR("line")))
   {
