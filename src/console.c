@@ -17,13 +17,18 @@ static int8_t TheCurrentColumn = 0;
 static int8_t TheLineCount = 60;
 static int8_t TheColumnCount = 40;
 
+/**
+ * The current number of lines the screen has been scrolled up.
+ */
+static uint8_t TheCurrentScrollPos = 0;
+
 static void console_roll_up (void);
-static void console_clear_line (uint8_t line);
 static uint8_t console_handle_utf8 (uint8_t byte);
 static uint8_t console_handle_control_codes (uint8_t byte);
 static uint8_t console_handle_escape_sequence (uint8_t byte);
 static void console_config_lcd_for_pos (uint8_t column, uint8_t line);
 static const char *console_next_num_token (const char *pString, uint8_t *pValue);
+static void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColumn);
 
 static uint16_t TheOnColor = 0xFFFFU;
 static uint16_t TheOffColor = 0x0000U;
@@ -95,7 +100,6 @@ void console_write_byte (uint8_t byte)
       /* roll 1 text line up */
       console_roll_up ();
       /* clear the last text line */
-      console_clear_line (TheLineCount - 1);
       TheCurrentLine = TheLineCount - 1;
     }
     TheCurrentColumn = 0;
@@ -158,14 +162,28 @@ void console_set_bg_color (uint16_t color)
 
 void console_roll_up (void)
 {
-}
+  /* clear the upper line of text */
+  console_escape_clear_line (0, -1, -1);
 
-void console_clear_line (uint8_t line)
-{
+  /* calculate the target scroll position */
+  ++TheCurrentScrollPos;
+  if (TheCurrentScrollPos >= TheLineCount)
+  {
+    TheCurrentScrollPos = 0;
+  }
+
+  /* now we are ready to scroll to the next line */
+  hw_lcd_s95513_set_scroll_start (TheCurrentScrollPos << 3);
 }
 
 void console_config_lcd_for_pos (uint8_t column, uint8_t line)
 {
+  line += TheCurrentScrollPos;
+  if (line >= TheLineCount)
+  {
+    line -= TheLineCount;
+  }
+
   const uint16_t sCol = (uint16_t)(column << 3);
   const uint16_t eCol = sCol + 7;
   const uint16_t sLine = (uint16_t)(line<<3);
@@ -197,7 +215,23 @@ uint8_t console_handle_control_codes (uint8_t byte)
   const uint8_t controlCode = (byte < 32 && byte != 27);
   if (controlCode)
   {
-    /**@todo impelement handling the control-code */
+    switch (byte)
+    {
+    case '\r':
+      TheCurrentColumn = 0;
+      break;
+    case '\n':
+      ++TheCurrentLine;
+      if (TheCurrentLine >= TheLineCount)
+      {
+        /* roll 1 text line up */
+        console_roll_up ();
+        TheCurrentLine = TheLineCount - 1;
+      }
+      break;
+    default:
+      break;
+    }
   }
 
   return controlCode;
@@ -609,9 +643,31 @@ void console_escape_restore_cursor_pos (const char *pArgs)
 
 void console_escape_erase_line (const char *pArgs)
 {
-  const uint16_t sCol = (uint16_t)(TheCurrentColumn << 3);
-  const uint16_t eCol = UINT16_C(0x13f);
-  const uint16_t sLine = (uint16_t)(TheCurrentLine << 3);
+  if (!*pArgs)
+  {
+    console_escape_clear_line (TheCurrentLine, TheCurrentColumn, -1);
+  }
+}
+
+void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColumn)
+{
+  if (startColumn < 0)
+  {
+    startColumn = 0;
+  }
+  if (endColumn < 0)
+  {
+    endColumn = TheColumnCount;
+  }
+  line += TheCurrentScrollPos;
+  if (line >= TheLineCount)
+  {
+    line -= TheLineCount;
+  }
+
+  const uint16_t sCol = (uint16_t)(startColumn << 3);
+  const uint16_t eCol = (((uint16_t)endColumn) << 3) - 1;
+  const uint16_t sLine = (uint16_t)(line << 3);
   const uint16_t eLine = sLine + 7;
 
   /* clear the line, fill the background color */

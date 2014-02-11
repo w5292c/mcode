@@ -16,6 +16,7 @@ void hw_lcd_s95513_turn_on (void)
   hw_i80_write (UINT8_C(0x3A), 1, &byte);
   byte = UINT8_C(0x02);
   hw_i80_write (UINT8_C(0x36), 1, &byte);
+  hw_lcd_s95513_set_scroll_start (UINT16_C(0));
 }
 
 void hw_lcd_s95513_turn_off (void)
