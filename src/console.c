@@ -6,7 +6,12 @@
 #include "hw-lcd-s95513.h"
 
 #include <string.h>
+
+#ifdef __AVR__
 #include <avr/pgmspace.h>
+#else /* __AVR__ */
+#include "emu-common.h"
+#endif /* __AVR__ */
 
 #define CONSOLE_HTAB_SIZE (4)
 
@@ -397,13 +402,21 @@ uint8_t console_esc_check_for_end (console_escape_handler *pHandler)
   for (i = 0; i < n; ++i)
   {
     const EscapeSequence *const pSequence = &TheEscapeSequesnceHandlers[i];
+#ifdef __AVR__
     const char *const pSuffix = (const char *) pgm_read_word (&pSequence->m_pSuffix);
+#else /* __AVR__ */
+    const char *const pSuffix = pSequence->m_pSuffix;
+#endif /* __AVR__ */
     const uint8_t suffixLength = strlen_P (pSuffix);
 
     if (bufferLength >= suffixLength && !strcmp_P ((const char *)(EscSequenceBuffer + bufferLength - suffixLength), pSuffix))
     {
       /* retrieve the handler */
+#ifdef __AVR__
       *pHandler = (console_escape_handler) pgm_read_word (&pSequence->m_pHandler);
+#else /* __AVR__ */
+      *pHandler = pSequence->m_pHandler;
+#endif /* __AVR__ */
       /* remove the suffix from the buffer */
       *(EscSequenceBuffer + bufferLength - suffixLength) = 0;
       found = 1;

@@ -1,19 +1,26 @@
+#include "main.h"
 #include "hw-uart.h"
 #include "hw-leds.h"
 #include "scheduler.h"
 #include "emu-common.h"
 #include "cmd-engine.h"
 #include "emu-common.h"
+#include "line-editor-uart.h"
 
+#include <gtk/gtk.h>
 #include <stdio.h>
 #include <signal.h>
+#include <QApplication>
 
 static void main_at_exit (void);
 static void main_sigint_handler (int signo);
 static void main_line_callback (const char *aString);
 
-int main (void)
+int main (int argc, char **argv)
 {
+  QApplication app(argc, argv);
+
+/*  gtk_init (&argc, &argv);*/
   /* override the signal handler */
   if (SIG_ERR == signal(SIGINT, main_sigint_handler))
   {
@@ -22,7 +29,7 @@ int main (void)
   }
   atexit (main_at_exit);
 
-/* first, init the scheduler */
+  /* first, init the scheduler */
   mcode_scheduler_init ();
   /* now, UART can be initialized */
   hw_uart_init ();

@@ -18,7 +18,11 @@
  * Fetched from: http://dimensionalrift.homelinux.net/combuster/mos3/?p=viewsource&file=/modules/gfx/font8_8.asm
  **/
 
+#ifdef __AVR__
 #include <avr/pgmspace.h>
+#else /* __AVR__ */
+#include "emu-common.h"
+#endif /* __AVR__ */
 
 // Constant: font8x8_basic
 // Contains an 8x8 font map for unicode points U+0020 - U+007F (basic latin)

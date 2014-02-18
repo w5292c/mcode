@@ -1,5 +1,6 @@
 #include "hw-i80.h"
 
+#include "emu-common.h"
 #include "mcode-config.h"
 
 #ifndef MCODE_EMULATE_I80
@@ -384,6 +385,14 @@ void hw_i80_deinit (void) { emu_hw_i80_deinit (); }
 void hw_i80_set_read_callback (hw_i80_read_callback aCallback) { emu_hw_i80_set_read_callback (aCallback); }
 void hw_i80_read (uint8_t cmd, uint8_t length) { emu_hw_i80_read (cmd, length); }
 void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data) { emu_hw_i80_write (cmd, length, data); }
+void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *data) { emu_hw_i80_write (cmd, length, data); }
 void hw_i80_reset (void) { emu_hw_i80_reset (); }
+
+void hw_i80_write_double (uint8_t cmd, uint8_t length, const uint8_t *data) {}
+void hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data) {}
+
+void hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length) {}
+void hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length) {}
+void hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length) {}
 
 #endif /* MCODE_EMULATE_I80 */

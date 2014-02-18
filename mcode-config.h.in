@@ -7,6 +7,9 @@
 /* The following line adds emulated LCD1 device to I80 bus */
 #cmakedefine MCODE_EMULATE_I80_LCD1
 
+/* The following line puts s95513-based LCD on I80 bus */
+#cmakedefine MCODE_EMULATE_LCD_S95513
+
 #cmakedefine USE_EMULATION_LAYER
 
 /* This setting enables synchronous UART write */
