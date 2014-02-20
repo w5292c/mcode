@@ -110,6 +110,10 @@ void console_write_byte (uint8_t byte)
   ++TheCurrentColumn;
 
   /* now we are ready to send the char bitmap to the LCD module */
+#if 1
+  const uint8_t *const pChar = mcode_fonts_get_char_bitmap (byte);
+  hw_i80_write_bitmap_P (UINT8_C (0x2C), 8, pChar, TheOffColor, TheOnColor);
+#else
   uint8_t x, y;
   uint8_t cmd = UINT8_C (0x2C);
   for (y = 0; y < 8; ++y)
@@ -130,6 +134,7 @@ void console_write_byte (uint8_t byte)
       cmd = UINT8_C(0x3C);
     }
   }
+#endif
 }
 
 void console_write_string (const char *pString)

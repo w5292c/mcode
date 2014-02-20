@@ -157,14 +157,15 @@ void emu_hw_lcd_s95513_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t
   emu_hw_lcd_s95513_handle_cmd (cmd);
   /* write loop */
   currentByte = *pData++;
-  for (bitMask = UINT8_C (0x80), currentByte = *pData++; ; )
+  for (bitMask = UINT8_C (0x01); ; )
   {
     emu_hw_lcd_s95513_handle_data_word ((currentByte & bitMask) ? onValue : offValue);
+    bitMask = (bitMask << 1);
     if (!bitMask)
     {
       if ((++pData) < pDataEnd)
       {
-        bitMask = UINT8_C (0x80);
+        bitMask = UINT8_C (0x01);
         currentByte = *pData;
       }
       else

@@ -20,7 +20,6 @@ int main (int argc, char **argv)
 {
   QApplication app(argc, argv);
 
-/*  gtk_init (&argc, &argv);*/
   /* override the signal handler */
   if (SIG_ERR == signal(SIGINT, main_sigint_handler))
   {

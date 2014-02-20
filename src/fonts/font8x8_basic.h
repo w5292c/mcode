@@ -26,7 +26,7 @@
 
 // Constant: font8x8_basic
 // Contains an 8x8 font map for unicode points U+0020 - U+007F (basic latin)
-static const char font8x8_basic[96][8] PROGMEM = {
+static const uint8_t font8x8_basic[96][8] PROGMEM = {
 #ifdef TEST_SPACE
     { 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02},   // U+0020 (space)
 #else /* TEST_SPACE */
