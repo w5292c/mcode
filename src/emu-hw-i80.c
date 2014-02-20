@@ -136,3 +136,23 @@ void emu_hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t len
   hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_const_long: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
+
+void emu_hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+#ifdef MCODE_EMULATE_I80_LCD1
+#elif defined (MCODE_EMULATE_LCD_S95513)
+  emu_hw_lcd_s95513_write_bitmap (cmd, length, pData, offValue, onValue);
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_bitmap: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}
+
+void emu_hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+#ifdef MCODE_EMULATE_I80_LCD1
+#elif defined (MCODE_EMULATE_LCD_S95513)
+  emu_hw_lcd_s95513_write_bitmap_P (cmd, length, pData, offValue, onValue);
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_bitmap_P: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}

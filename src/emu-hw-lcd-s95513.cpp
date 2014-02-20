@@ -12,6 +12,10 @@
 #include <stdlib.h>
 #endif /* __AVR__ */
 
+static uint8_t TheBuffer[8];
+static uint8_t TheNormalFlag = 1;
+static uint8_t TheBufferIndex = 0;
+static uint8_t TheCurrentCommand = 0;
 static hw_i80_read_callback TheReadCallback = NULL;
 
 static uint32_t emu_hw_lcd_s95513_to_color (quint32 data);
@@ -20,6 +24,9 @@ static void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color);
 /**
  * Commands
  */
+static void emu_hw_lcd_s95513_handle_write_ram_word (uint16_t word);
+static void emu_hw_lcd_s95513_handle_set_page_addr_N (uint8_t byte);
+static void emu_hw_lcd_s95513_handle_set_column_addr_N (uint8_t byte);
 static void emu_hw_lcd_s95513_handle_write_start (uint32_t length, const uint8_t *data);
 static void emu_hw_lcd_s95513_handle_write_continue (uint32_t length, const uint8_t *data);
 static void emu_hw_lcd_s95513_handle_set_page_addr (uint32_t length, const uint8_t *data);
@@ -28,6 +35,10 @@ static void emu_hw_lcd_s95513_handle_write_const_start (uint32_t length, uint32_
 static void emu_hw_lcd_s95513_handle_write_const_continue (uint32_t length, uint32_t data);
 static void emu_hw_lcd_s95513_handle_write_double_start (uint32_t length, const uint8_t *data);
 static void emu_hw_lcd_s95513_handle_write_double_continue (uint32_t length, const uint8_t *data);
+
+static void emu_hw_lcd_s95513_handle_cmd (uint8_t cmd);
+static void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte);
+static void emu_hw_lcd_s95513_handle_data_word (uint16_t word);
 
 void emu_hw_lcd_s95513_turn_on (void)
 {
@@ -290,6 +301,38 @@ void emu_hw_lcd_s95513_handle_write_double_continue (uint32_t length, const uint
   }
 }
 
+void emu_hw_lcd_s95513_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  uint8_t bitMask;
+  uint8_t currentByte;
+  const uint8_t *const pDataEnd = pData + length;
+
+  emu_hw_lcd_s95513_handle_cmd (cmd);
+  /* write loop */
+  currentByte = *pData++;
+  for (bitMask = UINT8_C (0x80), currentByte = *pData++; ; )
+  {
+    emu_hw_lcd_s95513_handle_data_word ((currentByte & bitMask) ? onValue : offValue);
+    if (!bitMask)
+    {
+      if ((++pData) < pDataEnd)
+      {
+        bitMask = UINT8_C (0x80);
+        currentByte = *pData;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+}
+
+void emu_hw_lcd_s95513_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  emu_hw_lcd_s95513_write_bitmap (cmd, length, pData, offValue, onValue);
+}
+
 void emu_hw_lcd_s95513_handle_set_page_addr (uint32_t length, const uint8_t *data)
 {
   /* do not support general case for now, to be implemented */
@@ -314,4 +357,117 @@ uint32_t emu_hw_lcd_s95513_to_color (uint32_t data)
   const uint8_t green = (0xffu&((0x07E0U&data)>>3));
   const uint8_t blue =  (0xffu&((0x001FU&data)<<3));
   return 0xff000000u|(red << 16)|(green << 8)| blue;
+}
+
+void emu_hw_lcd_s95513_handle_cmd (uint8_t cmd)
+{
+  switch (cmd)
+  {
+  case LCD_S95513_WR_RAM_START:
+    TheNormalFlag = 1;
+    TheCurrentCommand = cmd;
+    TheNextPage = ThePageStart;
+    TheNextColumn = TheColumnStart;
+    break;
+  default:
+    TheNormalFlag = 1;
+    TheCurrentCommand = cmd;
+    break;
+  }
+}
+
+void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte)
+{
+  switch (TheCurrentCommand)
+  {
+  case LCD_S95513_SET_COLUMN_ADDR:
+    emu_hw_lcd_s95513_handle_set_column_addr_N (byte);
+    break;
+  case LCD_S95513_SET_PAGE_ADDR:
+    emu_hw_lcd_s95513_handle_set_page_addr_N (byte);
+    break;
+  default:
+    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_handle_data_byte (cmd: "));
+    hw_uart_write_uint (TheCurrentCommand);
+    hw_uart_write_string_P (PSTR (", byte: "));
+    hw_uart_write_uint (byte);
+    hw_uart_write_string_P (PSTR (")\r\n"));
+    break;
+  }
+}
+
+void emu_hw_lcd_s95513_handle_data_word (uint16_t word)
+{
+  switch (TheCurrentCommand)
+  {
+  case LCD_S95513_WR_RAM_CONT:
+  case LCD_S95513_WR_RAM_START:
+    emu_hw_lcd_s95513_handle_write_ram_word (word);
+    break;
+    break;
+  case LCD_S95513_SET_COLUMN_ADDR:
+    emu_hw_lcd_s95513_handle_set_column_addr_N ((uint8_t) word);
+    break;
+  case LCD_S95513_SET_PAGE_ADDR:
+    emu_hw_lcd_s95513_handle_set_page_addr_N ((uint8_t) word);
+    break;
+  default:
+    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_handle_data_word (cmd: "));
+    hw_uart_write_uint (TheCurrentCommand);
+    hw_uart_write_string_P (PSTR (", word: "));
+    hw_uart_write_uint (word);
+    hw_uart_write_string_P (PSTR (")\r\n"));
+    break;
+  }
+}
+
+void emu_hw_lcd_s95513_handle_set_page_addr_N (uint8_t byte)
+{
+  if (TheNormalFlag)
+  {
+    TheBuffer[TheBufferIndex++] = byte;
+    if (4 == TheBufferIndex)
+    {
+      ThePageStart = (TheBuffer[0] << 8) | TheBuffer[1];
+      ThePageEnd = (TheBuffer[2] << 8) | TheBuffer[3];
+      TheNormalFlag = 0;
+      printf ("emu_hw_lcd_s95513_handle_set_page_addr_N: done: %u, %u\r\n", TheColumnStart, TheColumnEnd);
+    }
+  }
+}
+
+void emu_hw_lcd_s95513_handle_set_column_addr_N (uint8_t byte)
+{
+  if (TheNormalFlag)
+  {
+    TheBuffer[TheBufferIndex++] = byte;
+    if (4 == TheBufferIndex)
+    {
+      TheColumnStart = (TheBuffer[0] << 8) | TheBuffer[1];
+      TheColumnEnd = (TheBuffer[2] << 8) | TheBuffer[3];
+      TheNormalFlag = 0;
+      printf ("emu_hw_lcd_s95513_handle_set_column_addr_N: done: %u, %u\r\n", TheColumnStart, TheColumnEnd);
+    }
+  }
+}
+
+void emu_hw_lcd_s95513_handle_write_ram_word (uint16_t word)
+{
+  if (TheNormalFlag)
+  {
+    /* got next color sample, put it to the surface */
+    const uint32_t color = emu_hw_lcd_s95513_to_color (word);
+    emu_hw_lcd_s95513_set_pixel (TheNextColumn, TheNextPage, color);
+
+    TheNextColumn++;
+    if (TheNextColumn > TheColumnEnd)
+    {
+      TheNextColumn = TheColumnStart;
+      TheNextPage++;
+      if (TheNextPage > ThePageEnd)
+      {
+        TheNormalFlag = 0;
+      }
+    }
+  }
 }

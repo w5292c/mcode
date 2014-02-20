@@ -28,6 +28,9 @@ void emu_hw_lcd_s95513_write_const_short (uint8_t cmd, uint16_t constValue, uint
 void emu_hw_lcd_s95513_write_const (uint8_t cmd, uint16_t constValue, uint16_t length);
 void emu_hw_lcd_s95513_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length);
 
+void emu_hw_lcd_s95513_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
+void emu_hw_lcd_s95513_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

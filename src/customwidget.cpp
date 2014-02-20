@@ -40,7 +40,7 @@ void AcCustomWidget::setPixel (uint x, uint y, QRgb color)
   }
   else
   {
-    printf ("AcCustomWidget::setPixel: wrong request!\r\n");
+    printf ("AcCustomWidget::setPixel: wrong request: at (%u, %u), color: %u\r\n", x, y, color);
   }
 }
 

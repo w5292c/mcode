@@ -20,4 +20,7 @@ void emu_hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t len
 void emu_hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length);
 void emu_hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length);
 
+void emu_hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
+void emu_hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
+
 #endif /* MC_EMU_CODE_I80_H */

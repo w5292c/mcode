@@ -376,6 +376,80 @@ void hw_i80_parts_end (void)
   hw_i80_deactivate_cs ();
 }
 
+void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  uint8_t bitMask;
+  uint8_t currentByte;
+  const uint8_t *const pDataEnd = pData + length;
+
+  hw_i80_parts_begin ();
+  hw_i80_parts_write_cmd (cmd);
+
+  /* write loop */
+  currentByte = *pData++;
+  for (bitMask = UINT8_C (0x80), currentByte = *pData++; ; )
+  {
+    const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
+    hw_i80_write_data_2 (currentData);
+    hw_i80_activate_wr ();
+    hw_i80_read_write_delay ();
+    hw_i80_deactivate_wr ();
+    hw_i80_read_write_delay ();
+    bitMask = (bitMask >> 1);
+    if (!bitMask)
+    {
+      if ((++pData) < pDataEnd)
+      {
+        bitMask = UINT8_C (0x80);
+        currentByte = *pData;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+
+  hw_i80_parts_end ();
+}
+
+void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  uint8_t bitMask;
+  uint8_t currentByte;
+  const uint8_t *const pDataEnd = pData + length;
+
+  hw_i80_parts_begin ();
+  hw_i80_parts_write_cmd (cmd);
+
+  /* write loop */
+  currentByte = pgm_read_byte (pData++);
+  for (bitMask = UINT8_C (0x80), currentByte = *pData++; ; )
+  {
+    const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
+    hw_i80_write_data_2 (currentData);
+    hw_i80_activate_wr ();
+    hw_i80_read_write_delay ();
+    hw_i80_deactivate_wr ();
+    hw_i80_read_write_delay ();
+    bitMask = (bitMask >> 1);
+    if (!bitMask)
+    {
+      if (pData < pDataEnd)
+      {
+        bitMask = UINT8_C (0x80);
+        currentByte = pgm_read_byte (pData++);
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+
+  hw_i80_parts_end ();
+}
+
 #else /* MCODE_EMULATE_I80 */
 #include "emu-hw-i80.h"
 #include "emu-common.h"
@@ -394,5 +468,10 @@ void hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data) { 
 void hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length) { emu_hw_i80_write_const_short (cmd, constValue, length); }
 void hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length) { emu_hw_i80_write_const (cmd, constValue, length); }
 void hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length) { emu_hw_i80_write_const_long (cmd, constValue, length); }
+
+void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{ emu_hw_i80_write_bitmap (cmd, length, pData, offValue, onValue); }
+void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{ emu_hw_i80_write_bitmap_P (cmd, length, pData, offValue, onValue); }
 
 #endif /* MCODE_EMULATE_I80 */
