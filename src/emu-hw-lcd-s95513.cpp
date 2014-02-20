@@ -1,28 +1,21 @@
 #include "emu-hw-lcd-s95513.h"
 
 #include "hw-uart.h"
+#include "customwidget.h"
 
 #ifdef __AVR__
 #include <avr/pgmspace.h>
 #else /* __AVR__ */
 #include "emu-common.h"
 
+#include <stdio.h>
 #include <stdlib.h>
-#include <gtk/gtk.h>
-#include <math.h>
-#include <gtk/gtk.h>
 #endif /* __AVR__ */
 
-static GdkPixmap *ThePixmap = NULL;
-static GtkWidget *TheLcdScreen = NULL;
-static GtkWidget *TheLcdWindow = NULL;
 static hw_i80_read_callback TheReadCallback = NULL;
 
-static void emu_hw_lcd_s95513_schedule_update (void);
-static uint32_t emu_hw_lcd_s95513_to_color (uint32_t data);
-static gboolean emu_hw_lcd_s95513_update (gpointer data_pointer);
-static void emu_hw_lcd_s95513_set_pixel (gint x, gint y, guint32 color);
-static gboolean expose_event_callback (GtkWidget *widget, GdkEventExpose *event, gpointer data);
+static uint32_t emu_hw_lcd_s95513_to_color (quint32 data);
+static void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color);
 
 /**
  * Commands
@@ -31,6 +24,10 @@ static void emu_hw_lcd_s95513_handle_write_start (uint32_t length, const uint8_t
 static void emu_hw_lcd_s95513_handle_write_continue (uint32_t length, const uint8_t *data);
 static void emu_hw_lcd_s95513_handle_set_page_addr (uint32_t length, const uint8_t *data);
 static void emu_hw_lcd_s95513_handle_set_column_addr (uint32_t length, const uint8_t *data);
+static void emu_hw_lcd_s95513_handle_write_const_start (uint32_t length, uint32_t data);
+static void emu_hw_lcd_s95513_handle_write_const_continue (uint32_t length, uint32_t data);
+static void emu_hw_lcd_s95513_handle_write_double_start (uint32_t length, const uint8_t *data);
+static void emu_hw_lcd_s95513_handle_write_double_continue (uint32_t length, const uint8_t *data);
 
 void emu_hw_lcd_s95513_turn_on (void)
 {
@@ -49,38 +46,20 @@ void emu_hw_lcd_s95513_set_scroll_start (uint16_t start)
   hw_uart_write_string_P (PSTR (")\r\n"));
 }
 
+static AcCustomWidget *TheWidget = NULL;
 void emu_hw_lcd_s95513_init (void)
 {
-  if (!TheLcdWindow)
+  if (!TheWidget)
   {
-    /* initialize the offscreen pixmap */
-    ThePixmap = gdk_pixmap_new (NULL, 320, 480, 24);
-    GdkGC *pGC = gdk_gc_new (ThePixmap);
-
-    /* emulates the initial color on LCD */
-    const GdkColor color = { 0xff008080u, 0, 0, 0 };
-    gdk_gc_set_foreground (pGC, &color);
-    gdk_draw_rectangle (GDK_DRAWABLE (ThePixmap), pGC, TRUE, 0, 0, 320, 480);
-
-    TheLcdWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    TheLcdScreen = gtk_drawing_area_new ();
-    gtk_widget_set_size_request (TheLcdScreen, 320, 480);
-    g_signal_connect (G_OBJECT (TheLcdScreen), "expose_event", G_CALLBACK (expose_event_callback), NULL);
-    gtk_container_add (GTK_CONTAINER (TheLcdWindow), TheLcdScreen);
-
-    gtk_widget_show_all (TheLcdScreen);
-    gtk_widget_show_all (TheLcdWindow);
-
-    g_object_unref (pGC);
+    TheWidget = new AcCustomWidget();
+    TheWidget->show();
   }
 }
 
 void emu_hw_lcd_s95513_deinit (void)
 {
-/*  g_object_unref (ThePixmap);
-  ThePixmap = NULL;*/
-/*  g_object_unref (TheLcdWindow);
-  TheLcdWindow = NULL;*/
+  delete TheWidget;
+  TheWidget = NULL;
 }
 
 void emu_hw_lcd_s95513_set_read_callback (hw_i80_read_callback aCallback)
@@ -123,50 +102,76 @@ void emu_hw_lcd_s95513_write (uint8_t cmd, uint8_t length, const uint8_t *data)
   }
 }
 
+void emu_hw_lcd_s95513_write_double (uint8_t cmd, uint8_t length, const uint8_t *data)
+{
+  switch (cmd)
+  {
+  case LCD_S95513_WR_RAM_START:
+    emu_hw_lcd_s95513_handle_write_double_start (length, data);
+    break;
+  case LCD_S95513_WR_RAM_CONT:
+    emu_hw_lcd_s95513_handle_write_double_continue (length, data);
+    break;
+  default:
+    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_write_double (cmd: "));
+    hw_uart_write_uint (cmd);
+    hw_uart_write_string_P (PSTR (", data length: "));
+    hw_uart_write_uint (length);
+    hw_uart_write_string_P (PSTR (")\r\n"));
+    break;
+  }
+}
+
+void emu_hw_lcd_s95513_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data)
+{
+  emu_hw_lcd_s95513_write_double (cmd, length, data);
+}
+
+void emu_hw_lcd_s95513_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length)
+{
+  emu_hw_lcd_s95513_write_const_long (cmd, constValue, length);
+}
+
+void emu_hw_lcd_s95513_write_const (uint8_t cmd, uint16_t constValue, uint16_t length)
+{
+  emu_hw_lcd_s95513_write_const_long (cmd, constValue, length);
+}
+
+void emu_hw_lcd_s95513_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length)
+{
+  switch (cmd)
+  {
+  case LCD_S95513_WR_RAM_START:
+    emu_hw_lcd_s95513_handle_write_const_start (length, constValue);
+    break;
+  case LCD_S95513_WR_RAM_CONT:
+    emu_hw_lcd_s95513_handle_write_const_continue (length, constValue);
+    break;
+  default:
+    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_write_const_long (cmd: "));
+    hw_uart_write_uint (cmd);
+    hw_uart_write_string_P (PSTR (", data length: "));
+    hw_uart_write_uint (length);
+    hw_uart_write_string_P (PSTR (")\r\n"));
+    break;
+  }
+}
+
 void emu_hw_lcd_s95513_reset (void)
 {
-  GdkGC *const pGC = gdk_gc_new (ThePixmap);
-  const GdkColor color = { 0xff808080u, 0, 0, 0 };
-  gdk_gc_set_foreground (pGC, &color);
-  gdk_draw_rectangle (GDK_DRAWABLE (ThePixmap), pGC, TRUE, 0, 0, 320, 480);
-  g_object_unref (pGC);
-
-  emu_hw_lcd_s95513_schedule_update ();
+  int x, y;
+  for (x = 0; x < 320; ++x)
+  {
+    for (y = 0; y < 480; ++y)
+    {
+      TheWidget->setPixel (x, y, 0xff008080);
+    }
+  }
 }
 
-gboolean expose_event_callback (GtkWidget *widget, GdkEventExpose *event, gpointer data)
+void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color)
 {
-  GdkGC *const pGC = gdk_gc_new (ThePixmap);
-  gdk_draw_drawable (GDK_DRAWABLE (widget->window),
-    pGC, /* GdkGC *gc */
-    ThePixmap, 0, 0, /* GdkDrawable *src, gint xsrc, gint ysrc, */
-    0, 0, widget->allocation.width, widget->allocation.height);
-  g_object_unref (pGC);
-
-  return TRUE;
-}
-
-void emu_hw_lcd_s95513_set_pixel (gint x, gint y, guint32 color)
-{
-  if (!(x >= 0 && x < 320))
-  {
-    printf ("emu_hw_lcd_s95513_set_pixel: wrong x: %d, %d\r\n", x, y);
-  }
-  if (!(y >= 0 && y < 480))
-  {
-    printf ("emu_hw_lcd_s95513_set_pixel: wrong y: %d, %d\r\n", x, y);
-  }
-  g_assert (x >= 0 && x < 320);
-  g_assert (y >= 0 && y < 480);
-  g_assert (GDK_IS_DRAWABLE (ThePixmap));
-
-  GdkGC *pGC = gdk_gc_new (GDK_DRAWABLE (ThePixmap));
-  GdkColor colorStruct = { 0, 0, 0, 0 };
-  colorStruct.pixel = color;
-/*  gdk_gc_set_foreground (pGC, &colorStruct);
-  gdk_draw_point (GDK_DRAWABLE (ThePixmap), pGC, x, y);*/
-  g_object_unref (pGC);
-  emu_hw_lcd_s95513_schedule_update ();
+  TheWidget->setPixel (x, y, color);
 }
 
 static uint32_t TheCache = 0;
@@ -214,8 +219,6 @@ static void emu_hw_lcd_s95513_put_byte (uint8_t data)
 
 void emu_hw_lcd_s95513_handle_write_start (uint32_t length, const uint8_t *data)
 {
-  printf ("emu_hw_lcd_s95513_handle_write_start: %u\r\n", length);
-
   TheState = 0;
   TheCache = 0;
   TheWriteIndex = 0;
@@ -236,49 +239,79 @@ void emu_hw_lcd_s95513_handle_write_continue (uint32_t length, const uint8_t *da
   }
 }
 
+void emu_hw_lcd_s95513_handle_write_const_start (uint32_t length, uint32_t data)
+{
+  TheState = 0;
+  TheCache = 0;
+  TheWriteIndex = 0;
+  TheNextPage = ThePageStart;
+  TheNextColumn = TheColumnStart;
+
+  const uint8_t byte0 = (uint8_t)(data >> 8);
+  const uint8_t byte1 = (uint8_t)data;
+  while (length--)
+  {
+    emu_hw_lcd_s95513_put_byte (byte0);
+    emu_hw_lcd_s95513_put_byte (byte1);
+  }
+}
+
+void emu_hw_lcd_s95513_handle_write_const_continue (uint32_t length, uint32_t data)
+{
+  const uint8_t byte0 = (uint8_t)(data >> 8);
+  const uint8_t byte1 = (uint8_t)data;
+  while (length--)
+  {
+    emu_hw_lcd_s95513_put_byte (byte0);
+    emu_hw_lcd_s95513_put_byte (byte1);
+  }
+}
+
+void emu_hw_lcd_s95513_handle_write_double_start (uint32_t length, const uint8_t *data)
+{
+  TheState = 0;
+  TheCache = 0;
+  TheWriteIndex = 0;
+  TheNextPage = ThePageStart;
+  TheNextColumn = TheColumnStart;
+
+  emu_hw_lcd_s95513_handle_write_double_continue (length, data);
+}
+
+void emu_hw_lcd_s95513_handle_write_double_continue (uint32_t length, const uint8_t *data)
+{
+  int i;
+  for (i = 0; i < length; i += 2)
+  {
+    const uint8_t data0 = *data++;
+    const uint8_t data1 = *data++;
+    emu_hw_lcd_s95513_put_byte (data0);
+    emu_hw_lcd_s95513_put_byte (data1);
+  }
+}
+
 void emu_hw_lcd_s95513_handle_set_page_addr (uint32_t length, const uint8_t *data)
 {
   /* do not support general case for now, to be implemented */
-  g_assert (4 == length);
+  /*g_assert (4 == length);*/
 
   ThePageStart = ((*data++)<<8) | (*data++);
   ThePageEnd = ((*data++)<<8) | (*data++);
-  printf ("emu_hw_lcd_s95513_handle_set_page_addr: [%u, %u]\r\n", ThePageStart, ThePageEnd);
 }
 
 void emu_hw_lcd_s95513_handle_set_column_addr (uint32_t length, const uint8_t *data)
 {
   /* do not support general case for now, to be implemented */
-  g_assert (4 == length);
+  /*g_assert (4 == length);*/
 
   TheColumnStart = ((*data++)<<8) | (*data++);
   TheColumnEnd = ((*data++)<<8) | (*data++);
-  printf ("emu_hw_lcd_s95513_handle_set_column_addr: [%u, %u]\r\n", TheColumnStart, TheColumnEnd);
 }
 
 uint32_t emu_hw_lcd_s95513_to_color (uint32_t data)
 {
-  const uint8_t red =   (0xffu&((0xf80U&data)>>8));
-  const uint8_t green = (0xffu&((0x7E0U&data)>>3));
-  const uint8_t blue =  (0xffu&((0x01FU&data)<<3));
-  return (red << 16)|(green << 8)| blue;
-}
-
-static guint TheUpdateSourceId = 0;
-void emu_hw_lcd_s95513_schedule_update (void)
-{
-  if (TheUpdateSourceId)
-  {
-    g_source_remove (TheUpdateSourceId);
-    TheUpdateSourceId = 0;
-  }
-
-  TheUpdateSourceId = g_timeout_add (100, emu_hw_lcd_s95513_update, NULL);
-}
-
-gboolean emu_hw_lcd_s95513_update (gpointer data_pointer)
-{
-/*  gtk_widget_queue_draw (TheLcdScreen);*/
-  printf ("update-event\r\n");
-  return FALSE;
+  const uint8_t red =   (0xffu&((0xf800U&data)>>8));
+  const uint8_t green = (0xffu&((0x07E0U&data)>>3));
+  const uint8_t blue =  (0xffu&((0x001FU&data)<<3));
+  return 0xff000000u|(red << 16)|(green << 8)| blue;
 }

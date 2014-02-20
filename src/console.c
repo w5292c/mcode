@@ -37,17 +37,10 @@ static void console_config_lcd_for_pos (uint8_t column, uint8_t line);
 static const char *console_next_num_token (const char *pString, uint8_t *pValue);
 static void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColumn);
 
-static uint16_t TheOnColor = 0xFFFFU;
-static uint16_t TheOffColor = 0x0000U;
-
 /* 2104 3210 | 3450 1234 */
 /* GGGR RRRR | GGGB BBBB */
-static const uint8_t on_buffer[4] PROGMEM = {
-  0xE0U, 0xFFU, 0xFFU, 0xFFU
-};
-static const uint8_t off_buffer[4] PROGMEM = {
-  0x00U, 0x00U, 0x00U, 0x00U
-};
+static uint16_t TheOnColor = 0xFFFFU;
+static uint16_t TheOffColor = 0x0000U;
 
 void console_init (void)
 {

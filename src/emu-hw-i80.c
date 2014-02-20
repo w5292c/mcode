@@ -86,3 +86,53 @@ void emu_hw_i80_reset (void)
   hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_reset: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
+
+void emu_hw_i80_write_double (uint8_t cmd, uint8_t length, const uint8_t *data)
+{
+  #ifdef MCODE_EMULATE_I80_LCD1
+#elif defined (MCODE_EMULATE_LCD_S95513)
+  emu_hw_lcd_s95513_write_double (cmd, length, data);
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_double: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}
+
+void emu_hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data)
+{
+#ifdef MCODE_EMULATE_I80_LCD1
+#elif defined (MCODE_EMULATE_LCD_S95513)
+  emu_hw_lcd_s95513_write_double_P (cmd, length, data);
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_double_P: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}
+
+void emu_hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length)
+{
+#ifdef MCODE_EMULATE_I80_LCD1
+#elif defined (MCODE_EMULATE_LCD_S95513)
+  emu_hw_lcd_s95513_write_const_short (cmd, constValue, length);
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_const_short: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}
+
+void emu_hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length)
+{
+#ifdef MCODE_EMULATE_I80_LCD1
+#elif defined (MCODE_EMULATE_LCD_S95513)
+  emu_hw_lcd_s95513_write_const (cmd, constValue, length);
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_const: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}
+
+void emu_hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length)
+{
+#ifdef MCODE_EMULATE_I80_LCD1
+#elif defined (MCODE_EMULATE_LCD_S95513)
+  emu_hw_lcd_s95513_write_const_long (cmd, constValue, length);
+#else /* MCODE_EMULATE_I80_LCD1 */
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_const_long: no device connected\r\n"));
+#endif /* MCODE_EMULATE_I80_LCD1 */
+}

@@ -52,7 +52,7 @@ void mcode_scheduler_start (void)
     }
   }
 #else /* __linux__ */
-  gtk_main ();
+  mcode_main_start ();
 #endif /* __linux__ */
 }
 
@@ -61,7 +61,7 @@ void mcode_scheduler_stop (void)
 #ifndef __linux__
   NoExitRequest = 0;
 #else /* __linux__ */
-  gtk_main_quit ();
+  mcode_main_quit ();
 #endif /* __linux__ */
 }
 

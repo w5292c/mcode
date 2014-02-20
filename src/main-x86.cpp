@@ -77,3 +77,13 @@ void main_request_exit (void)
   hw_uart_write_string_P (PSTR("MAIN: exit request\r\n"));
   mcode_scheduler_stop ();
 }
+
+void mcode_main_start (void)
+{
+  QApplication::exec ();
+}
+
+void mcode_main_quit (void)
+{
+  QApplication::exit (0);
+}
