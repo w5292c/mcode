@@ -87,23 +87,23 @@ void emu_hw_i80_reset (void)
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
-void emu_hw_i80_write_double (uint8_t cmd, uint8_t length, const uint8_t *data)
+void emu_hw_i80_write_words (uint8_t cmd, uint8_t length, const uint16_t *data)
 {
   #ifdef MCODE_EMULATE_I80_LCD1
 #elif defined (MCODE_EMULATE_LCD_S95513)
-  emu_hw_lcd_s95513_write_double (cmd, length, data);
+  emu_hw_lcd_s95513_write_words (cmd, length, data);
 #else /* MCODE_EMULATE_I80_LCD1 */
-  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_double: no device connected\r\n"));
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_words: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 
-void emu_hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data)
+void emu_hw_i80_write_words_P (uint8_t cmd, uint8_t length, const uint16_t *data)
 {
 #ifdef MCODE_EMULATE_I80_LCD1
 #elif defined (MCODE_EMULATE_LCD_S95513)
-  emu_hw_lcd_s95513_write_double_P (cmd, length, data);
+  emu_hw_lcd_s95513_write_words_P (cmd, length, data);
 #else /* MCODE_EMULATE_I80_LCD1 */
-  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_double_P: no device connected\r\n"));
+  hw_uart_write_string_P (PSTR("Warning: emu_hw_i80_write_words_P: no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
 

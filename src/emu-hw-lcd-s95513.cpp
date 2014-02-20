@@ -95,19 +95,19 @@ void emu_hw_lcd_s95513_write (uint8_t cmd, uint8_t length, const uint8_t *data)
   }
 }
 
-void emu_hw_lcd_s95513_write_double (uint8_t cmd, uint8_t length, const uint8_t *data)
+void emu_hw_lcd_s95513_write_words (uint8_t cmd, uint8_t length, const uint16_t *data)
 {
   uint8_t i;
   emu_hw_lcd_s95513_handle_cmd (cmd);
-  for (i = 0; i < length; i += 2)
+  for (i = 0; i < length; ++i)
   {
-    emu_hw_lcd_s95513_handle_data_word ((*data++) | (*data++ << 8));
+    emu_hw_lcd_s95513_handle_data_word (*data++);
   }
 }
 
-void emu_hw_lcd_s95513_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data)
+void emu_hw_lcd_s95513_write_words_P (uint8_t cmd, uint8_t length, const uint16_t *data)
 {
-  emu_hw_lcd_s95513_write_double (cmd, length, data);
+  emu_hw_lcd_s95513_write_words (cmd, length, data);
 }
 
 void emu_hw_lcd_s95513_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length)

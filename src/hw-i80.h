@@ -14,8 +14,8 @@ void hw_i80_read (uint8_t cmd, uint8_t length);
 void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data);
 void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *data);
 
-void hw_i80_write_double (uint8_t cmd, uint8_t length, const uint8_t *data);
-void hw_i80_write_double_P (uint8_t cmd, uint8_t length, const uint8_t *data);
+void hw_i80_write_words (uint8_t cmd, uint8_t length, const uint16_t *data);
+void hw_i80_write_words_P (uint8_t cmd, uint8_t length, const uint16_t *data);
 
 void hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length);
 void hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length);

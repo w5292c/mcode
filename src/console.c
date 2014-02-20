@@ -120,12 +120,12 @@ void console_write_byte (uint8_t byte)
       if (line & (1U << x))
       {
         /* the pixel is ON */
-        hw_i80_write_double (cmd, 2, (const uint8_t *)(&TheOnColor));
+        hw_i80_write_words (cmd, 1, &TheOnColor);
       }
       else
       {
         /* the pixel is OFF */
-        hw_i80_write_double (cmd, 2, (const uint8_t *)(&TheOffColor));
+        hw_i80_write_words (cmd, 1, &TheOffColor);
       }
       cmd = UINT8_C(0x3C);
     }
