@@ -13,8 +13,14 @@
 #endif /* __AVR__ */
 
 static uint8_t TheBuffer[8];
+static uint16_t ThePageEnd = 0;
+static uint16_t TheNextPage = 0;
+static uint16_t ThePageStart = 0;
+static uint16_t TheColumnEnd = 0;
 static uint8_t TheNormalFlag = 1;
+static uint16_t TheNextColumn = 0;
 static uint8_t TheBufferIndex = 0;
+static uint16_t TheColumnStart = 0;
 static uint8_t TheCurrentCommand = 0;
 static hw_i80_read_callback TheReadCallback = NULL;
 
@@ -24,17 +30,9 @@ static void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color);
 /**
  * Commands
  */
-static void emu_hw_lcd_s95513_handle_write_ram_word (uint16_t word);
-static void emu_hw_lcd_s95513_handle_set_page_addr_N (uint8_t byte);
-static void emu_hw_lcd_s95513_handle_set_column_addr_N (uint8_t byte);
-static void emu_hw_lcd_s95513_handle_write_start (uint32_t length, const uint8_t *data);
-static void emu_hw_lcd_s95513_handle_write_continue (uint32_t length, const uint8_t *data);
-static void emu_hw_lcd_s95513_handle_set_page_addr (uint32_t length, const uint8_t *data);
-static void emu_hw_lcd_s95513_handle_set_column_addr (uint32_t length, const uint8_t *data);
-static void emu_hw_lcd_s95513_handle_write_const_start (uint32_t length, uint32_t data);
-static void emu_hw_lcd_s95513_handle_write_const_continue (uint32_t length, uint32_t data);
-static void emu_hw_lcd_s95513_handle_write_double_start (uint32_t length, const uint8_t *data);
-static void emu_hw_lcd_s95513_handle_write_double_continue (uint32_t length, const uint8_t *data);
+static void emu_hw_lcd_s95513_handle_data_write_ram (uint16_t word);
+static void emu_hw_lcd_s95513_handle_data_set_page_addr (uint8_t byte);
+static void emu_hw_lcd_s95513_handle_data_set_column_addr (uint8_t byte);
 
 static void emu_hw_lcd_s95513_handle_cmd (uint8_t cmd);
 static void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte);
@@ -89,47 +87,21 @@ void emu_hw_lcd_s95513_read (uint8_t cmd, uint8_t length)
 
 void emu_hw_lcd_s95513_write (uint8_t cmd, uint8_t length, const uint8_t *data)
 {
-  switch (cmd)
+  uint8_t i;
+  emu_hw_lcd_s95513_handle_cmd (cmd);
+  for (i = 0; i < length; ++i)
   {
-  case LCD_S95513_WR_RAM_START:
-    emu_hw_lcd_s95513_handle_write_start (length, data);
-    break;
-  case LCD_S95513_WR_RAM_CONT:
-    emu_hw_lcd_s95513_handle_write_continue (length, data);
-    break;
-  case LCD_S95513_SET_COLUMN_ADDR:
-    emu_hw_lcd_s95513_handle_set_column_addr (length, data);
-    break;
-  case LCD_S95513_SET_PAGE_ADDR:
-    emu_hw_lcd_s95513_handle_set_page_addr (length, data);
-    break;
-  default:
-    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_write (cmd: "));
-    hw_uart_write_uint (cmd);
-    hw_uart_write_string_P (PSTR (", data length: "));
-    hw_uart_write_uint (length);
-    hw_uart_write_string_P (PSTR (")\r\n"));
-    break;
+    emu_hw_lcd_s95513_handle_data_byte (*data++);
   }
 }
 
 void emu_hw_lcd_s95513_write_double (uint8_t cmd, uint8_t length, const uint8_t *data)
 {
-  switch (cmd)
+  uint8_t i;
+  emu_hw_lcd_s95513_handle_cmd (cmd);
+  for (i = 0; i < length; i += 2)
   {
-  case LCD_S95513_WR_RAM_START:
-    emu_hw_lcd_s95513_handle_write_double_start (length, data);
-    break;
-  case LCD_S95513_WR_RAM_CONT:
-    emu_hw_lcd_s95513_handle_write_double_continue (length, data);
-    break;
-  default:
-    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_write_double (cmd: "));
-    hw_uart_write_uint (cmd);
-    hw_uart_write_string_P (PSTR (", data length: "));
-    hw_uart_write_uint (length);
-    hw_uart_write_string_P (PSTR (")\r\n"));
-    break;
+    emu_hw_lcd_s95513_handle_data_word ((*data++) | (*data++ << 8));
   }
 }
 
@@ -150,21 +122,12 @@ void emu_hw_lcd_s95513_write_const (uint8_t cmd, uint16_t constValue, uint16_t l
 
 void emu_hw_lcd_s95513_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length)
 {
-  switch (cmd)
+  uint32_t i;
+
+  emu_hw_lcd_s95513_handle_cmd (cmd);
+  for (i = 0; i < length; ++i)
   {
-  case LCD_S95513_WR_RAM_START:
-    emu_hw_lcd_s95513_handle_write_const_start (length, constValue);
-    break;
-  case LCD_S95513_WR_RAM_CONT:
-    emu_hw_lcd_s95513_handle_write_const_continue (length, constValue);
-    break;
-  default:
-    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_write_const_long (cmd: "));
-    hw_uart_write_uint (cmd);
-    hw_uart_write_string_P (PSTR (", data length: "));
-    hw_uart_write_uint (length);
-    hw_uart_write_string_P (PSTR (")\r\n"));
-    break;
+    emu_hw_lcd_s95513_handle_data_word (constValue);
   }
 }
 
@@ -183,122 +146,6 @@ void emu_hw_lcd_s95513_reset (void)
 void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color)
 {
   TheWidget->setPixel (x, y, color);
-}
-
-static uint32_t TheCache = 0;
-static uint16_t ThePageEnd = 0;
-static uint16_t TheNextPage = 0;
-static uint16_t ThePageStart = 0;
-static uint16_t TheColumnEnd = 0;
-static uint16_t TheColumnStart = 0;
-static uint16_t TheNextColumn = 0;
-static uint32_t TheWriteIndex = 0;
-
-static int8_t TheState = 0;
-static void emu_hw_lcd_s95513_put_byte (uint8_t data)
-{
-  if (TheState < 0)
-  {
-    /* ignore-state */
-    return;
-  }
-
-  TheCache = (TheCache << 8);
-  TheCache = (TheCache | data);
-  ++TheWriteIndex;
-  if (0 == (TheWriteIndex%2))
-  {
-    /* got next color sample, put it to the surface */
-    const uint32_t color = emu_hw_lcd_s95513_to_color (TheCache);
-    emu_hw_lcd_s95513_set_pixel (TheNextColumn, TheNextPage, color);
-
-    TheNextColumn++;
-    if (TheNextColumn > TheColumnEnd)
-    {
-      TheNextColumn = TheColumnStart;
-      TheNextPage++;
-      if (TheNextPage > ThePageEnd)
-      {
-        TheState = -1;
-      }
-    }
-
-    /* clean-up before the next sample */
-    TheCache = 0;
-  }
-}
-
-void emu_hw_lcd_s95513_handle_write_start (uint32_t length, const uint8_t *data)
-{
-  TheState = 0;
-  TheCache = 0;
-  TheWriteIndex = 0;
-  TheNextPage = ThePageStart;
-  TheNextColumn = TheColumnStart;
-
-  while (length--)
-  {
-    emu_hw_lcd_s95513_put_byte (*data++);
-  }
-}
-
-void emu_hw_lcd_s95513_handle_write_continue (uint32_t length, const uint8_t *data)
-{
-  while (length--)
-  {
-    emu_hw_lcd_s95513_put_byte (*data++);
-  }
-}
-
-void emu_hw_lcd_s95513_handle_write_const_start (uint32_t length, uint32_t data)
-{
-  TheState = 0;
-  TheCache = 0;
-  TheWriteIndex = 0;
-  TheNextPage = ThePageStart;
-  TheNextColumn = TheColumnStart;
-
-  const uint8_t byte0 = (uint8_t)(data >> 8);
-  const uint8_t byte1 = (uint8_t)data;
-  while (length--)
-  {
-    emu_hw_lcd_s95513_put_byte (byte0);
-    emu_hw_lcd_s95513_put_byte (byte1);
-  }
-}
-
-void emu_hw_lcd_s95513_handle_write_const_continue (uint32_t length, uint32_t data)
-{
-  const uint8_t byte0 = (uint8_t)(data >> 8);
-  const uint8_t byte1 = (uint8_t)data;
-  while (length--)
-  {
-    emu_hw_lcd_s95513_put_byte (byte0);
-    emu_hw_lcd_s95513_put_byte (byte1);
-  }
-}
-
-void emu_hw_lcd_s95513_handle_write_double_start (uint32_t length, const uint8_t *data)
-{
-  TheState = 0;
-  TheCache = 0;
-  TheWriteIndex = 0;
-  TheNextPage = ThePageStart;
-  TheNextColumn = TheColumnStart;
-
-  emu_hw_lcd_s95513_handle_write_double_continue (length, data);
-}
-
-void emu_hw_lcd_s95513_handle_write_double_continue (uint32_t length, const uint8_t *data)
-{
-  int i;
-  for (i = 0; i < length; i += 2)
-  {
-    const uint8_t data0 = *data++;
-    const uint8_t data1 = *data++;
-    emu_hw_lcd_s95513_put_byte (data0);
-    emu_hw_lcd_s95513_put_byte (data1);
-  }
 }
 
 void emu_hw_lcd_s95513_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
@@ -333,24 +180,6 @@ void emu_hw_lcd_s95513_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8
   emu_hw_lcd_s95513_write_bitmap (cmd, length, pData, offValue, onValue);
 }
 
-void emu_hw_lcd_s95513_handle_set_page_addr (uint32_t length, const uint8_t *data)
-{
-  /* do not support general case for now, to be implemented */
-  /*g_assert (4 == length);*/
-
-  ThePageStart = ((*data++)<<8) | (*data++);
-  ThePageEnd = ((*data++)<<8) | (*data++);
-}
-
-void emu_hw_lcd_s95513_handle_set_column_addr (uint32_t length, const uint8_t *data)
-{
-  /* do not support general case for now, to be implemented */
-  /*g_assert (4 == length);*/
-
-  TheColumnStart = ((*data++)<<8) | (*data++);
-  TheColumnEnd = ((*data++)<<8) | (*data++);
-}
-
 uint32_t emu_hw_lcd_s95513_to_color (uint32_t data)
 {
   const uint8_t red =   (0xffu&((0xf800U&data)>>8));
@@ -361,17 +190,17 @@ uint32_t emu_hw_lcd_s95513_to_color (uint32_t data)
 
 void emu_hw_lcd_s95513_handle_cmd (uint8_t cmd)
 {
+  TheNormalFlag = 1;
+  TheBufferIndex = 0;
+  TheCurrentCommand = cmd;
+
   switch (cmd)
   {
   case LCD_S95513_WR_RAM_START:
-    TheNormalFlag = 1;
-    TheCurrentCommand = cmd;
     TheNextPage = ThePageStart;
     TheNextColumn = TheColumnStart;
     break;
   default:
-    TheNormalFlag = 1;
-    TheCurrentCommand = cmd;
     break;
   }
 }
@@ -381,10 +210,10 @@ void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte)
   switch (TheCurrentCommand)
   {
   case LCD_S95513_SET_COLUMN_ADDR:
-    emu_hw_lcd_s95513_handle_set_column_addr_N (byte);
+    emu_hw_lcd_s95513_handle_data_set_column_addr (byte);
     break;
   case LCD_S95513_SET_PAGE_ADDR:
-    emu_hw_lcd_s95513_handle_set_page_addr_N (byte);
+    emu_hw_lcd_s95513_handle_data_set_page_addr (byte);
     break;
   default:
     hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_handle_data_byte (cmd: "));
@@ -402,14 +231,14 @@ void emu_hw_lcd_s95513_handle_data_word (uint16_t word)
   {
   case LCD_S95513_WR_RAM_CONT:
   case LCD_S95513_WR_RAM_START:
-    emu_hw_lcd_s95513_handle_write_ram_word (word);
+    emu_hw_lcd_s95513_handle_data_write_ram (word);
     break;
     break;
   case LCD_S95513_SET_COLUMN_ADDR:
-    emu_hw_lcd_s95513_handle_set_column_addr_N ((uint8_t) word);
+    emu_hw_lcd_s95513_handle_data_set_column_addr ((uint8_t) word);
     break;
   case LCD_S95513_SET_PAGE_ADDR:
-    emu_hw_lcd_s95513_handle_set_page_addr_N ((uint8_t) word);
+    emu_hw_lcd_s95513_handle_data_set_page_addr ((uint8_t) word);
     break;
   default:
     hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_handle_data_word (cmd: "));
@@ -421,7 +250,7 @@ void emu_hw_lcd_s95513_handle_data_word (uint16_t word)
   }
 }
 
-void emu_hw_lcd_s95513_handle_set_page_addr_N (uint8_t byte)
+void emu_hw_lcd_s95513_handle_data_set_page_addr (uint8_t byte)
 {
   if (TheNormalFlag)
   {
@@ -431,12 +260,11 @@ void emu_hw_lcd_s95513_handle_set_page_addr_N (uint8_t byte)
       ThePageStart = (TheBuffer[0] << 8) | TheBuffer[1];
       ThePageEnd = (TheBuffer[2] << 8) | TheBuffer[3];
       TheNormalFlag = 0;
-      printf ("emu_hw_lcd_s95513_handle_set_page_addr_N: done: %u, %u\r\n", TheColumnStart, TheColumnEnd);
     }
   }
 }
 
-void emu_hw_lcd_s95513_handle_set_column_addr_N (uint8_t byte)
+void emu_hw_lcd_s95513_handle_data_set_column_addr (uint8_t byte)
 {
   if (TheNormalFlag)
   {
@@ -446,12 +274,11 @@ void emu_hw_lcd_s95513_handle_set_column_addr_N (uint8_t byte)
       TheColumnStart = (TheBuffer[0] << 8) | TheBuffer[1];
       TheColumnEnd = (TheBuffer[2] << 8) | TheBuffer[3];
       TheNormalFlag = 0;
-      printf ("emu_hw_lcd_s95513_handle_set_column_addr_N: done: %u, %u\r\n", TheColumnStart, TheColumnEnd);
     }
   }
 }
 
-void emu_hw_lcd_s95513_handle_write_ram_word (uint16_t word)
+void emu_hw_lcd_s95513_handle_data_write_ram (uint16_t word)
 {
   if (TheNormalFlag)
   {
