@@ -80,7 +80,7 @@ inline static void hw_i80_write_data (uint8_t data) { PORTA = data; }
 
 inline static void hw_i80_write_data_2 (uint16_t data) { PORTA = (uint8_t)data; PORTB = (uint8_t)(data>>8); }
 
-inline static void hw_i80_read_write_delay (void) { _NOP (); }
+inline static void hw_i80_read_write_delay (void) { /* _NOP (); */ }
 
 static void hw_i80_setup_ports (void) {
   /* Configure C and D-ports, outputs: CS, WR, RD, RS, RESET */
@@ -387,7 +387,7 @@ void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, ui
 
   /* write loop */
   currentByte = *pData++;
-  for (bitMask = UINT8_C (0x80), currentByte = *pData++; ; )
+  for (bitMask = UINT8_C (0x01); ; )
   {
     const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
     hw_i80_write_data_2 (currentData);
@@ -395,13 +395,13 @@ void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, ui
     hw_i80_read_write_delay ();
     hw_i80_deactivate_wr ();
     hw_i80_read_write_delay ();
-    bitMask = (bitMask >> 1);
+    bitMask = (bitMask << 1);
     if (!bitMask)
     {
-      if ((++pData) < pDataEnd)
+      if (pData < pDataEnd)
       {
-        bitMask = UINT8_C (0x80);
-        currentByte = *pData;
+        bitMask = UINT8_C (0x01);
+        currentByte = *pData++;
       }
       else
       {
@@ -424,7 +424,7 @@ void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, 
 
   /* write loop */
   currentByte = pgm_read_byte (pData++);
-  for (bitMask = UINT8_C (0x80), currentByte = *pData++; ; )
+  for (bitMask = UINT8_C (0x01); ; )
   {
     const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
     hw_i80_write_data_2 (currentData);
@@ -432,12 +432,12 @@ void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, 
     hw_i80_read_write_delay ();
     hw_i80_deactivate_wr ();
     hw_i80_read_write_delay ();
-    bitMask = (bitMask >> 1);
+    bitMask = (bitMask << 1);
     if (!bitMask)
     {
       if (pData < pDataEnd)
       {
-        bitMask = UINT8_C (0x80);
+        bitMask = UINT8_C (0x01);
         currentByte = pgm_read_byte (pData++);
       }
       else

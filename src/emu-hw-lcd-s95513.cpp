@@ -163,10 +163,10 @@ void emu_hw_lcd_s95513_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t
     bitMask = (bitMask << 1);
     if (!bitMask)
     {
-      if ((++pData) < pDataEnd)
+      if (pData < pDataEnd)
       {
         bitMask = UINT8_C (0x01);
-        currentByte = *pData;
+        currentByte = *pData++;
       }
       else
       {
