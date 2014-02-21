@@ -210,6 +210,9 @@ void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte)
 {
   switch (TheCurrentCommand)
   {
+  case LCD_S95513_WR_RAM_CONT:
+  case LCD_S95513_WR_RAM_START:
+    emu_hw_lcd_s95513_handle_data_write_ram (byte);
   case LCD_S95513_SET_COLUMN_ADDR:
     emu_hw_lcd_s95513_handle_data_set_column_addr (byte);
     break;
