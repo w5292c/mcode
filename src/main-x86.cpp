@@ -31,7 +31,6 @@
 #include "emu-common.h"
 #include "line-editor-uart.h"
 
-#include <gtk/gtk.h>
 #include <stdio.h>
 #include <signal.h>
 #include <QApplication>
