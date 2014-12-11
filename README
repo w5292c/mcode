@@ -1,3 +1,7 @@
+Important!
+==========
+I am going to rename most code to match public component name.
+
 This is a test application that runs on ATMega32A for testing LCD modules connected to it using I80 interface.
 
 Here is how we can build for emulator:
