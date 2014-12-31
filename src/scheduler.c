@@ -29,10 +29,15 @@
 #include <string.h>
 #ifdef __AVR__
 #include <avr/pgmspace.h>
-#else /* __AVR__ */
-#include <gtk/gtk.h>
-#include "emu-common.h"
 #endif /* __AVR__ */
+
+#ifdef __linux__
+#include <gtk/gtk.h>
+#endif /* __linux__ */
+
+#if defined(__linux__) || defined(__ARM__)
+#include "emu-common.h"
+#endif /* defined(__linux__) || defined(__ARM__) */
 
 #define MCODE_TICKS_COUNT (8)
 
@@ -97,7 +102,9 @@ void mcode_scheduler_add (mcode_cheduler_tick tick)
   }
   else
   {
+#ifndef __ARM__
     hw_uart_write_string_P(PSTR("ERROR: scheduler: no space\r\n"));
+#endif /* __ARM__ */
   }
 }
 
