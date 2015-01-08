@@ -8,3 +8,22 @@ $ cmake -DCMAKE_MODULE_PATH=${STM32_CMAKE_PATH}/cmake/Modules -DSTM32_CHIP=STM32
 $ make console-test.hex
 4) Flashing the target:
 $ openocd -f interface/jlink.cfg -f target/stm32f1x.cfg -c "program console-test.hex verify reset"
+
+HW specs
+========
+
+Clocks
+======
+OSC_IN/OSC_OUT: 8MHz crystal;
+OSC32_IN/OSC32_OUT: 32768Hz crystal;
+
+GPIO/LEDS
+=========
+D1 (LED): PB5;
+D2 (LED): PB8;
+D3 (LED): PB9;
+
+USART
+=====
+USART1_TX (OUT): PA9;
+USART1_RX (in): PA10;
