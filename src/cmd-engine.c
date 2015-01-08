@@ -171,7 +171,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> esc-color - Show colored strings\r\n"));
     hw_uart_write_string_P (PSTR("> tlimg - Load large test image\r\n"));
 #endif /* MCODE_CONSOLE_ENABLED */
-    hw_uart_write_string_P (PSTR("> l <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
+    hw_uart_write_string_P (PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
 #ifdef MCODE_HW_I80_ENABLED
     hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P (PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
@@ -199,9 +199,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
     start_uart_editor = 0;
   }
 #endif /* MCODE_HW_I80_ENABLED */
-  else if (!strncmp_P (aString, PSTR("l "), 2))
+  else if (!strncmp_P (aString, PSTR("led "), 4))
   {
-    cmd_engine_set_led (&aString[2]);
+    cmd_engine_set_led (&aString[4]);
   }
 #ifdef MCODE_HW_I80_ENABLED
   else if (!strcmp_P (aString, PSTR("reset")))
@@ -364,7 +364,7 @@ void cmd_engine_set_led (const char *aCommand)
     const uint8_t ch0 = aCommand[0];
     const uint8_t ch2 = aCommand[2];
 
-    if (glob_is_hex_ch (ch0) && glob_is_hex_ch (ch2) && ' ' == aCommand[1])
+    if (char_is_hex (ch0) && char_is_hex (ch2) && ' ' == aCommand[1])
     {
       const uint8_t on = glob_ch_to_val (ch2);
       const uint8_t index = glob_ch_to_val (ch0);

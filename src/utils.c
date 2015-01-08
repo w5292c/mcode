@@ -24,6 +24,8 @@
 
 #include "utils.h"
 
+#include <string.h>
+
 uint16_t glob_str_to_uint16(const char *pHexString)
 {
   return glob_get_byte(pHexString + 2) | (((uint16_t)glob_get_byte(pHexString)) << 8);
@@ -52,16 +54,126 @@ uint8_t glob_ch_to_val(uint8_t ch)
   return value;
 }
 
-uint8_t glob_is_hex_ch (int8_t ch)
+bool char_is_whitespace(char ch)
 {
-  /* first, check if the character is a number */
-  uint8_t res = (ch <= '9' && ch >= '0');
-  if (!res)
-  {
+  return
+    (' ' == ch ||
+    '\r' == ch ||
+    '\n' == ch ||
+    '\t' == ch ||
+    '\000' == ch);
+}
+
+bool char_is_numeric(char ch)
+{
+  return ch >= '0' && ch <= '9';
+}
+
+bool char_is_hex(char ch)
+{
+  if (char_is_numeric(ch)) {
+    return 1;
+  } else {
     /* convert to the upper case */
     ch &= ~0x20;
-    /* and check if the character is [A-F] */
-    res = (ch >= 'A' && ch <= 'F');
+    return ch >= 'A' && ch <= 'F';
   }
-  return res;
+}
+
+const char *string_skip_whitespace(const char *str)
+{
+  if (str) {
+    do {
+      const char ch = *str;
+      if (!ch) {
+        /* end-of-line reached */
+        str = 0;
+        break;
+      } else if (char_is_whitespace(ch)) {
+        /* whitespace, skip it */
+        ++str;
+      } else {
+        /* non-whitespace found, return it */
+        break;
+      }
+    } while (1);
+  }
+
+  return str;
+}
+
+const char *string_next_number(const char *str, int *value)
+{
+  if (!strncmp("0x", str, 2)) {
+    return string_next_hex_number(str + 2, value);
+  } else {
+    return string_next_decimal_number(str, value);
+  }
+}
+
+const char *string_next_decimal_number(const char *str, int *value)
+{
+  int parsedValue = 0;
+  if (str) {
+    do {
+      const char ch = *str;
+      if (!ch || !char_is_numeric(ch)) {
+        break;
+      } else {
+        const uint8_t charValue = glob_ch_to_val(ch);
+        parsedValue *= 10;
+        parsedValue += charValue;
+        ++str;
+      }
+    } while (1);
+  }
+
+  *value = parsedValue;
+
+  return str;
+}
+
+const char *string_next_hex_number(const char *str, int *value)
+{
+  int parsedValue = 0;
+  if (str) {
+    do {
+      const char ch = *str;
+      if (!ch || !char_is_hex(ch)) {
+        break;
+      } else {
+        const uint8_t charValue = glob_ch_to_val(ch);
+        parsedValue *= 16;
+        parsedValue += charValue;
+        ++str;
+      }
+    } while (1);
+  }
+
+  *value = parsedValue;
+
+  return str;
+}
+
+const char *string_next_token(const char *str, int *length)
+{
+  int result = 0;
+  if (str) {
+    do {
+      const char ch = *str;
+      if (!ch) {
+        str = 0;
+        break;
+      } else if (char_is_whitespace(ch)) {
+        break;
+      } else {
+        ++str;
+        ++result;
+      }
+    } while (1);
+  }
+
+  *length = result;
+
+  return str;
 }

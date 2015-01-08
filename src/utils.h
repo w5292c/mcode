@@ -26,15 +26,25 @@
 #define MCODE_UTILS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-uint8_t glob_is_hex_ch (int8_t ch);
 uint8_t glob_ch_to_val(uint8_t ch);
 uint8_t glob_get_byte(const char *pData);
 uint16_t glob_str_to_uint16(const char *pHexString);
+
+bool char_is_whitespace(char ch);
+bool char_is_numeric(char ch);
+bool char_is_hex(char ch);
+
+const char *string_skip_whitespace(const char *str);
+const char *string_next_number(const char *str, int *value);
+const char *string_next_token(const char *str, int *length);
+const char *string_next_hex_number(const char *str, int *value);
+const char *string_next_decimal_number(const char *str, int *value);
 
 #ifdef __cplusplus
 } /* extern "C" */
