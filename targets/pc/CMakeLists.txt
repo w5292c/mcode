@@ -20,6 +20,7 @@ ADD_DEFINITIONS ( -D__STDC_CONSTANT_MACROS )
 set ( SRC_LIST
   ${MCODE_TOP}/src/main-x86.cpp
   ${MCODE_TOP}/src/fonts.c
+  ${MCODE_TOP}/src/utils.c
   ${MCODE_TOP}/src/hw-i80.c
   ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/hw-uart.c
@@ -44,7 +45,11 @@ QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 option ( MCODE_EMULATE_LED "Enable LEDs emulation" ON )
 option ( MCODE_EMULATE_UART "Enable UART emulation" ON )
 option ( MCODE_EMULATE_I80 "Enable I80 interface emulation" ON )
-option ( MCODE_EMULATE_I80_LCD1 "Add LCD1 device to I80 bus" OFF )
+option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
+option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
+option ( MCODE_EMULATE_I80_LCD1 "Add LCD1 device to I80 bus" ON )
+option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
+option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 option ( USE_EMULATION_LAYER "Build Library with emulator layer" ON )
 option ( MCODE_EMULATE_LCD_S95513 "Emulate LCD with controller s95513" ON )
 
