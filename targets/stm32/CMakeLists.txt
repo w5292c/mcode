@@ -27,6 +27,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/cmd-engine.c
+  ${MCODE_TOP}/src/stm32/hw-spi.c
 #  ${MCODE_TOP}/src/hw-lcd-s95513.c
 #  ${MCODE_TOP}/src/cmd-test-image.c
   ${MCODE_TOP}/src/line-editor-uart.c

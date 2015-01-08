@@ -23,7 +23,13 @@ D1 (LED): PB5;
 D2 (LED): PB8;
 D3 (LED): PB9;
 
-USART
-=====
+USART1
+======
 USART1_TX (OUT): PA9;
 USART1_RX (in): PA10;
+
+SPI1 (Master)
+=============
+SPI1_SCK: PA5;
+SPI1_MISO (IN): PA6;
+SPI1_MOSI (OUT): PA7;
