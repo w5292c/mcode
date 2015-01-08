@@ -25,10 +25,14 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "scheduler.h"
+#include "cmd-engine.h"
+#include "mcode-config.h"
 
 #include <stm32f10x.h>
 
+#ifdef MCODE_DEBUG_BLINKING
 static void main_tick(void);
+#endif /* MCODE_DEBUG_BLINKING */
 
 int main (void)
 {
@@ -37,16 +41,22 @@ int main (void)
   mcode_hw_leds_init();
   hw_uart_init();
   hw_uart_write_string("ARM variant started.\r\n");
+#ifdef MCODE_DEBUG_BLINKING
   mcode_scheduler_add(main_tick);
+#endif /* MCODE_DEBUG_BLINKING */
+  cmd_engine_init();
 
-  mcode_scheduler_start ();
+  cmd_engine_start();
+  mcode_scheduler_start();
 
   /* Clean-up */
+  cmd_engine_deinit();
   mcode_hw_leds_deinit();
   mcode_scheduler_deinit();
   return 0;
 }
 
+#ifdef MCODE_DEBUG_BLINKING
 static int TheCase = 0;
 static int TheDelay = 0;
 void main_tick(void)
@@ -78,3 +88,4 @@ void main_tick(void)
 
   if (++TheCase > 2) TheCase = 0;
 }
+#endif /* MCODE_DEBUG_BLINKING */

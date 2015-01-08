@@ -231,22 +231,19 @@ void hw_uart_write_string_P (const char *aString)
 
 static void hw_uart_tick (void)
 {
+#ifdef __AVR__
   if (TheCurrentBuffer)
   {
     if (TheCurrentReadIndex1)
     {
-#ifdef __AVR__
       /* disable RXC interrupt */
       UCSRB &= ~(1<<RXCIE);
-#endif /* __AVR__ */
 
       /* toggle the current buffer */
       TheCurrentBuffer = /*!TheCurrentBuffer*/0;
 
-#ifdef __AVR__
       /* enable interrupt again */
       UCSRB |= (1<<RXCIE);
-#endif /* __AVR__ */
 
       /* */
       if (TheCallback)
@@ -266,18 +263,14 @@ static void hw_uart_tick (void)
   {
     if (TheCurrentReadIndex0)
     {
-#ifdef __AVR__
       /* disable RXC interrupt */
       UCSRB &= ~(1<<RXCIE);
-#endif /* __AVR__ */
 
       /* toggle the current buffer */
       TheCurrentBuffer = /*!TheCurrentBuffer*/1;
 
-#ifdef __AVR__
       /* enable interrupt again */
       UCSRB |= (1<<RXCIE);
-#endif /* __AVR__ */
 
       /* */
       if (TheCallback)
@@ -293,6 +286,23 @@ static void hw_uart_tick (void)
       TheCurrentReadIndex0 = 0;
     }
   }
+
+#endif /* __AVR__ */
+
+#ifdef STM32F10X_HD
+  /* Check if we have any received data */
+  if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) != RESET) {
+    const uint8_t data = USART_ReceiveData(USART1);
+#if 0
+    hw_uart_write_string("Received: ");
+    hw_uart_write_uint(data);
+    hw_uart_write_string("\r\n");
+#endif /* 0 */
+    if (TheCallback) {
+      (*TheCallback)(data);
+    }
+  }
+#endif /* */
 
 #ifndef MCODE_HW_UART_SYNC_WRITE
   const int bufferBytes = (TheWriteBufferEnd - TheWriteBufferStart);

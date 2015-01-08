@@ -25,6 +25,7 @@
 #include "cmd-engine.h"
 
 #include "main.h"
+#include "utils.h"
 #include "hw-i80.h"
 #include "console.h"
 #include "hw-leds.h"
@@ -44,20 +45,19 @@
 #include "emu-common.h"
 #endif /* __AVR__ */
 
+#ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_reset (void);
-static uint8_t glob_is_hex_ch (unsigned char ch);
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
-static void cmd_engine_set_led (const char *aCommand);
-static unsigned char glob_ch_to_val (unsigned char ch);
-static unsigned char glob_get_byte (const char *pData);
-static void cmd_engine_on_cmd_ready (const char *aString);
-static uint16_t glob_str_to_uint16 (const char *pHexString);
 static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
-
+#endif /* MCODE_HW_I80_ENABLED */
+static void cmd_engine_set_led (const char *aCommand);
+static void cmd_engine_on_cmd_ready (const char *aString);
+#ifdef MCODE_CONSOLE_ENABLED
 static void cmd_engine_set_bg (const char *aParams);
 static void cmd_engine_set_color (const char *aParams);
 static void cmd_engine_set_scroll_start (const char *aParams);
+#endif /* MCODE_CONSOLE_ENABLED */
 
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
@@ -119,15 +119,17 @@ static const char TheLongTestText[] PROGMEM =
 
 void cmd_engine_init (void)
 {
+#ifdef MCODE_HW_I80_ENABLED
   hw_i80_init ();
   hw_i80_set_read_callback (cmd_engine_on_read_ready);
+#endif /* MCODE_HW_I80_ENABLED */
   line_editor_uart_init ();
   line_editor_uart_set_callback (cmd_engine_on_cmd_ready);
 }
 
 void cmd_engine_deinit (void)
 {
-  hw_i80_deinit ();
+/*  hw_i80_deinit ();*/
   line_editor_uart_deinit ();
 }
 
@@ -147,13 +149,17 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #if __linux__ == 1
     hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
+#ifdef MCODE_CONSOLE_ENABLED
     hw_uart_write_string_P (PSTR("> color xxxx - set text color\r\n"));
     hw_uart_write_string_P (PSTR("> bg xxxx - set background color\r\n"));
-
     hw_uart_write_string_P (PSTR("> cls - Clear screen\r\n"));
+#endif
+#ifdef MCODE_HW_I80_ENABLED
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
+#endif /* MCODE_HW_I80_ENABLED */
+#ifdef MCODE_CONSOLE_ENABLED
     hw_uart_write_string_P (PSTR("> bs - Print <back-space> character\r\n"));
     hw_uart_write_string_P (PSTR("> tab - Print <tab> character\r\n"));
     hw_uart_write_string_P (PSTR("> ch - Print a single character\r\n"));
@@ -164,9 +170,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> esc-pos - Show positioned test\r\n"));
     hw_uart_write_string_P (PSTR("> esc-color - Show colored strings\r\n"));
     hw_uart_write_string_P (PSTR("> tlimg - Load large test image\r\n"));
+#endif /* MCODE_CONSOLE_ENABLED */
     hw_uart_write_string_P (PSTR("> l <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
+#ifdef MCODE_HW_I80_ENABLED
     hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P (PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
+#endif /* MCODE_HW_I80_ENABLED */
   }
 #ifdef __linux__
   else if (!strcmp_P (aString, PSTR("quit")) || !strcmp_P (aString, PSTR("exit")))
@@ -176,6 +185,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     start_uart_editor = 0;
   }
 #endif /* __X86__ */
+#ifdef MCODE_HW_I80_ENABLED
   else if (!strncmp_P (aString, PSTR("w "), 2))
   {
     /* WRITE command */
@@ -188,10 +198,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_read (&aString[2]);
     start_uart_editor = 0;
   }
+#endif /* MCODE_HW_I80_ENABLED */
   else if (!strncmp_P (aString, PSTR("l "), 2))
   {
     cmd_engine_set_led (&aString[2]);
   }
+#ifdef MCODE_HW_I80_ENABLED
   else if (!strcmp_P (aString, PSTR("reset")))
   {
     cmd_engine_reset ();
@@ -212,6 +224,8 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     cmd_test_image_large ();
   }
+#endif /* MCODE_HW_I80_ENABLED */
+#ifdef MCODE_CONSOLE_ENABLED
   else if (!strcmp_P (aString, PSTR("cls")))
   {
     console_clear_screen ();
@@ -262,11 +276,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
     static uint8_t count = 0;
 
     char buffer[8];
-    snprintf (buffer, 8, "%d", ++count);
+    snprintf (buffer, 8, "%d", ++count);*/
     console_write_string_P (PSTR("This is a text line #"));
     console_write_string (buffer);
     console_write_string_P (PSTR("\r\n"));
   }
+#endif /* MCODE_CONSOLE_ENABLED */
   else if (*aString)
   {
     /* got unrecognized non-empty command */
@@ -279,6 +294,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 }
 
+#ifdef MCODE_HW_I80_ENABLED
 void cmd_engine_read (const char *aCommand)
 {
   int success = 1;
@@ -332,6 +348,7 @@ void cmd_engine_read (const char *aCommand)
     line_editor_uart_start ();
   }
 }
+#endif /* MCODE_HW_I80_ENABLED */
 
 /**
  * Set-LED command handler
@@ -362,6 +379,7 @@ void cmd_engine_set_led (const char *aCommand)
   }
 }
 
+#ifdef MCODE_HW_I80_ENABLED
 void cmd_engine_reset (void)
 {
   hw_i80_reset ();
@@ -442,44 +460,9 @@ void cmd_engine_write (const char *aCommand)
   /* restart the command line prompt */
   line_editor_uart_start ();
 }
+#endif /* MCODE_HW_I80_ENABLED */
 
-uint8_t glob_is_hex_ch (unsigned char ch)
-{
-  /* first, check if the character is a number */
-  uint8_t res = (ch <= '9' && ch >= '0');
-  if (!res)
-  {
-    /* convert to the upper case */
-    ch &= ~0x20;
-    /* and check if the character is [A-F] */
-    res = (ch >= 'A' && ch <= 'F');
-  }
-  return res;
-}
-
-static unsigned char glob_ch_to_val (unsigned char ch)
-{
-  unsigned char value = ch;
-
-  /* 'A' (10): 0x41, 0x61 */
-  if (value > '9')
-  {
-    value = (value & (~0x20));
-    value += 10 - 'A';
-  }
-  else
-  {
-    value -= '0';
-  }
-
-  return value;
-}
-
-unsigned char glob_get_byte (const char *pData)
-{
-  return (glob_ch_to_val (pData[0]) << 4) | glob_ch_to_val (pData[1]);
-}
-
+#ifdef MCODE_CONSOLE_ENABLED
 void cmd_engine_set_bg (const char *aParams)
 {
   if (4 == strlen (aParams))
@@ -506,11 +489,6 @@ void cmd_engine_set_color (const char *aParams)
   }
 }
 
-uint16_t glob_str_to_uint16 (const char *pHexString)
-{
-  return glob_get_byte (pHexString + 2) | (((uint16_t)glob_get_byte (pHexString)) << 8);
-}
-
 void cmd_engine_set_scroll_start (const char *aParams)
 {
   if (4 == strlen (aParams))
@@ -522,3 +500,4 @@ void cmd_engine_set_scroll_start (const char *aParams)
     hw_uart_write_string_P (PSTR("Wrong args, format: scroll <XXXX>\r\n"));
   }
 }
+#endif /* MCODE_CONSOLE_ENABLED */

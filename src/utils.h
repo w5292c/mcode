@@ -22,31 +22,22 @@
  * SOFTWARE.
  */
 
-/* The following line enables emulation of UART */
-#cmakedefine MCODE_EMULATE_UART
+#ifndef MCODE_UTILS_H
+#define MCODE_UTILS_H
 
-/* The following line enables I80 interface emulation */
-#cmakedefine MCODE_EMULATE_I80
+#include <stdint.h>
 
-/* The following line adds emulated LCD1 device to I80 bus */
-#cmakedefine MCODE_EMULATE_I80_LCD1
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* The following line puts s95513-based LCD on I80 bus */
-#cmakedefine MCODE_EMULATE_LCD_S95513
+uint8_t glob_is_hex_ch (int8_t ch);
+uint8_t glob_ch_to_val(uint8_t ch);
+uint8_t glob_get_byte(const char *pData);
+uint16_t glob_str_to_uint16(const char *pHexString);
 
-#cmakedefine USE_EMULATION_LAYER
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-/* This setting enables synchronous UART write */
-#cmakedefine MCODE_HW_UART_SYNC_WRITE
-
-/* This setting enables LED emulation */
-#cmakedefine MCODE_EMULATE_LED
-
-/* This setting is defined if console is enabled in the system */
-#cmakedefine MCODE_CONSOLE_ENABLED
-
-/* I80 interface enabled */
-#cmakedefine MCODE_HW_I80_ENABLED
-
-/* Enable debug LEDs blinking */
-#cmakedefine MCODE_DEBUG_BLINKING
+#endif /* MCODE_UTILS_H */
