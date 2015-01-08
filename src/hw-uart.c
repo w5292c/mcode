@@ -220,6 +220,8 @@ void hw_uart_write_string_P (const char *aString)
     while ( !( UCSRA & (1<<UDRE)) );
     UDR = ch;
   }
+#else /* __AVR__ */
+  hw_uart_write_string(aString);
 #endif /* __AVR__ */
 
 #else /* MCODE_HW_UART_SYNC_WRITE */

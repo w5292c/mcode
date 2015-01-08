@@ -22,62 +22,59 @@
  * SOFTWARE.
  */
 
+#include "hw-leds.h"
 #include "hw-uart.h"
 #include "scheduler.h"
 
 #include <stm32f10x.h>
 
+static void main_tick(void);
+
 int main (void)
 {
+  /* first, init the scheduler */
+  mcode_scheduler_init();
+  mcode_hw_leds_init();
   hw_uart_init();
   hw_uart_write_string("ARM variant started.\r\n");
+  mcode_scheduler_add(main_tick);
 
-  /* GPIO configuration */
-  GPIO_InitTypeDef GPIO_Config;
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-  GPIO_Config.GPIO_Pin =  GPIO_Pin_5;
-  GPIO_Config.GPIO_Mode = GPIO_Mode_Out_PP;
-  GPIO_Config.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(GPIOB, &GPIO_Config);
-  GPIO_Config.GPIO_Pin =  GPIO_Pin_8;
-  GPIO_Init(GPIOB, &GPIO_Config);
-  GPIO_Config.GPIO_Pin =  GPIO_Pin_9;
-  GPIO_Init(GPIOB, &GPIO_Config);
-  GPIO_WriteBit(GPIOB, GPIO_Pin_5, Bit_SET);
-
-  /* first, init the scheduler */
-  mcode_scheduler_init ();
-
-#if 0
   mcode_scheduler_start ();
-#else
-  /* Implement something visible, to be removed later, as soon as implemented properly */
-  int s = 0;
-  for (;;) {
-    switch(s) {
-    case 0:
-      GPIO_WriteBit(GPIOB, GPIO_Pin_5, Bit_SET);
-      GPIO_WriteBit(GPIOB, GPIO_Pin_8, Bit_RESET);
-      GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_RESET);
-      break;
-    case 1:
-      GPIO_WriteBit(GPIOB, GPIO_Pin_5, Bit_RESET);
-      GPIO_WriteBit(GPIOB, GPIO_Pin_8, Bit_SET);
-      GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_RESET);
-      break;
-    case 2:
-      GPIO_WriteBit(GPIOB, GPIO_Pin_5, Bit_RESET);
-      GPIO_WriteBit(GPIOB, GPIO_Pin_8, Bit_RESET);
-      GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_SET);
-      break;
-    default:
-      break;
-    }
 
-    for (unsigned int i=0;i<0xfffffU;i++);
-    if (++s > 2) s = 0;
-  }
-#endif
-
+  /* Clean-up */
+  mcode_hw_leds_deinit();
+  mcode_scheduler_deinit();
   return 0;
+}
+
+static int TheCase = 0;
+static int TheDelay = 0;
+void main_tick(void)
+{
+  if (TheDelay++ != 0xFFFFU) {
+    return;
+  }
+  TheDelay = 0;
+
+  switch(TheCase) {
+  case 0:
+    mcode_hw_leds_set(1, 1);
+    mcode_hw_leds_set(2, 0);
+    mcode_hw_leds_set(3, 0);
+    break;
+  case 1:
+    mcode_hw_leds_set(1, 0);
+    mcode_hw_leds_set(2, 1);
+    mcode_hw_leds_set(3, 0);
+    break;
+  case 2:
+    mcode_hw_leds_set(1, 0);
+    mcode_hw_leds_set(2, 0);
+    mcode_hw_leds_set(3, 1);
+    break;
+  default:
+    break;
+  }
+
+  if (++TheCase > 2) TheCase = 0;
 }
