@@ -22,12 +22,16 @@
  * SOFTWARE.
  */
 
+#include "hw-uart.h"
 #include "scheduler.h"
 
 #include <stm32f10x.h>
 
 int main (void)
 {
+  hw_uart_init();
+  hw_uart_write_string("ARM variant started.\r\n");
+
   /* GPIO configuration */
   GPIO_InitTypeDef GPIO_Config;
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);

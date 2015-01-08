@@ -33,8 +33,15 @@
 #include <stdlib.h>
 
 #ifndef MCODE_EMULATE_UART
+
+#ifdef __AVR__
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
+#else /* __AVR__ */
+#include "emu-common.h"
+#include <stdint.h>
+#include <stm32f10x.h>
+#endif /* __AVR__ */
 
 static hw_uart_char_event TheCallback = NULL;
 
@@ -80,6 +87,37 @@ void hw_uart_init (void)
   /* Set frame format: 8data, 2stop bit */
   UCSRC = (1<<URSEL)|(3<<UCSZ0);
 #endif /* __AVR_MEGA__ */
+
+#ifdef STM32F10X_HD
+  /* Init clocks */
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1 | RCC_APB2Periph_AFIO, ENABLE);
+
+  /* Init USART pins */
+  /* USART1_RX (in): PA10: IN_FLOATING */
+  GPIO_InitTypeDef pinConfig;
+  pinConfig.GPIO_Pin = GPIO_Pin_10;
+  pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
+  pinConfig.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+  GPIO_Init(GPIOA, &pinConfig);
+  /* USART1_TX (OUT): PA9: Alt_PP */
+  pinConfig.GPIO_Pin = GPIO_Pin_9;
+  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
+  GPIO_Init(GPIOA, &pinConfig);
+
+  /* Init USART device */
+  USART_InitTypeDef initData;
+  initData.USART_BaudRate = 115200;
+  initData.USART_WordLength = USART_WordLength_8b;
+  initData.USART_StopBits = USART_StopBits_2;
+  initData.USART_Parity = USART_Parity_No;
+  initData.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+  initData.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_Init(USART1, &initData);
+
+  /* Start the device */
+  USART_Cmd(USART1, ENABLE);
+#endif /* STM32F10X_HD */
+
   mcode_scheduler_add (hw_uart_tick);
 }
 
@@ -129,12 +167,25 @@ void hw_uart_write_uint (unsigned int value)
 void hw_uart_write_string (const char *aString)
 {
 #ifdef MCODE_HW_UART_SYNC_WRITE
+
+#ifdef __AVR__
   uint8_t ch;
   while (0 != (ch = *aString++))
   {
     while ( !( UCSRA & (1<<UDRE)) ) ;
     UDR = ch;
   }
+#endif /* __AVR__ */
+
+#ifdef STM32F10X_HD
+  uint8_t ch;
+  while (0 != (ch = *aString++)) {
+    /* Wait until USART1 DR register is empty */
+    while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+    USART_SendData(USART1, ch);
+  }
+#endif /* STM32F10X_HD */
+
 #else /* MCODE_HW_UART_SYNC_WRITE */
   if (TheWriteBufferStart)
   {
@@ -161,12 +212,16 @@ void hw_uart_write_string (const char *aString)
 void hw_uart_write_string_P (const char *aString)
 {
 #ifdef MCODE_HW_UART_SYNC_WRITE
+
+#ifdef __AVR__
   uint8_t ch;
   while (0 != (ch = pgm_read_byte (aString++)))
   {
     while ( !( UCSRA & (1<<UDRE)) );
     UDR = ch;
   }
+#endif /* __AVR__ */
+
 #else /* MCODE_HW_UART_SYNC_WRITE */
   /**@todo implement async version */
 #endif /* MCODE_HW_UART_SYNC_WRITE*/
@@ -178,12 +233,18 @@ static void hw_uart_tick (void)
   {
     if (TheCurrentReadIndex1)
     {
+#ifdef __AVR__
       /* disable RXC interrupt */
       UCSRB &= ~(1<<RXCIE);
+#endif /* __AVR__ */
+
       /* toggle the current buffer */
       TheCurrentBuffer = /*!TheCurrentBuffer*/0;
+
+#ifdef __AVR__
       /* enable interrupt again */
       UCSRB |= (1<<RXCIE);
+#endif /* __AVR__ */
 
       /* */
       if (TheCallback)
@@ -203,12 +264,18 @@ static void hw_uart_tick (void)
   {
     if (TheCurrentReadIndex0)
     {
+#ifdef __AVR__
       /* disable RXC interrupt */
       UCSRB &= ~(1<<RXCIE);
+#endif /* __AVR__ */
+
       /* toggle the current buffer */
       TheCurrentBuffer = /*!TheCurrentBuffer*/1;
+
+#ifdef __AVR__
       /* enable interrupt again */
       UCSRB |= (1<<RXCIE);
+#endif /* __AVR__ */
 
       /* */
       if (TheCallback)

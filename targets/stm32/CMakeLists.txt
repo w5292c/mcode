@@ -6,7 +6,7 @@ ENABLE_LANGUAGE(ASM)
 FIND_PACKAGE(CMSIS REQUIRED)
 FIND_PACKAGE(StdPeriphLib REQUIRED)
 
-add_definitions( "-D__ARM__" )
+add_definitions( "-D__ARM__ -D__HHCSTM32F100__" )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
@@ -23,7 +23,7 @@ set ( SRC_LIST
 #  ${MCODE_TOP}/src/hw-i80.c
 #  ${MCODE_TOP}/src/console.c
 #  ${MCODE_TOP}/src/hw-leds.c
-#  ${MCODE_TOP}/src/hw-uart.c
+  ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
 #  ${MCODE_TOP}/src/cmd-engine.c
 #  ${MCODE_TOP}/src/hw-lcd-s95513.c
@@ -33,10 +33,12 @@ set ( SRC_LIST
 
 set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )
 
+option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
+
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SRC_LIST} ${CMSIS_STARTUP_SOURCE} ${CMSIS_SOURCES} ${StdPeriphLib_SOURCES})
 
 STM32_SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME})
-STM32_SET_HSE_VALUE(${CMAKE_PROJECT_NAME} 12000000)
+STM32_SET_HSE_VALUE(${CMAKE_PROJECT_NAME} 8000000)
 STM32_ADD_HEX_BIN_TARGETS(${CMAKE_PROJECT_NAME})
