@@ -51,7 +51,7 @@ static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
 static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
 #endif /* MCODE_HW_I80_ENABLED */
-static void cmd_engine_set_led (const char *aCommand);
+static void cmd_engine_set_led (const char *cmd);
 static void cmd_engine_on_cmd_ready (const char *aString);
 #ifdef MCODE_CONSOLE_ENABLED
 static void cmd_engine_set_bg (const char *aParams);
@@ -356,25 +356,26 @@ void cmd_engine_read (const char *aCommand)
  * @note The command parameters should go in the following format: "X Y";
  * X may be either 0 or 1 (LED index) and Y may be either 0 or 1 (OFF or ON).
  */
-void cmd_engine_set_led (const char *aCommand)
+void cmd_engine_set_led(const char *cmd)
 {
-  uint8_t success = 0;
-  if (3 == strlen (aCommand))
-  {
-    const uint8_t ch0 = aCommand[0];
-    const uint8_t ch2 = aCommand[2];
-
-    if (char_is_hex (ch0) && char_is_hex (ch2) && ' ' == aCommand[1])
-    {
-      const uint8_t on = glob_ch_to_val (ch2);
-      const uint8_t index = glob_ch_to_val (ch0);
-      mcode_hw_leds_set (index, on);
-      success = 1;
-    }
+  int index = -1;
+  int value = -1;
+  const char *const secondNumber = string_skip_whitespace(string_next_number(string_skip_whitespace(cmd), &index));
+  if (secondNumber) {
+    string_next_number(secondNumber, &value);
   }
-
-  if (!success)
-  {
+  if (index >= 0) {
+    if (value >= 0) {
+      mcode_hw_leds_set(index, value);
+    } else {
+      const uint8_t on = mcode_hw_leds_get(index);
+      hw_uart_write_string_P(PSTR("LED"));
+      hw_uart_write_uint(index);
+      hw_uart_write_string_P(PSTR(", value: "));
+      hw_uart_write_uint(on);
+      hw_uart_write_string_P(PSTR("\r\n"));
+    }
+  } else {
     hw_uart_write_string_P (PSTR("Wrong args, format: L I 0/1\r\n> I - the LED index [0..1]\r\n> 0/1 - turm OFF/ON\r\n"));
   }
 }
