@@ -33,3 +33,25 @@ SPI1 (Master)
 SPI1_SCK: PA5;
 SPI1_MISO (IN): PA6;
 SPI1_MOSI (OUT): PA7;
+PB6;
+PB7;
+
+LCD TFT SOI 240x320
+===================
+LCD TFT slot:
+-------------
+1) Vcc (+3.3V);
+2) GND;
+3) CS;
+4) RESET;
+5) D/C;
+6) SDI (MOSI);
+7) SCK;
+8) LED;
+9) SDO (MISO);
+SD Card slot:
+-------------
+1' SD_CS;
+2' SD_MOSI;
+3' SD_MISO;
+4' SD_SCK;

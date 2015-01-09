@@ -26,6 +26,7 @@
 #define MCODE_HW_LCD_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +36,8 @@ typedef void (*lcd_read_cb)(int length, const uint8_t *data);
 
 void lcd_init(void);
 void lcd_deinit(void);
+
+void lcd_set_bl(bool on);
 
 void lcd_reset(void);
 void lcd_set_read_cb(lcd_read_cb cb);

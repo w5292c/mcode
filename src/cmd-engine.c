@@ -27,6 +27,7 @@
 #include "main.h"
 #include "utils.h"
 #include "hw-i80.h"
+#include "hw-lcd.h"
 #include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
@@ -154,11 +155,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P (PSTR("> bg xxxx - set background color\r\n"));
     hw_uart_write_string_P (PSTR("> cls - Clear screen\r\n"));
 #endif
-#ifdef MCODE_HW_I80_ENABLED
     hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
-#endif /* MCODE_HW_I80_ENABLED */
 #ifdef MCODE_CONSOLE_ENABLED
     hw_uart_write_string_P (PSTR("> bs - Print <back-space> character\r\n"));
     hw_uart_write_string_P (PSTR("> tab - Print <tab> character\r\n"));
@@ -203,19 +202,28 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     cmd_engine_set_led (&aString[4]);
   }
-#ifdef MCODE_HW_I80_ENABLED
   else if (!strcmp_P (aString, PSTR("reset")))
   {
+    lcd_reset();
+#ifdef MCODE_HW_I80_ENABLED
     cmd_engine_reset ();
+#endif /* MCODE_HW_I80_ENABLED */
   }
   else if (!strcmp_P (aString, PSTR("on")))
   {
-    hw_lcd_s95513_turn_on ();
+#ifdef MCODE_HW_I80_ENABLED
+    hw_lcd_s95513_turn_on();
+#endif /* MCODE_HW_I80_ENABLED */
+    lcd_set_bl(true);
   }
   else if (!strcmp_P (aString, PSTR("off")))
   {
-    hw_lcd_s95513_turn_off ();
+    lcd_set_bl(false);
+#ifdef MCODE_HW_I80_ENABLED
+    hw_lcd_s95513_turn_off();
+#endif /* MCODE_HW_I80_ENABLED */
   }
+#ifdef MCODE_HW_I80_ENABLED
   else if (!strcmp_P (aString, PSTR("timg")))
   {
     cmd_test_image ();

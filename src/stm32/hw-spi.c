@@ -31,3 +31,8 @@ void spi_init(void)
 void spi_deinit(void)
 {
 }
+
+uint16_t spi_transfer(uint16_t data)
+{
+  return data;
+}

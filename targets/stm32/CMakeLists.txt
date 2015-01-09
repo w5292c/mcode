@@ -27,11 +27,11 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/stm32/hw-spi.c
-  ${MCODE_TOP}/src/stm32/hw-lcd.c
   ${MCODE_TOP}/src/stm32/hw-leds.c
 #  ${MCODE_TOP}/src/hw-lcd-s95513.c
 #  ${MCODE_TOP}/src/cmd-test-image.c
   ${MCODE_TOP}/src/line-editor-uart.c
+  ${MCODE_TOP}/src/stm32/hw-lcd-spi.c
 )
 
 set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )

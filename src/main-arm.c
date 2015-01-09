@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "hw-lcd.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "scheduler.h"
@@ -39,6 +40,7 @@ int main (void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mcode_hw_leds_init();
+  lcd_init();
   hw_uart_init();
   hw_uart_write_string("ARM variant started.\r\n");
 #ifdef MCODE_DEBUG_BLINKING
@@ -51,6 +53,7 @@ int main (void)
 
   /* Clean-up */
   cmd_engine_deinit();
+  lcd_deinit();
   mcode_hw_leds_deinit();
   mcode_scheduler_deinit();
   return 0;
