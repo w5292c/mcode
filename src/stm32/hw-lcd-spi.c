@@ -49,12 +49,40 @@ void lcd_init(void)
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
 
   /* Configure the pins */
-  GPIO_InitTypeDef GPIO_Config;
-  GPIO_Config.GPIO_Pin =  GPIO_Pin_4;
-  GPIO_Config.GPIO_Mode = GPIO_Mode_Out_PP;
-  GPIO_Config.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(GPIOD, &GPIO_Config);
+  GPIO_InitTypeDef pinConfig;
+  /* Configure PD4 pin (LED) */
+  pinConfig.GPIO_Pin =  GPIO_Pin_4;
+  pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
+  pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_Init(GPIOD, &pinConfig);
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, Bit_RESET);
+  /* Configure PD5 pin (RESET) */
+  pinConfig.GPIO_Pin = 5;
+  pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
+  GPIO_Init(GPIOD, &pinConfig);
+  GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_SET);
+  /* Configure PB7 pin (D/C) */
+  pinConfig.GPIO_Pin = 7;
+  pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
+  GPIO_Init(GPIOB, &pinConfig);
+  GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_RESET);
+  /* Configure PB6 pin (SPI_CS) */
+  pinConfig.GPIO_Pin = 6;
+  pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
+  GPIO_Init(GPIOB, &pinConfig);
+  GPIO_WriteBit(GPIOB, GPIO_Pin_6, Bit_SET);
+  /* Configure PA7 pin (SPI_MOSI) */
+  pinConfig.GPIO_Pin = 7;
+  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
+  GPIO_Init(GPIOA, &pinConfig);
+  /* Configure PA5 pin (SPI_SCK) */
+  pinConfig.GPIO_Pin = 5;
+  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
+  GPIO_Init(GPIOA, &pinConfig);
+  /* Configure PA6 pin (SPI_MISO) */
+  pinConfig.GPIO_Pin = 6;
+  pinConfig.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+  GPIO_Init(GPIOA, &pinConfig);
 }
 
 void lcd_deinit(void)
@@ -63,6 +91,11 @@ void lcd_deinit(void)
 
 void lcd_reset(void)
 {
+  volatile uint32_t i;
+  GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_RESET);
+  for (i = 0; i < 0x1FFFFU; ++i);
+  GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_SET);
+  for (i = 0; i < 0x1FFFFU; ++i);
 }
 
 void lcd_set_read_cb(lcd_read_cb cb)
