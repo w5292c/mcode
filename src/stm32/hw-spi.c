@@ -32,7 +32,7 @@ void spi_deinit(void)
 {
 }
 
-uint16_t spi_transfer(uint16_t data)
+uint8_t spi_transfer(uint8_t data)
 {
   return data;
 }

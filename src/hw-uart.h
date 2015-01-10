@@ -25,6 +25,9 @@
 #ifndef MCODE_HW_UART_H
 #define MCODE_HW_UART_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,9 +41,11 @@ void hw_uart_set_callback (hw_uart_char_event aCallback);
 
 void hw_uart_start_read (void);
 
-void hw_uart_write_uint (unsigned int value);
-void hw_uart_write_string (const char *aString);
-void hw_uart_write_string_P (const char *aString);
+void hw_uart_write_uint(uint16_t value);
+void hw_uart_write_uint16(uint16_t value, bool skipZeros);
+void hw_uart_write_uint32(uint32_t value, bool skipZeros);
+void hw_uart_write_string(const char *aString);
+void hw_uart_write_string_P(const char *aString);
 
 #ifdef __cplusplus
 } /* extern "C" */

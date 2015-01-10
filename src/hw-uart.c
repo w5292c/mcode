@@ -151,17 +151,41 @@ static int8_t vtoch (uint8_t value)
   }
 }
 
-void hw_uart_write_uint (unsigned int value)
+
+void hw_uart_write_uint(uint16_t value)
 {
-  value = value & 0xFFFFU;
-  char buffer[6];
-  buffer[0] = '#';
-  buffer[1] = vtoch (0x0FU & (value >> 12));
-  buffer[2] = vtoch (0x0FU & (value >>  8));
-  buffer[3] = vtoch (0x0FU & (value >>  4));
-  buffer[4] = vtoch (0x0FU & value);
-  buffer[5] = 0;
-  hw_uart_write_string (buffer);
+  hw_uart_write_uint16(value, false);
+}
+
+void hw_uart_write_uint32(uint32_t value, bool skipZeros)
+{
+  const uint16_t upper = (uint16_t)(value>>16);
+  if (!skipZeros || 0 != upper) {
+    /* skip upper part if it is empty */
+    hw_uart_write_uint16(upper, skipZeros);
+    /* if the upper part is not empty, we cannot skip zeroes any longer */
+    skipZeros = false;
+  }
+  hw_uart_write_uint16((uint16_t)value, skipZeros);
+}
+
+void hw_uart_write_uint16(uint16_t value, bool skipZeros)
+{
+  int i;
+  char buffer[5];
+  buffer[0] = vtoch (0x0FU & (value >> 12));
+  buffer[1] = vtoch (0x0FU & (value >>  8));
+  buffer[2] = vtoch (0x0FU & (value >>  4));
+  buffer[3] = vtoch (0x0FU & value);
+  buffer[4] = 0;
+  if (skipZeros) {
+    for (i = 0; i < 3; ++i) {
+      if ('0' == *buffer) {
+        memmove(buffer, buffer + 1, 4);
+      }
+    }
+  }
+  hw_uart_write_string(buffer);
 }
 
 void hw_uart_write_string (const char *aString)

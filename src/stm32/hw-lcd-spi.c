@@ -24,6 +24,8 @@
 
 #include "hw-lcd.h"
 
+#include "hw-uart.h"
+
 #include <stm32f10x.h>
 
 /*
@@ -40,13 +42,28 @@
  */
 static lcd_read_cb TheReadCallback = 0;
 
+static uint32_t lcd_spi_read_id(void);
+
 void lcd_init(void)
 {
   /* GPIO configuration */
   /* Enable clocks */
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
+
+  SPI_InitTypeDef spiConfig;
+  spiConfig.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+  spiConfig.SPI_Mode = SPI_Mode_Master;
+  spiConfig.SPI_DataSize = SPI_DataSize_8b;
+  spiConfig.SPI_CPOL = SPI_CPOL_Low;
+  spiConfig.SPI_CPHA = SPI_CPHA_1Edge;
+  spiConfig.SPI_NSS = SPI_NSS_Soft;
+  spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
+  spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
+  spiConfig.SPI_CRCPolynomial = 0;
+  SPI_Init(SPI1, &spiConfig);
 
   /* Configure the pins */
   GPIO_InitTypeDef pinConfig;
@@ -83,6 +100,11 @@ void lcd_init(void)
   pinConfig.GPIO_Pin = 6;
   pinConfig.GPIO_Mode = GPIO_Mode_IN_FLOATING;
   GPIO_Init(GPIOA, &pinConfig);
+
+  const uint32_t id = lcd_spi_read_id();
+  hw_uart_write_string("Read LCD IC ID: 0x");
+  hw_uart_write_uint32(id, false);
+  hw_uart_write_string("\r\n");
 }
 
 void lcd_deinit(void)
@@ -114,4 +136,14 @@ void lcd_write(uint8_t cmd, uint8_t length, const uint8_t *data)
 void lcd_set_bl(bool on)
 {
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, on ? Bit_SET : Bit_RESET);
+}
+
+uint8_t spi_transfer(uint8_t data)
+{
+  return data;
+}
+
+uint32_t lcd_spi_read_id(void)
+{
+  return 0x00009341U;
 }

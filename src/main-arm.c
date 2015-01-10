@@ -40,8 +40,8 @@ int main (void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mcode_hw_leds_init();
-  lcd_init();
   hw_uart_init();
+  lcd_init();
   hw_uart_write_string("ARM variant started.\r\n");
 #ifdef MCODE_DEBUG_BLINKING
   mcode_scheduler_add(main_tick);
