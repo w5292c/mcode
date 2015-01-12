@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "mtick.h"
 #include "hw-lcd.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
@@ -39,6 +40,7 @@ int main (void)
 {
   /* first, init the scheduler */
   mcode_scheduler_init();
+  mtick_init();
   mcode_hw_leds_init();
   hw_uart_init();
   lcd_init();

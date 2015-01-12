@@ -157,6 +157,18 @@ void hw_uart_write_uint(uint16_t value)
   hw_uart_write_uint16(value, false);
 }
 
+void hw_uart_write_uint64(uint64_t value, bool skipZeros)
+{
+  const uint32_t upper = (uint32_t)(value>>32);
+  if (!skipZeros || 0 != upper) {
+    /* skip upper part if it is empty */
+    hw_uart_write_uint32(upper, skipZeros);
+    /* if the upper part is not empty, we cannot skip zeroes any longer */
+    skipZeros = false;
+  }
+  hw_uart_write_uint32((uint32_t)value, skipZeros);
+}
+
 void hw_uart_write_uint32(uint32_t value, bool skipZeros)
 {
   const uint16_t upper = (uint16_t)(value>>16);

@@ -25,6 +25,7 @@
 #include "cmd-engine.h"
 
 #include "main.h"
+#include "mtick.h"
 #include "utils.h"
 #include "hw-i80.h"
 #include "hw-lcd.h"
@@ -146,77 +147,83 @@ void cmd_engine_on_cmd_ready (const char *aString)
   if (!strcmp_P (aString, PSTR("help")))
   {
     /* HELP command */
-    hw_uart_write_string_P (PSTR("Supported cmds:\r\n"));
+    hw_uart_write_string_P(PSTR("Supported cmds:\r\n"));
 #if __linux__ == 1
-    hw_uart_write_string_P (PSTR("> exit/quit - exit\r\n"));
+    hw_uart_write_string_P(PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
+    hw_uart_write_string_P(PSTR("> ut - Show uptime\r\n"));
 #ifdef MCODE_CONSOLE_ENABLED
-    hw_uart_write_string_P (PSTR("> color xxxx - set text color\r\n"));
-    hw_uart_write_string_P (PSTR("> bg xxxx - set background color\r\n"));
-    hw_uart_write_string_P (PSTR("> cls - Clear screen\r\n"));
+    hw_uart_write_string_P(PSTR("> color xxxx - set text color\r\n"));
+    hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
+    hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
 #endif
-    hw_uart_write_string_P (PSTR("> reset - Reset LCD module\r\n"));
-    hw_uart_write_string_P (PSTR("> on - Turn LCD module ON\r\n"));
-    hw_uart_write_string_P (PSTR("> off - Turn LCD module OFF\r\n"));
+    hw_uart_write_string_P(PSTR("> reset - Reset LCD module\r\n"));
+    hw_uart_write_string_P(PSTR("> on - Turn LCD module ON\r\n"));
+    hw_uart_write_string_P(PSTR("> off - Turn LCD module OFF\r\n"));
 #ifdef MCODE_CONSOLE_ENABLED
-    hw_uart_write_string_P (PSTR("> bs - Print <back-space> character\r\n"));
-    hw_uart_write_string_P (PSTR("> tab - Print <tab> character\r\n"));
-    hw_uart_write_string_P (PSTR("> ch - Print a single character\r\n"));
-    hw_uart_write_string_P (PSTR("> line - Print a string with a new-line\r\n"));
-    hw_uart_write_string_P (PSTR("> scroll <xxxx> - Scroll image\r\n"));
-    hw_uart_write_string_P (PSTR("> timg - Load test image\r\n"));
-    hw_uart_write_string_P (PSTR("> tstr - Show long string\r\n"));
-    hw_uart_write_string_P (PSTR("> esc-pos - Show positioned test\r\n"));
-    hw_uart_write_string_P (PSTR("> esc-color - Show colored strings\r\n"));
-    hw_uart_write_string_P (PSTR("> tlimg - Load large test image\r\n"));
+    hw_uart_write_string_P(PSTR("> bs - Print <back-space> character\r\n"));
+    hw_uart_write_string_P(PSTR("> tab - Print <tab> character\r\n"));
+    hw_uart_write_string_P(PSTR("> ch - Print a single character\r\n"));
+    hw_uart_write_string_P(PSTR("> line - Print a string with a new-line\r\n"));
+    hw_uart_write_string_P(PSTR("> scroll <xxxx> - Scroll image\r\n"));
+    hw_uart_write_string_P(PSTR("> timg - Load test image\r\n"));
+    hw_uart_write_string_P(PSTR("> tstr - Show long string\r\n"));
+    hw_uart_write_string_P(PSTR("> esc-pos - Show positioned test\r\n"));
+    hw_uart_write_string_P(PSTR("> esc-color - Show colored strings\r\n"));
+    hw_uart_write_string_P(PSTR("> tlimg - Load large test image\r\n"));
 #endif /* MCODE_CONSOLE_ENABLED */
-    hw_uart_write_string_P (PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
+    hw_uart_write_string_P(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
 #ifdef MCODE_HW_I80_ENABLED
-    hw_uart_write_string_P (PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
-    hw_uart_write_string_P (PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
+    hw_uart_write_string_P(PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
+    hw_uart_write_string_P(PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
 #endif /* MCODE_HW_I80_ENABLED */
   }
 #ifdef __linux__
-  else if (!strcmp_P (aString, PSTR("quit")) || !strcmp_P (aString, PSTR("exit")))
+  else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit")))
   {
     /* EXIT command */
-    main_request_exit ();
+    main_request_exit();
     start_uart_editor = 0;
   }
 #endif /* __X86__ */
+  else if (!strcmp_P(aString, PSTR("ut"))) {
+    hw_uart_write_string_P(PSTR("Uptime: 0x"));
+    hw_uart_write_uint64(mtick_count(), true);
+    hw_uart_write_string_P(PSTR("\r\n"));
+  }
 #ifdef MCODE_HW_I80_ENABLED
-  else if (!strncmp_P (aString, PSTR("w "), 2))
+  else if (!strncmp_P(aString, PSTR("w "), 2))
   {
     /* WRITE command */
-    cmd_engine_write (&aString[2]);
+    cmd_engine_write(&aString[2]);
     start_uart_editor = 0;
   }
-  else if (!strncmp_P (aString, PSTR("r "), 2))
+  else if (!strncmp_P(aString, PSTR("r "), 2))
   {
     /* READ command */
-    cmd_engine_read (&aString[2]);
+    cmd_engine_read(&aString[2]);
     start_uart_editor = 0;
   }
 #endif /* MCODE_HW_I80_ENABLED */
-  else if (!strncmp_P (aString, PSTR("led "), 4))
+  else if (!strncmp_P(aString, PSTR("led "), 4))
   {
-    cmd_engine_set_led (&aString[4]);
+    cmd_engine_set_led(&aString[4]);
   }
-  else if (!strcmp_P (aString, PSTR("reset")))
+  else if (!strcmp_P(aString, PSTR("reset")))
   {
     lcd_reset();
 #ifdef MCODE_HW_I80_ENABLED
-    cmd_engine_reset ();
+    cmd_engine_reset();
 #endif /* MCODE_HW_I80_ENABLED */
   }
-  else if (!strcmp_P (aString, PSTR("on")))
+  else if (!strcmp_P(aString, PSTR("on")))
   {
 #ifdef MCODE_HW_I80_ENABLED
     hw_lcd_s95513_turn_on();
 #endif /* MCODE_HW_I80_ENABLED */
     lcd_set_bl(true);
   }
-  else if (!strcmp_P (aString, PSTR("off")))
+  else if (!strcmp_P(aString, PSTR("off")))
   {
     lcd_set_bl(false);
 #ifdef MCODE_HW_I80_ENABLED
@@ -224,95 +231,95 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #endif /* MCODE_HW_I80_ENABLED */
   }
 #ifdef MCODE_HW_I80_ENABLED
-  else if (!strcmp_P (aString, PSTR("timg")))
+  else if (!strcmp_P(aString, PSTR("timg")))
   {
-    cmd_test_image ();
+    cmd_test_image();
   }
-  else if (!strcmp_P (aString, PSTR("tlimg")))
+  else if (!strcmp_P(aString, PSTR("tlimg")))
   {
-    cmd_test_image_large ();
+    cmd_test_image_large();
   }
 #endif /* MCODE_HW_I80_ENABLED */
 #ifdef MCODE_CONSOLE_ENABLED
-  else if (!strcmp_P (aString, PSTR("cls")))
+  else if (!strcmp_P(aString, PSTR("cls")))
   {
-    console_clear_screen ();
+    console_clear_screen();
   }
-  else if (!strncmp_P (aString, PSTR("bg "), 3))
+  else if (!strncmp_P(aString, PSTR("bg "), 3))
   {
-    cmd_engine_set_bg (&aString[3]);
+    cmd_engine_set_bg(&aString[3]);
   }
-  else if (!strncmp_P (aString, PSTR("color "), 6))
+  else if (!strncmp_P(aString, PSTR("color "), 6))
   {
-    cmd_engine_set_color (&aString[6]);
+    cmd_engine_set_color(&aString[6]);
   }
-  else if (!strncmp_P (aString, PSTR("scroll "), 7))
+  else if (!strncmp_P(aString, PSTR("scroll "), 7))
   {
-    cmd_engine_set_scroll_start (&aString[7]);
+    cmd_engine_set_scroll_start(&aString[7]);
   }
-  else if (!strcmp_P (aString, PSTR("tstr")))
+  else if (!strcmp_P(aString, PSTR("tstr")))
   {
-    console_write_string_P (TheLongTestText);
+    console_write_string_P(TheLongTestText);
   }
-  else if (!strcmp_P (aString, PSTR("esc-color")))
+  else if (!strcmp_P(aString, PSTR("esc-color")))
   {
-    console_write_string_P (TheTestTextWithEscapeSequences);
+    console_write_string_P(TheTestTextWithEscapeSequences);
   }
-  else if (!strcmp_P (aString, PSTR("esc-pos")))
+  else if (!strcmp_P(aString, PSTR("esc-pos")))
   {
-    console_write_string_P (TheTestEscPositionManagement);
+    console_write_string_P(TheTestEscPositionManagement);
   }
-  else if (!strcmp_P (aString, PSTR("bs")))
+  else if (!strcmp_P(aString, PSTR("bs")))
   {
-    console_write_string_P (PSTR ("\010"));
+    console_write_string_P(PSTR ("\010"));
   }
-  else if (!strcmp_P (aString, PSTR("tab")))
+  else if (!strcmp_P(aString, PSTR("tab")))
   {
-    console_write_string_P (PSTR ("\t"));
+    console_write_string_P(PSTR ("\t"));
   }
-  else if (!strcmp_P (aString, PSTR("ch")))
+  else if (!strcmp_P(aString, PSTR("ch")))
   {
     static char str[] = "A";
-    console_write_string (str);
+    console_write_string(str);
     if (++str[0] > 'Z')
     {
       str[0] = 'A';
     }
   }
-  else if (!strcmp_P (aString, PSTR("line")))
+  else if (!strcmp_P(aString, PSTR("line")))
   {
     static uint8_t count = 0;
 
     char buffer[8];
-    snprintf (buffer, 8, "%d", ++count);*/
-    console_write_string_P (PSTR("This is a text line #"));
-    console_write_string (buffer);
-    console_write_string_P (PSTR("\r\n"));
+    snprintf(buffer, 8, "%d", ++count);*/
+    console_write_string_P(PSTR("This is a text line #"));
+    console_write_string(buffer);
+    console_write_string_P(PSTR("\r\n"));
   }
 #endif /* MCODE_CONSOLE_ENABLED */
   else if (*aString)
   {
     /* got unrecognized non-empty command */
-    hw_uart_write_string_P (PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));
+    hw_uart_write_string_P(PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));
   }
 
   if (start_uart_editor)
   {
-    line_editor_uart_start ();
+    line_editor_uart_start();
   }
 }
 
 #ifdef MCODE_HW_I80_ENABLED
-void cmd_engine_read (const char *aCommand)
+void cmd_engine_read(const char *aCommand)
 {
   int success = 1;
   unsigned char command = 0;
   unsigned char dataLength = 0;
 
   /* first, retrieve the command code */
-  if (isxdigit (aCommand[0]) && isxdigit (aCommand[1]))
+  if (isxdigit(aCommand[0]) && isxdigit(aCommand[1]))
   {
-    command = strtoul (aCommand, NULL, 16);
+    command = strtoul(aCommand, NULL, 16);
     aCommand += 2;
   }
   else
@@ -323,16 +330,16 @@ void cmd_engine_read (const char *aCommand)
   if (success)
   {
     /* skip whitespace */
-    while (isspace(aCommand[0]))
+    while(isspace(aCommand[0]))
     {
       ++aCommand;
     }
 
     const char ch0 = aCommand[0];
-    if (ch0 && isxdigit (ch0))
+    if (ch0 && isxdigit(ch0))
     {
       char *end = NULL;
-      dataLength = strtoul (aCommand, &end, 16);
+      dataLength = strtoul(aCommand, &end, 16);
       success = ((dataLength < 17) && end && !(*end));
       if (!success)
       {
@@ -348,12 +355,12 @@ void cmd_engine_read (const char *aCommand)
   if (success && dataLength)
   {
     /* execute the command on success and if we have non-zero data length */
-    hw_i80_read (command, dataLength);
+    hw_i80_read(command, dataLength);
   }
   else
   {
-    hw_uart_write_string_P (PSTR("Wrong args, format: R CC LL\r\n"));
-    line_editor_uart_start ();
+    hw_uart_write_string_P(PSTR("Wrong args, format: R CC LL\r\n"));
+    line_editor_uart_start();
   }
 }
 #endif /* MCODE_HW_I80_ENABLED */

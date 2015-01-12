@@ -22,34 +22,21 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_HW_UART_H
-#define MCODE_HW_UART_H
-
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef MCODE_GLOBAL_H
+#define MCODE_GLOBAL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef void (*hw_uart_char_event) (unsigned int aChar);
+/**
+ * This is a test scheduler, to be removed.
+ */
 
-void hw_uart_init (void);
-void hw_uart_deinit (void);
-
-void hw_uart_set_callback (hw_uart_char_event aCallback);
-
-void hw_uart_start_read (void);
-
-void hw_uart_write_uint(uint16_t value);
-void hw_uart_write_uint16(uint16_t value, bool skipZeros);
-void hw_uart_write_uint32(uint32_t value, bool skipZeros);
-void hw_uart_write_uint64(uint64_t value, bool skipZeros);
-void hw_uart_write_string(const char *aString);
-void hw_uart_write_string_P(const char *aString);
+typedef void (*mcode_tick)(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* MCODE_HW_UART_H */
+#endif /* MCODE_GLOBAL_H */

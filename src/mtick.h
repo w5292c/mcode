@@ -22,34 +22,32 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_HW_UART_H
-#define MCODE_HW_UART_H
+#ifndef MCODE_MTICK_H
+#define MCODE_MTICK_H
+
+#include "global.h"
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef void (*hw_uart_char_event) (unsigned int aChar);
+/**
+ * This is a test scheduler, to be removed.
+ */
 
-void hw_uart_init (void);
-void hw_uart_deinit (void);
+void mtick_init(void);
+void mtick_deinit(void);
+void mtick_add(mcode_tick tick);
 
-void hw_uart_set_callback (hw_uart_char_event aCallback);
+void mtick_stop(void);
+void mtick_start(void);
 
-void hw_uart_start_read (void);
-
-void hw_uart_write_uint(uint16_t value);
-void hw_uart_write_uint16(uint16_t value, bool skipZeros);
-void hw_uart_write_uint32(uint32_t value, bool skipZeros);
-void hw_uart_write_uint64(uint64_t value, bool skipZeros);
-void hw_uart_write_string(const char *aString);
-void hw_uart_write_string_P(const char *aString);
+uint64_t mtick_count(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* MCODE_HW_UART_H */
+#endif /* MCODE_MTICK_H */

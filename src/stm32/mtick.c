@@ -22,34 +22,52 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_HW_UART_H
-#define MCODE_HW_UART_H
+#include "mtick.h"
 
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef MCODE_MTICKS_COUNT
+#define MCODE_MTICKS_COUNT (10)
+#endif /* MCODE_MTICKS_COUNT */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static volatile uint64_t TheMSecCounter = 0;
+static mcode_tick TheTickCallbacks[MCODE_MTICKS_COUNT];
 
-typedef void (*hw_uart_char_event) (unsigned int aChar);
+void mtick_init(void)
+{
+  int i;
+  for (i = 0; i < MCODE_MTICKS_COUNT; ++i) {
+    TheTickCallbacks[i] = 0;
+  }
+}
 
-void hw_uart_init (void);
-void hw_uart_deinit (void);
+void mtick_deinit(void)
+{
+}
 
-void hw_uart_set_callback (hw_uart_char_event aCallback);
+void mtick_add(mcode_tick tick)
+{
+  int i;
+  for (i = 0; i < MCODE_MTICKS_COUNT; ++i) {
+    if (!TheTickCallbacks[i]) {
+      TheTickCallbacks[i] = tick;
+      break;
+    }
+  }
+}
 
-void hw_uart_start_read (void);
+void mtick_stop(void)
+{
+}
 
-void hw_uart_write_uint(uint16_t value);
-void hw_uart_write_uint16(uint16_t value, bool skipZeros);
-void hw_uart_write_uint32(uint32_t value, bool skipZeros);
-void hw_uart_write_uint64(uint64_t value, bool skipZeros);
-void hw_uart_write_string(const char *aString);
-void hw_uart_write_string_P(const char *aString);
+void mtick_start(void)
+{
+}
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+uint64_t mtick_count(void)
+{
+  return TheMSecCounter;
+}
 
-#endif /* MCODE_HW_UART_H */
+void TIM6_IRQHandler(void)
+{
+  ++TheMSecCounter;
+}
