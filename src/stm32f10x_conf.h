@@ -22,9 +22,9 @@
 // #include "stm32f10x_rtc.h"
 // #include "stm32f10x_sdio.h"
 #include "stm32f10x_spi.h"
-// #include "stm32f10x_tim.h"
+#include "stm32f10x_tim.h"
 #include "stm32f10x_usart.h"
 // #include "stm32f10x_wwdg.h"
-// #include "stm32f10x_misc.h"
+#include "stm32f10x_misc.h"
 
 #endif

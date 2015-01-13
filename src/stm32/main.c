@@ -36,7 +36,7 @@
 static void main_tick(void);
 #endif /* MCODE_DEBUG_BLINKING */
 
-int main (void)
+int main(void)
 {
   /* first, init the scheduler */
   mcode_scheduler_init();

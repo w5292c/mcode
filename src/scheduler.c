@@ -43,29 +43,29 @@
 
 static int NoExitRequest;
 static int ClientsNumber;
-static mcode_cheduler_tick TheApplicationTicks[MCODE_TICKS_COUNT];
+static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
 #ifdef __linux__
-static gboolean mcode_scheduler_idle (gpointer user_data);
+static gboolean mcode_scheduler_idle(gpointer user_data);
 #endif /* __linux__ */
 
-void mcode_scheduler_init (void)
+void mcode_scheduler_init(void)
 {
   ClientsNumber = 0;
   NoExitRequest = 1;
-  memset (TheApplicationTicks, 0, sizeof (TheApplicationTicks));
+  memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
 
 #ifdef __linux__
-  g_idle_add ((GSourceFunc)mcode_scheduler_idle, NULL);
+  g_idle_add((GSourceFunc)mcode_scheduler_idle, NULL);
 #endif /* __linux__ */
 }
 
-void mcode_scheduler_deinit (void)
+void mcode_scheduler_deinit(void)
 {
-  memset (TheApplicationTicks, 0, sizeof (TheApplicationTicks));
+  memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
 }
 
-void mcode_scheduler_start (void)
+void mcode_scheduler_start(void)
 {
 #ifndef __linux__
   int i;
@@ -73,28 +73,28 @@ void mcode_scheduler_start (void)
   {
     for (i = 0; i < ClientsNumber; i++)
     {
-      mcode_cheduler_tick tick = TheApplicationTicks[i];
+      mcode_tick tick = TheApplicationTicks[i];
       if (tick)
       {
-        (*tick) ();
+        (*tick)();
       }
     }
   }
 #else /* __linux__ */
-  mcode_main_start ();
+  mcode_main_start();
 #endif /* __linux__ */
 }
 
-void mcode_scheduler_stop (void)
+void mcode_scheduler_stop(void)
 {
 #ifndef __linux__
   NoExitRequest = 0;
 #else /* __linux__ */
-  mcode_main_quit ();
+  mcode_main_quit();
 #endif /* __linux__ */
 }
 
-void mcode_scheduler_add (mcode_cheduler_tick tick)
+void mcode_scheduler_add(mcode_tick tick)
 {
   if (ClientsNumber < MCODE_TICKS_COUNT)
   {
@@ -109,15 +109,15 @@ void mcode_scheduler_add (mcode_cheduler_tick tick)
 }
 
 #ifdef __linux__
-gboolean mcode_scheduler_idle (gpointer user_data)
+gboolean mcode_scheduler_idle(gpointer user_data)
 {
   int i = 0;
   for (i = 0; i < ClientsNumber; i++)
   {
-    mcode_cheduler_tick tick = TheApplicationTicks[i];
+    mcode_tick tick = TheApplicationTicks[i];
     if (tick)
     {
-      (*tick) ();
+      (*tick)();
     }
   }
 
