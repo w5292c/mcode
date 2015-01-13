@@ -16,13 +16,13 @@ set ( CMAKE_FIND_ROOT_PATH "/usr/lib/avr/" )
 project (console-test C)
 
 set (SRC_LIST
-  ${MCODE_TOP}/src/main-avr.c
+  ${MCODE_TOP}/src/avr/main.c
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/hw-i80.c
   ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
-#  ${MCODE_TOP}/src/avr-fuses.c
+#  ${MCODE_TOP}/src/avr/fuses.c
   ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/avr/hw-leds.c
   ${MCODE_TOP}/src/hw-lcd-s95513.c

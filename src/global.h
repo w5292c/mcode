@@ -30,9 +30,8 @@ extern "C" {
 #endif
 
 /**
- * This is a test scheduler, to be removed.
+ * Generic function template without any parameters
  */
-
 typedef void (*mcode_tick)(void);
 
 #ifdef __cplusplus
