@@ -160,6 +160,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P(PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P(PSTR("> off - Turn LCD module OFF\r\n"));
+    hw_uart_write_string_P(PSTR("> lcd-id Read the LCD ID\r\n"));
 #ifdef MCODE_CONSOLE_ENABLED
     hw_uart_write_string_P(PSTR("> bs - Print <back-space> character\r\n"));
     hw_uart_write_string_P(PSTR("> tab - Print <tab> character\r\n"));
@@ -229,6 +230,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_HW_I80_ENABLED
     hw_lcd_s95513_turn_off();
 #endif /* MCODE_HW_I80_ENABLED */
+  }
+  else if (!strcmp_P(aString, PSTR("lcd-id"))) {
+    const uint32_t id = lcd_read_id();
+    hw_uart_write_string("LCD ID: 0x");
+    hw_uart_write_uint32(id, false);
+    hw_uart_write_string("\r\n");
   }
 #ifdef MCODE_HW_I80_ENABLED
   else if (!strcmp_P(aString, PSTR("timg")))

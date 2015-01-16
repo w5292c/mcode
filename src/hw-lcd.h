@@ -38,6 +38,7 @@ void lcd_init(void);
 void lcd_deinit(void);
 
 void lcd_set_bl(bool on);
+uint32_t lcd_read_id(void);
 
 void lcd_reset(void);
 void lcd_set_read_cb(lcd_read_cb cb);
