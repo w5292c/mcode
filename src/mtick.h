@@ -44,6 +44,8 @@ void mtick_add(mcode_tick tick);
 void mtick_stop(void);
 void mtick_start(void);
 
+void mtick_sleep(uint32_t mticks);
+
 uint64_t mtick_count(void);
 
 #ifdef __cplusplus

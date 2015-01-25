@@ -100,6 +100,12 @@ void mtick_start(void)
 {
 }
 
+void mtick_sleep(uint32_t mticks)
+{
+  const uint64_t target = TheMSecCounter + mticks + 1;
+  while (TheMSecCounter < target);
+}
+
 uint64_t mtick_count(void)
 {
   return TheMSecCounter;
