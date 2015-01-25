@@ -77,31 +77,30 @@ void lcd_init(void)
   GPIO_Init(GPIOD, &pinConfig);
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, Bit_RESET);
   /* Configure PD5 pin (RESET) */
-  pinConfig.GPIO_Pin = 5;
+  pinConfig.GPIO_Pin = GPIO_Pin_5;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOD, &pinConfig);
   GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_SET);
   /* Configure PB7 pin (D/C) */
-  pinConfig.GPIO_Pin = 7;
+  pinConfig.GPIO_Pin = GPIO_Pin_7;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &pinConfig);
   GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_RESET);
   /* Configure PB6 pin (SPI_CS) */
-  pinConfig.GPIO_Pin = 6;
-  pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
+  pinConfig.GPIO_Pin = GPIO_Pin_6;
+  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_Init(GPIOB, &pinConfig);
-  GPIO_WriteBit(GPIOB, GPIO_Pin_6, Bit_SET);
   /* Configure PA7 pin (SPI_MOSI) */
-  pinConfig.GPIO_Pin = 7;
+  pinConfig.GPIO_Pin = GPIO_Pin_7;
   pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_Init(GPIOA, &pinConfig);
   /* Configure PA5 pin (SPI_SCK) */
-  pinConfig.GPIO_Pin = 5;
+  pinConfig.GPIO_Pin = GPIO_Pin_5;
   pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_Init(GPIOA, &pinConfig);
   /* Configure PA6 pin (SPI_MISO) */
-  pinConfig.GPIO_Pin = 6;
-  pinConfig.GPIO_Mode = GPIO_Mode_IPU; /* Rigth mode: GPIO_Mode_IN_FLOATING */
+  pinConfig.GPIO_Pin = GPIO_Pin_6;
+  pinConfig.GPIO_Mode = GPIO_Mode_IN_FLOATING;
   GPIO_Init(GPIOA, &pinConfig);
 
   SPI_Cmd(SPI1, ENABLE);
