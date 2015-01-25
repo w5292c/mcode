@@ -20,7 +20,7 @@ INCLUDE_DIRECTORIES(
 set ( SRC_LIST
   ${MCODE_TOP}/src/stm32/main.c
   ${MCODE_TOP}/src/utils.c
-#  ${MCODE_TOP}/src/fonts.c
+  ${MCODE_TOP}/src/fonts.c
 #  ${MCODE_TOP}/src/hw-i80.c
 #  ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/hw-uart.c
