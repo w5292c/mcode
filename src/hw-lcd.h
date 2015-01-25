@@ -32,6 +32,9 @@
 extern "C" {
 #endif
 
+#define COUNT_ARGS(...)  (sizeof((int[]){__VA_ARGS__})/sizeof (int))
+#define lcd_command(...) lcd_write(COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)
+
 typedef void (*lcd_read_cb)(int length, const uint8_t *data);
 
 void lcd_init(void);
@@ -44,7 +47,7 @@ void lcd_reset(void);
 void lcd_set_read_cb(lcd_read_cb cb);
 
 void lcd_read(uint8_t cmd, uint8_t length);
-void lcd_write(uint8_t cmd, uint8_t length, const uint8_t *data);
+void lcd_write(int len, ...);
 
 #ifdef __cplusplus
 } /* extern "C" */
