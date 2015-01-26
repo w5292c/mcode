@@ -24,6 +24,7 @@
 
 #include "mtick.h"
 #include "hw-lcd.h"
+#include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "scheduler.h"
@@ -50,6 +51,7 @@ int main(void)
 #ifdef MCODE_DEBUG_BLINKING
   mcode_scheduler_add(main_tick);
 #endif /* MCODE_DEBUG_BLINKING */
+  console_init();
   cmd_engine_init();
 
   cmd_engine_start();

@@ -32,6 +32,7 @@
 #include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
+#include "mcode-config.h"
 #include "hw-lcd-s95513.h"
 #include "cmd-test-image.h"
 #include "line-editor-uart.h"
@@ -295,12 +296,13 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
   else if (!strcmp_P(aString, PSTR("line")))
   {
-    static uint8_t count = 0;
+//    static uint8_t count = 0;
 
-    char buffer[8];
-    snprintf(buffer, 8, "%d", ++count);*/
+//    char buffer[8];
+//    sprintf(buffer, "%d", ++count);
     console_write_string_P(PSTR("This is a text line #"));
-    console_write_string(buffer);
+//    console_write_uint32();
+//    console_write_string(buffer);
     console_write_string_P(PSTR("\r\n"));
   }
 #endif /* MCODE_CONSOLE_ENABLED */
@@ -516,7 +518,7 @@ void cmd_engine_set_scroll_start (const char *aParams)
 {
   if (4 == strlen (aParams))
   {
-    hw_lcd_s95513_set_scroll_start (glob_str_to_uint16 (aParams));
+    lcd_set_scroll_start(glob_str_to_uint16 (aParams));
   }
   else
   {

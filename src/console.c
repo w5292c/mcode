@@ -25,7 +25,7 @@
 #include "console.h"
 
 #include "fonts.h"
-#include "hw-i80.h"
+#include "hw-lcd.h"
 #include "hw-uart.h"
 #include "hw-lcd-s95513.h"
 
@@ -45,8 +45,11 @@ static int8_t TheSavedColumnPos = 0;
 static int8_t TheCurrentLine = 0;
 static int8_t TheCurrentColumn = 0;
 
-static int8_t TheLineCount = 60;
-static int8_t TheColumnCount = 40;
+static int8_t TheLineCount = 0;
+static int8_t TheColumnCount = 0;
+
+static uint16_t TheDisplayWidth = 0;
+static uint16_t TheDisplayHeight = 0;
 
 /**
  * The current number of lines the screen has been scrolled up.
@@ -66,61 +69,51 @@ static void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t 
 static uint16_t TheOnColor = 0xFFFFU;
 static uint16_t TheOffColor = 0x0000U;
 
-void console_init (void)
+void console_init(void)
+{
+  TheDisplayWidth = lcd_get_width();
+  TheDisplayHeight = lcd_get_height();
+  TheLineCount = TheDisplayHeight>>3;
+  TheColumnCount = TheDisplayWidth>>3;
+}
+
+void console_deinit(void)
 {
 }
 
-void console_deinit (void)
-{
-}
-
-void console_clear_screen (void)
+void console_clear_screen(void)
 {
   /* reset the console state */
   TheCurrentLine = 0;
   TheCurrentColumn = 0;
 
   /* turn the LCD on */
-  hw_lcd_s95513_turn_on ();
+//  hw_lcd_s95513_turn_on ();
 
   /* clear the screen, fill the background color */
-  uint8_t buffer[4];
-  /* set_column_address */
-  buffer[0] = UINT8_C (0x00);
-  buffer[1] = UINT8_C (0x00); /* start column */
-  buffer[2] = UINT8_C (0x01);
-  buffer[3] = UINT8_C (0x3f); /* end column */
-  hw_i80_write (UINT8_C(0x2a), 4, buffer);
-  /* set_page_address */
-  buffer[0] = UINT8_C (0x00);
-  buffer[1] = UINT8_C (0x00); /* start page */
-  buffer[2] = UINT8_C (0x01);
-  buffer[3] = UINT8_C (0xdf); /* end page */
-  hw_i80_write (UINT8_C(0x2B), 4, buffer);
-  hw_i80_write_const_long (UINT8_C(0x2c), TheOffColor, 153600);
+  lcd_set_columns(0x0000, 239);
+  lcd_set_pages(0x0000, 319);
+  lcd_write_const_words(UINT8_C(0x2c), TheOffColor, 76800);
+  lcd_set_scroll_start(0);
+  TheCurrentScrollPos = 0;
 }
 
 void console_write_byte (uint8_t byte)
 {
-  if (console_handle_escape_sequence (byte))
-  {
+  if (console_handle_escape_sequence (byte)) {
     return;
   }
-  if (console_handle_control_codes (byte))
-  {
+  if (console_handle_control_codes (byte)) {
     return;
   }
-  if (console_handle_utf8 (byte))
-  {
+  if (console_handle_utf8 (byte)) {
     return;
   }
 
   /* check the current position */
-  if (TheCurrentColumn >= TheColumnCount)
-  {
+  if (TheCurrentColumn >= TheColumnCount) {
     ++TheCurrentLine;
-    if (TheCurrentLine >= TheLineCount)
-    {
+    if (TheCurrentLine >= TheLineCount) {
       /* roll 1 text line up */
       console_roll_up ();
       /* clear the last text line */
@@ -134,31 +127,8 @@ void console_write_byte (uint8_t byte)
   ++TheCurrentColumn;
 
   /* now we are ready to send the char bitmap to the LCD module */
-#if 1
   const uint8_t *const pChar = mcode_fonts_get_char_bitmap (byte);
-  hw_i80_write_bitmap_P (UINT8_C (0x2C), 8, pChar, TheOffColor, TheOnColor);
-#else
-  uint8_t x, y;
-  uint8_t cmd = UINT8_C (0x2C);
-  for (y = 0; y < 8; ++y)
-  {
-    const uint8_t line = mcode_fonts_get_bitmap (byte , y);
-    for (x = 0; x < 8; ++x)
-    {
-      if (line & (1U << x))
-      {
-        /* the pixel is ON */
-        hw_i80_write_words (cmd, 1, &TheOnColor);
-      }
-      else
-      {
-        /* the pixel is OFF */
-        hw_i80_write_words (cmd, 1, &TheOffColor);
-      }
-      cmd = UINT8_C(0x3C);
-    }
-  }
-#endif
+  lcd_write_bitmap(UINT8_C (0x2C), 8, pChar, TheOffColor, TheOnColor);
 }
 
 void console_write_string (const char *pString)
@@ -173,7 +143,7 @@ void console_write_string (const char *pString)
 void console_write_string_P (const char *pString)
 {
   uint8_t ch;
-  while ((ch = pgm_read_byte (pString++)))
+  while ((ch = pgm_read_byte((const unsigned char *)(pString++))))
   {
     console_write_byte (ch);
   }
@@ -202,7 +172,7 @@ void console_roll_up (void)
   }
 
   /* now we are ready to scroll to the next line */
-  hw_lcd_s95513_set_scroll_start (TheCurrentScrollPos << 3);
+  lcd_set_scroll_start(TheCurrentScrollPos << 3);
 }
 
 void console_config_lcd_for_pos (uint8_t column, uint8_t line)
@@ -217,20 +187,8 @@ void console_config_lcd_for_pos (uint8_t column, uint8_t line)
   const uint16_t eCol = sCol + 7;
   const uint16_t sLine = (uint16_t)(line<<3);
   const uint16_t eLine = sLine + 7;
-
-  uint8_t buffer[4];
-  /* set_column_address */
-  buffer[0] = (uint8_t)(UINT8_C (0xFF) & (sCol>>8));
-  buffer[1] = (uint8_t)(UINT8_C (0xFF) & sCol); /* start column */
-  buffer[2] = (uint8_t)(UINT8_C (0xFF) & (eCol>>8));
-  buffer[3] = (uint8_t)(UINT8_C (0xFF) & eCol); /* end column */
-  hw_i80_write (UINT8_C(0x2A), 4, buffer);
-  /* set_page_address */
-  buffer[0] = (uint8_t)(UINT8_C (0xFF) & (sLine>>8));
-  buffer[1] = (uint8_t)(UINT8_C (0xFF) & sLine); /* start page */
-  buffer[2] = (uint8_t)(UINT8_C (0xFF) & (eLine>>8));
-  buffer[3] = (uint8_t)(UINT8_C (0xFF) & eLine); /* end page */
-  hw_i80_write (UINT8_C(0x2B), 4, buffer);
+  lcd_set_columns(sCol, eCol);
+  lcd_set_pages(sLine, eLine);
 }
 
 uint8_t console_handle_utf8 (uint8_t byte)
@@ -711,17 +669,14 @@ void console_escape_erase_line (const char *pArgs)
 
 void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColumn)
 {
-  if (startColumn < 0)
-  {
+  if (startColumn < 0) {
     startColumn = 0;
   }
-  if (endColumn < 0)
-  {
+  if (endColumn < 0) {
     endColumn = TheColumnCount;
   }
   line += TheCurrentScrollPos;
-  if (line >= TheLineCount)
-  {
+  if (line >= TheLineCount) {
     line -= TheLineCount;
   }
 
@@ -729,20 +684,7 @@ void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColu
   const uint16_t eCol = (((uint16_t)endColumn) << 3) - 1;
   const uint16_t sLine = (uint16_t)(line << 3);
   const uint16_t eLine = sLine + 7;
-
-  /* clear the line, fill the background color */
-  uint8_t buffer[4];
-  /* set_column_address */
-  buffer[0] = (uint8_t)(UINT8_C (0xFF) & (sCol>>8));
-  buffer[1] = (uint8_t)(UINT8_C (0xFF) & sCol); /* start column */
-  buffer[2] = (uint8_t)(UINT8_C (0xFF) & (eCol>>8));
-  buffer[3] = (uint8_t)(UINT8_C (0xFF) & eCol); /* end column: 0x013f */
-  hw_i80_write (UINT8_C(0x2A), 4, buffer);
-  /* set_page_address */
-  buffer[0] = (uint8_t)(UINT8_C (0xFF) & (sLine>>8));
-  buffer[1] = (uint8_t)(UINT8_C (0xFF) & sLine); /* start page */
-  buffer[2] = (uint8_t)(UINT8_C (0xFF) & (eLine>>8));
-  buffer[3] = (uint8_t)(UINT8_C (0xFF) & eLine); /* end page */
-  hw_i80_write (UINT8_C(0x2B), 4, buffer);
-  hw_i80_write_const (UINT8_C(0x2c), TheOffColor, ((TheColumnCount - TheCurrentColumn) << 6));
+  lcd_set_columns(sCol, eCol);
+  lcd_set_pages(sLine, eLine);
+  lcd_write_const_words(UINT8_C(0x2c), TheOffColor, ((TheColumnCount - TheCurrentColumn) << 6));
 }

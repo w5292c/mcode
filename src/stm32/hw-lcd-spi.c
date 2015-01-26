@@ -152,6 +152,16 @@ uint8_t spi_transfer(uint8_t data)
   return byte;
 }
 
+uint16_t lcd_get_width(void)
+{
+  return 240;
+}
+
+uint16_t lcd_get_height(void)
+{
+  return 320;
+}
+
 uint32_t lcd_read_id(void)
 {
   int i;
@@ -258,4 +268,56 @@ void lcd_write(int len, ...)
     lcd_write_byte(va_arg(vl, unsigned int));
   }
   va_end(vl);
+}
+
+void lcd_set_scroll_start(uint16_t start)
+{
+  lcd_command(0x37, start>>8, start);
+}
+
+void lcd_set_columns(uint16_t start, uint16_t end)
+{
+  lcd_command(0x2A, (uint8_t)(start>>8), (uint8_t)start, (uint8_t)(end>>8), (uint8_t)end);
+}
+
+void lcd_set_pages(uint16_t start, uint16_t end)
+{
+  lcd_command(0x2B, (uint8_t)(start>>8), (uint8_t)start, (uint8_t)(end>>8), (uint8_t)end);
+}
+
+void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
+{
+  const uint8_t byte1 = word>>8;
+  const uint8_t byte2 = word;
+  lcd_write_cmd(cmd);
+  for (uint32_t i = 0; i < count; ++i) {
+    lcd_write_byte(byte1);
+    lcd_write_byte(byte2);
+  }
+}
+
+void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  uint8_t bitMask;
+  uint8_t currentByte;
+  const uint8_t *const pDataEnd = pData + length;
+
+  lcd_write_cmd(cmd);
+  /* write loop */
+  currentByte = *pData++;
+  for (bitMask = UINT8_C (0x01); ; ) {
+    const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
+    lcd_write_byte(currentData>>8);
+    lcd_write_byte(currentData);
+    bitMask = (bitMask << 1);
+    if (!bitMask) {
+      if (pData < pDataEnd) {
+        bitMask = UINT8_C (0x01);
+        currentByte = *pData++;
+      }
+      else {
+        break;
+      }
+    }
+  }
 }
