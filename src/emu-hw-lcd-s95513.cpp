@@ -72,9 +72,9 @@ void emu_hw_lcd_s95513_turn_off (void)
   hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_turn_off\r\n"));
 }
 
-void emu_hw_lcd_s95513_set_scroll_start (uint16_t start)
+void lcd_set_scroll_start(uint16_t start)
 {
-  hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_set_scroll_start ("));
+  hw_uart_write_string_P (PSTR ("EMU: lcd_set_scroll_start("));
   hw_uart_write_uint (start);
   hw_uart_write_string_P (PSTR (")\r\n"));
 }

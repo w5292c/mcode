@@ -33,7 +33,6 @@ extern "C" {
 
 void hw_lcd_s95513_turn_on (void);
 void hw_lcd_s95513_turn_off (void);
-void hw_lcd_s95513_set_scroll_start (uint16_t start);
 
 #define LCD_S95513_WR_RAM_START UINT8_C(0x2C)
 #define LCD_S95513_WR_RAM_CONT UINT8_C(0x3C)

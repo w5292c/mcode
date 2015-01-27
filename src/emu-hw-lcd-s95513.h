@@ -37,7 +37,6 @@ void emu_hw_lcd_s95513_deinit (void);
 
 void emu_hw_lcd_s95513_turn_on (void);
 void emu_hw_lcd_s95513_turn_off (void);
-void emu_hw_lcd_s95513_set_scroll_start (uint16_t start);
 
 void emu_hw_lcd_s95513_reset (void);
 

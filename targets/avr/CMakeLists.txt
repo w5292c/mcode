@@ -6,6 +6,7 @@ set ( CMAKE_SHARED_LINKER_FLAGS "-mmcu=atmega32" )
 set ( CMAKE_MODULE_LINKER_FLAGS "-mmcu=atmega32" )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
+include_directories( ${MCODE_TOP}/src/ )
 
 set ( CMAKE_SYSTEM_NAME "Generic" )
 set ( CMAKE_C_COMPILER "avr-gcc" )
@@ -18,12 +19,15 @@ project (console-test C)
 set (SRC_LIST
   ${MCODE_TOP}/src/avr/main.c
   ${MCODE_TOP}/src/fonts.c
-  ${MCODE_TOP}/src/hw-i80.c
+  ${MCODE_TOP}/src/utils.c
   ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
+  ${MCODE_TOP}/src/avr/mtick.c
 #  ${MCODE_TOP}/src/avr/fuses.c
+  ${MCODE_TOP}/src/avr/hw-i80.c
   ${MCODE_TOP}/src/cmd-engine.c
+  ${MCODE_TOP}/src/avr/hw-lcd.c
   ${MCODE_TOP}/src/avr/hw-leds.c
   ${MCODE_TOP}/src/hw-lcd-s95513.c
   ${MCODE_TOP}/src//cmd-test-image.c

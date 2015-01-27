@@ -22,32 +22,69 @@
  * SOFTWARE.
  */
 
-#include "hw-lcd-s95513.h"
-
-#include "hw-i80.h"
 #include "hw-lcd.h"
 
-#include <stdint.h>
-#include <stdlib.h>
+#include "hw-i80.h"
+#include "hw-uart.h"
 
-void hw_lcd_s95513_turn_on (void)
+void lcd_init(void)
 {
-  /* exit_sleep_mode */
-  hw_i80_write (UINT8_C(0x11), 0, NULL);
-  /* set_display_on */
-  hw_i80_write (UINT8_C(0x29), 0, NULL);
-  /* set_pixel_format: 18bpp */
-  uint8_t byte = 0x55;
-  hw_i80_write (UINT8_C(0x3A), 1, &byte);
-  byte = UINT8_C(0x02);
-  hw_i80_write (UINT8_C(0x36), 1, &byte);
-  lcd_set_scroll_start(UINT16_C(0));
 }
 
-void hw_lcd_s95513_turn_off (void)
+void lcd_deinit(void)
 {
-  /* set_display_off */
-  hw_i80_write (UINT8_C(0x28), 0, NULL);
-  /* enter_sleep_mode */
-  hw_i80_write (UINT8_C(0x10), 0, NULL);
+}
+
+void lcd_reset(void)
+{
+  hw_i80_reset();
+}
+
+void lcd_read(uint8_t cmd, uint8_t length)
+{
+}
+
+void lcd_set_bl(bool on)
+{
+}
+
+uint32_t lcd_read_id(void)
+{
+  return 0;
+}
+
+uint16_t lcd_get_width(void)
+{
+  return 240;
+}
+
+uint16_t lcd_get_height(void)
+{
+  return 320;
+}
+
+void lcd_set_scroll_start(uint16_t start)
+{
+  uint8_t buffer[2];
+  buffer[0] = (uint8_t)(start>>8);
+  buffer[1] = (uint8_t)(start);
+  hw_i80_write(UINT8_C(0x37), 2, buffer);
+}
+
+void lcd_set_columns(uint16_t start, uint16_t end)
+{
+}
+
+void lcd_set_pages(uint16_t start, uint16_t end)
+{
+}
+
+void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
+{
+  hw_i80_write_const_long (cmd, word, count);
+}
+
+void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
 }
