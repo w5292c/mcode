@@ -321,3 +321,13 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
     }
   }
 }
+
+void lcd_turn(bool on)
+{
+  hw_uart_write_string(">>> LCD turn: O");
+  if (on) {
+    hw_uart_write_string("N\r\n");
+  } else {
+    hw_uart_write_string("FF\r\n");
+  }
+}
