@@ -43,6 +43,7 @@
 #error "The file 'emu-hw-i80.c' can only be included in MCODE_EMULATE_I80 mode"
 #endif /* MCODE_EMULATE_I80 */
 
+#if 0
 void emu_hw_i80_init (void)
 {
 #ifdef MCODE_EMULATE_I80_LCD1
@@ -77,6 +78,7 @@ void emu_hw_i80_set_read_callback (hw_i80_read_callback aCallback)
   hw_uart_write_string_P (PSTR("): no device connected\r\n"));
 #endif /* MCODE_EMULATE_I80_LCD1 */
 }
+#endif
 
 void emu_hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data)
 {

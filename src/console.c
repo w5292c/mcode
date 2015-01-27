@@ -27,7 +27,6 @@
 #include "fonts.h"
 #include "hw-lcd.h"
 #include "hw-uart.h"
-#include "hw-lcd-s95513.h"
 
 #include <string.h>
 
@@ -88,7 +87,7 @@ void console_clear_screen(void)
   TheCurrentColumn = 0;
 
   /* turn the LCD on */
-//  hw_lcd_s95513_turn_on ();
+  lcd_turn(true);
 
   /* clear the screen, fill the background color */
   lcd_set_columns(0x0000, 239);

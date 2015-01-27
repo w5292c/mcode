@@ -43,6 +43,8 @@ void lcd_deinit(void);
 uint16_t lcd_get_width(void);
 uint16_t lcd_get_height(void);
 
+void lcd_turn(bool on);
+
 void lcd_set_bl(bool on);
 uint32_t lcd_read_id(void);
 

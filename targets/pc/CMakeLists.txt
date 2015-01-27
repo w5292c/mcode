@@ -21,15 +21,14 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/emu/main.cpp
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/utils.c
-  ${MCODE_TOP}/src/hw-i80.c
   ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/emu/hw-leds.c
-  ${MCODE_TOP}/src/hw-lcd-s95513.c
   ${MCODE_TOP}/src/cmd-test-image.c
   ${MCODE_TOP}/src/line-editor-uart.c
+  ${MCODE_TOP}/src/emu/hw-lcd-s95513.cpp
 )
 
 set ( SRC_LIST_QT
@@ -58,16 +57,16 @@ configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mc
 if (MCODE_EMULATE_UART)
   set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-uart.c )
 endif()
-if (MCODE_EMULATE_I80)
-  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-i80.c )
-endif ()
+#if (MCODE_EMULATE_I80)
+#  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-i80.c )
+#endif ()
 if (MCODE_EMULATE_I80_LCD1)
   set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-i80-lcd1.c )
 endif (MCODE_EMULATE_I80_LCD1)
 
-if (MCODE_EMULATE_LCD_S95513)
-  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-lcd-s95513.cpp )
-endif (MCODE_EMULATE_LCD_S95513)
+#if (MCODE_EMULATE_LCD_S95513)
+#  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/hw-lcd-s95513.cpp )
+#endif (MCODE_EMULATE_LCD_S95513)
 
 add_executable( console-test ${SRC_LIST} ${HEADERS_MOC} ${SRC_LIST_QT} )
 target_link_libraries ( console-test ${GTK2_0_LIBRARIES} )

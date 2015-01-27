@@ -33,7 +33,6 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "mcode-config.h"
-#include "hw-lcd-s95513.h"
 #include "cmd-test-image.h"
 #include "line-editor-uart.h"
 
@@ -221,7 +220,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P(aString, PSTR("on")))
   {
 #ifdef MCODE_HW_I80_ENABLED
-    hw_lcd_s95513_turn_on();
+    lcd_turn(true);
 #endif /* MCODE_HW_I80_ENABLED */
     lcd_set_bl(true);
   }
@@ -229,7 +228,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     lcd_set_bl(false);
 #ifdef MCODE_HW_I80_ENABLED
-    hw_lcd_s95513_turn_off();
+    lcd_turn(false);
 #endif /* MCODE_HW_I80_ENABLED */
   }
   else if (!strcmp_P(aString, PSTR("lcd-id"))) {

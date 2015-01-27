@@ -27,6 +27,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*hw_i80_read_callback) (int length, const unsigned char *data);
 
 void hw_i80_init (void);
@@ -56,5 +60,9 @@ void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, ui
 void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
 
 void hw_i80_reset (void);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* MC_CODE_I80_H */

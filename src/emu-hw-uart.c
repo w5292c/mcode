@@ -103,6 +103,18 @@ void emu_hw_uart_write_uint (unsigned int value)
   fflush (stdout);
 }
 
+void hw_uart_write_uint16(uint16_t value, bool skipZeros)
+{
+}
+
+void hw_uart_write_uint32(uint32_t value, bool skipZeros)
+{
+}
+
+void hw_uart_write_uint64(uint64_t value, bool skipZeros)
+{
+}
+
 void emu_hw_uart_write_string_P (const char *aString)
 {
   emu_hw_uart_write_string (aString);
