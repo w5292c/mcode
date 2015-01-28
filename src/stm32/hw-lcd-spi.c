@@ -112,7 +112,7 @@ void lcd_init(void)
   SPI_Cmd(SPI1, ENABLE);
 
   lcd_reset();
-  while (0x00419300U != lcd_read_id());
+  while (0x00009341 != lcd_read_id());
 
   lcd_spi_init();
 }
@@ -165,41 +165,58 @@ uint16_t lcd_get_height(void)
 uint32_t lcd_read_id(void)
 {
   int i;
-  uint8_t id[4] = {0};
+  uint8_t id[3] = {0};
   for (i = 0; i < 3; ++i) {
     id[i] = lcd_read_register(0xd3, i + 1);
   }
 
-  const uint32_t idValue = id[0] | (id[1] << 8) | (id[2] << 16) | (id[3] << 24);
+  const uint32_t idValue = (id[0] << 16) | (id[1] << 8) | id[2];
   return idValue;
 }
 
 void lcd_spi_init(void)
 {
-  lcd_command(0xCBU, 0x39, 0x2C, 0x00, 0x34, 0x02);
-  lcd_command(0xCFU, 0x00, 0XC1, 0X30);
-  lcd_command(0xE8U, 0x85, 0x00, 0x78);
-  lcd_command(0xEAU, 0x00, 0x00);
-  lcd_command(0xEDU, 0x64, 0x03, 0X12, 0X81);
-  lcd_command(0xF7U, 0x20);
-  lcd_command(0xC0U, 0x23);
-  lcd_command(0xC1U, 0x10);
-  lcd_command(0xC5U, 0x3e, 0x28);
-  lcd_command(0xC7U, 0x86);
+ /* SW reset */
+  lcd_command(0x01);
+  mtick_sleep(5);
+  /* Display OFF */
+  lcd_command(0x28);
+  /* Power control A: default */
+  lcd_command(0xCB, 0x39, 0X2C, 0x00, 0x34, 0x02);
+  /* Power control B: default */
+  lcd_command(0xCF, 0x00, 0x83, 0x30);
+  /* Power on sequence control */
+  lcd_command(0xED, 0x64, 0x03, 0x12, 0x81);
+  /* Driver timing control A */
+  lcd_command(0xE8, 0x85, 0x01, 0x79);
+  /* Driver timing control B */
+  lcd_command(0xEA, 0x00, 0x00);
+  /* Pump ratio control */
+  lcd_command(0xF7, 0x20);
+  /* Power control */
+  lcd_command(0xC0, 0x26);
+  lcd_command(0xC1, 0x11);
+  /* VCOM */
+  lcd_command(0xC5, 0x35, 0x3E);
+  lcd_command(0xC7, 0xBE);
+  /* Memory access control: 16 bits per pixel */
+  lcd_command(0x3A, 0x55);
+  /* Memory Access Control */
   lcd_command(0x36U, 0x48);
-  lcd_command(0x3AU, 0x55);
-  lcd_command(0xB1U, 0x00, 0x18);
-  lcd_command(0xB6U, 0x08, 0x82, 0x27);
-  lcd_command(0xF2U, 0x00);
-  lcd_command(0x26U, 0x01);
-  lcd_command(0xE0U, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00);
-  lcd_command(0XE1U, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F);
-
-  // Exit Sleep
-  lcd_write_cmd(0x11);
-  mtick_sleep(120);
-  // Display: ON
-  lcd_write_cmd(0x29);
+  /* Frame rate */
+  lcd_command(0xB1, 0x00, 0x1B);
+  /* Gamma set */
+  lcd_command(0x26, 0x01);
+  /* Entry Mode Set */
+  lcd_command(0xB7, 0x07);
+  /* Display Function Control */
+  lcd_command(0xB6, 0x0A, 0x82, 0x27, 0x00);
+  /* Exit Sleep */
+  lcd_command(0x11);
+  mtick_sleep(100);
+  /* Display: ON */
+  lcd_command(0x29);
+  mtick_sleep(20);
 
   // Set columns: [0..239]
   lcd_command(0x2A, 0, 0, 0, 239U);
