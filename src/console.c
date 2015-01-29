@@ -82,6 +82,10 @@ void console_deinit(void)
 
 void console_clear_screen(void)
 {
+  /* Reset the current scroll position */
+  lcd_set_scroll_start(0);
+  TheCurrentScrollPos = 0;
+
   /* reset the console state */
   TheCurrentLine = 0;
   TheCurrentColumn = 0;
@@ -90,11 +94,7 @@ void console_clear_screen(void)
   lcd_turn(true);
 
   /* clear the screen, fill the background color */
-  lcd_set_columns(0x0000, 239);
-  lcd_set_pages(0x0000, 319);
-  lcd_write_const_words(UINT8_C(0x2c), TheOffColor, 76800);
-  lcd_set_scroll_start(0);
-  TheCurrentScrollPos = 0;
+  lcd_cls(TheOffColor);
 }
 
 void console_write_byte (uint8_t byte)

@@ -218,22 +218,7 @@ void lcd_spi_init(void)
   lcd_command(0x29);
   mtick_sleep(20);
 
-  // Set columns: [0..239]
-  lcd_command(0x2A, 0, 0, 0, 239U);
-  // Set pages: [0..319]
-  lcd_command(0x2B, 0, 0, 1, 63);
-
-  // fill the screen
-  lcd_write_cmd(0x2c);
-  lcd_spi_set_command(true);
-  lcd_spi_set_cs(false);
-  for (uint32_t i=0; i<38400; i++) {
-    spi_transfer(0x00);
-    spi_transfer(0x0f);
-    spi_transfer(0x00);
-    spi_transfer(0x0f);
-  }
-  lcd_spi_set_cs(true);
+  lcd_cls(0x0000);
 }
 
 void lcd_spi_set_cs(bool selected)
@@ -302,6 +287,12 @@ void lcd_set_pages(uint16_t start, uint16_t end)
   lcd_command(0x2B, (uint8_t)(start>>8), (uint8_t)start, (uint8_t)(end>>8), (uint8_t)end);
 }
 
+void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd)
+{
+  lcd_command(0x2A, colStart>>8, colStart, colEnd>>8, colEnd);
+  lcd_command(0x2B, rowStart>>8, rowStart, rowEnd>>8, rowEnd);
+}
+
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
 {
   const uint8_t byte1 = word>>8;
@@ -339,12 +330,15 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
   }
 }
 
+void lcd_cls(uint16_t color)
+{
+  const uint16_t width = lcd_get_width();
+  const uint32_t height = lcd_get_height();
+  lcd_set_window(0, width - 1, 0, height - 1);
+  lcd_write_const_words(0x2C, color, width*height);
+}
+
 void lcd_turn(bool on)
 {
-  hw_uart_write_string(">>> LCD turn: O");
-  if (on) {
-    hw_uart_write_string("N\r\n");
-  } else {
-    hw_uart_write_string("FF\r\n");
-  }
+  lcd_command(on ? 0x29 : 0x28);
 }
