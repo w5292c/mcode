@@ -56,8 +56,6 @@ void lcd_read(uint8_t cmd, uint8_t length);
 void lcd_write(int len, ...);
 
 void lcd_set_scroll_start(uint16_t start);
-void lcd_set_pages(uint16_t start, uint16_t end);
-void lcd_set_columns(uint16_t start, uint16_t end);
 void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd);
 
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count);

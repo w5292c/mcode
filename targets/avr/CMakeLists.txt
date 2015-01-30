@@ -18,6 +18,7 @@ project (console-test C)
 
 set (SRC_LIST
   ${MCODE_TOP}/src/avr/main.c
+  ${MCODE_TOP}/src/common/hw-lcd.c
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/utils.c
   ${MCODE_TOP}/src/console.c
@@ -29,9 +30,9 @@ set (SRC_LIST
   ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/avr/hw-lcd.c
   ${MCODE_TOP}/src/avr/hw-leds.c
-  ${MCODE_TOP}/src/hw-lcd-s95513.c
   ${MCODE_TOP}/src//cmd-test-image.c
   ${MCODE_TOP}/src/line-editor-uart.c
+  ${MCODE_TOP}/src/avr/hw-lcd-s95513.c
 )
 
 option ( MCODE_EMULATE_UART "Enable UART emulation" OFF )

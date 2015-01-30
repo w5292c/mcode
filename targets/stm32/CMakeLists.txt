@@ -19,16 +19,15 @@ INCLUDE_DIRECTORIES(
 
 set ( SRC_LIST
   ${MCODE_TOP}/src/stm32/main.c
+  ${MCODE_TOP}/src/common/hw-lcd.c
   ${MCODE_TOP}/src/utils.c
   ${MCODE_TOP}/src/fonts.c
-#  ${MCODE_TOP}/src/hw-i80.c
   ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/stm32/mtick.c
   ${MCODE_TOP}/src/stm32/hw-leds.c
-#  ${MCODE_TOP}/src/hw-lcd-s95513.c
 #  ${MCODE_TOP}/src/cmd-test-image.c
   ${MCODE_TOP}/src/line-editor-uart.c
   ${MCODE_TOP}/src/stm32/hw-lcd-spi.c

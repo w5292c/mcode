@@ -144,16 +144,6 @@ void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *pData)
   hw_i80_write_imp (cmd, length, pData, 1, 0);
 }
 
-void hw_i80_write_words (uint8_t cmd, uint8_t length, const uint16_t *data)
-{
-/*  hw_i80_write_imp (cmd, length, data, 0, 1);*/
-}
-
-void hw_i80_write_words_P (uint8_t cmd, uint8_t length, const uint16_t *data)
-{
-/*  hw_i80_write_imp (cmd, length, data, 1, 1);*/
-}
-
 void hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length)
 {
   hw_i80_parts_begin ();
@@ -485,9 +475,6 @@ void hw_i80_read (uint8_t cmd, uint8_t length) { emu_hw_i80_read (cmd, length); 
 void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data) { emu_hw_i80_write (cmd, length, data); }
 void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *data) { emu_hw_i80_write (cmd, length, data); }
 void hw_i80_reset (void) { emu_hw_i80_reset (); }
-
-void hw_i80_write_words (uint8_t cmd, uint8_t length, const uint16_t *data) { emu_hw_i80_write_words (cmd, length, data); }
-void hw_i80_write_words_P (uint8_t cmd, uint8_t length, const uint16_t *data) { emu_hw_i80_write_words_P (cmd, length, data); }
 
 void hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length) { emu_hw_i80_write_const_short (cmd, constValue, length); }
 void hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length) { emu_hw_i80_write_const (cmd, constValue, length); }

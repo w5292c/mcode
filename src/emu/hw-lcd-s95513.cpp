@@ -174,7 +174,7 @@ void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color)
   TheWidget->setPixel (x, y, color);
 }
 
-void emu_hw_lcd_s95513_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+void hw_i80_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
 {
   uint8_t bitMask;
   uint8_t currentByte;
@@ -202,9 +202,9 @@ void emu_hw_lcd_s95513_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t
   }
 }
 
-void emu_hw_lcd_s95513_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+void hw_i80_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
 {
-  emu_hw_lcd_s95513_write_bitmap (cmd, length, pData, offValue, onValue);
+  hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
 }
 
 uint32_t emu_hw_lcd_s95513_to_color (uint32_t data)
@@ -262,7 +262,6 @@ void emu_hw_lcd_s95513_handle_data_word (uint16_t word)
   case LCD_S95513_WR_RAM_CONT:
   case LCD_S95513_WR_RAM_START:
     emu_hw_lcd_s95513_handle_data_write_ram (word);
-    break;
     break;
   case LCD_S95513_SET_COLUMN_ADDR:
     emu_hw_lcd_s95513_handle_data_set_column_addr ((uint8_t) word);
@@ -343,20 +342,14 @@ uint16_t lcd_get_height(void)
   return 480;
 }
 
-void lcd_set_pages(uint16_t start, uint16_t end)
-{
-}
-
-void lcd_set_columns(uint16_t start, uint16_t end)
-{
-}
-
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
 {
+  hw_i80_write_const_long (cmd, word, count);
 }
 
 void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
 {
+  hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
 }
 
 void lcd_turn(bool on)
@@ -379,4 +372,40 @@ uint32_t lcd_read_id(void)
 uint64_t mtick_count(void)
 {
   return 0;
+}
+
+void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd)
+{
+  uint8_t buffer[4];
+  /* set_column_address */
+  buffer[0] = UINT8_C(colStart>>8);
+  buffer[1] = UINT8_C(colStart);
+  buffer[2] = UINT8_C(colEnd>>8);
+  buffer[3] = UINT8_C(colEnd);
+  hw_i80_write(UINT8_C(0x2A), 4, buffer);
+  /* set_page_address */
+  buffer[0] = UINT8_C(rowStart>>8);
+  buffer[1] = UINT8_C(rowStart);
+  buffer[2] = UINT8_C(rowEnd>>8);
+  buffer[3] = UINT8_C(rowEnd);
+  hw_i80_write(UINT8_C(0x2B), 4, buffer);
+}
+
+void hw_i80_write_const_short(uint8_t cmd, uint16_t constValue, uint8_t length)
+{
+  hw_i80_write_const_long(cmd, constValue, length);
+}
+
+void hw_i80_write_const(uint8_t cmd, uint16_t constValue, uint16_t length)
+{
+  hw_i80_write_const_long(cmd, constValue, length);
+}
+
+void hw_i80_write_const_long(uint8_t cmd, uint16_t constValue, uint32_t length)
+{
+  uint32_t i;
+  emu_hw_lcd_s95513_handle_cmd(cmd);
+  for (i = 0; i < length; ++i) {
+    emu_hw_lcd_s95513_handle_data_word(constValue);
+  }
 }

@@ -44,8 +44,8 @@ static int8_t TheSavedColumnPos = 0;
 static int8_t TheCurrentLine = 0;
 static int8_t TheCurrentColumn = 0;
 
-static int8_t TheLineCount = 0;
-static int8_t TheColumnCount = 0;
+static uint8_t TheLineCount = 0;
+static uint8_t TheColumnCount = 0;
 
 static uint16_t TheDisplayWidth = 0;
 static uint16_t TheDisplayHeight = 0;
@@ -186,8 +186,7 @@ void console_config_lcd_for_pos (uint8_t column, uint8_t line)
   const uint16_t eCol = sCol + 7;
   const uint16_t sLine = (uint16_t)(line<<3);
   const uint16_t eLine = sLine + 7;
-  lcd_set_columns(sCol, eCol);
-  lcd_set_pages(sLine, eLine);
+  lcd_set_window(sCol, eCol, sLine, eLine);
 }
 
 uint8_t console_handle_utf8 (uint8_t byte)
@@ -683,7 +682,6 @@ void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColu
   const uint16_t eCol = (((uint16_t)endColumn) << 3) - 1;
   const uint16_t sLine = (uint16_t)(line << 3);
   const uint16_t eLine = sLine + 7;
-  lcd_set_columns(sCol, eCol);
-  lcd_set_pages(sLine, eLine);
+  lcd_set_window(sCol, eCol, sLine, eLine);
   lcd_write_const_words(UINT8_C(0x2c), TheOffColor, ((TheColumnCount - TheCurrentColumn) << 6));
 }

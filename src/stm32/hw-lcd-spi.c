@@ -277,16 +277,6 @@ void lcd_set_scroll_start(uint16_t start)
   lcd_command(0x37, start>>8, start);
 }
 
-void lcd_set_columns(uint16_t start, uint16_t end)
-{
-  lcd_command(0x2A, (uint8_t)(start>>8), (uint8_t)start, (uint8_t)(end>>8), (uint8_t)end);
-}
-
-void lcd_set_pages(uint16_t start, uint16_t end)
-{
-  lcd_command(0x2B, (uint8_t)(start>>8), (uint8_t)start, (uint8_t)(end>>8), (uint8_t)end);
-}
-
 void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd)
 {
   lcd_command(0x2A, colStart>>8, colStart, colEnd>>8, colEnd);
@@ -328,14 +318,6 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
       }
     }
   }
-}
-
-void lcd_cls(uint16_t color)
-{
-  const uint16_t width = lcd_get_width();
-  const uint32_t height = lcd_get_height();
-  lcd_set_window(0, width - 1, 0, height - 1);
-  lcd_write_const_words(0x2C, color, width*height);
 }
 
 void lcd_turn(bool on)

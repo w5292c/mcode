@@ -23,6 +23,7 @@
  */
 
 #include "main.h"
+#include "console.h"
 #include "hw-uart.h"
 #include "hw-leds.h"
 #include "scheduler.h"
@@ -58,8 +59,9 @@ int main (int argc, char **argv)
   /* init LEDs */
   mcode_hw_leds_init ();
   /* init the line editor and the command engine */
-  line_editor_uart_init ();
-  cmd_engine_init ();
+  line_editor_uart_init();
+  console_init();
+  cmd_engine_init();
 
   /* now, enable the interrupts */
   sei ();
