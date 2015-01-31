@@ -78,7 +78,7 @@ void lcd_init(void)
   GPIO_InitTypeDef pinConfig;
   /* Configure PD4 pin (LED) */
   pinConfig.GPIO_Pin =  GPIO_Pin_4;
-  pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
+  pinConfig.GPIO_Mode = GPIO_Mode_Out_OD;
   pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOD, &pinConfig);
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, Bit_RESET);
