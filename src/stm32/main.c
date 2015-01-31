@@ -111,6 +111,4 @@ void main_mtick(void)
 
   static bool on = false;
   on = !on;
-
-  lcd_set_bl(on);
 }

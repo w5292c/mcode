@@ -140,7 +140,7 @@ void lcd_read(uint8_t cmd, uint8_t length)
 
 void lcd_set_bl(bool on)
 {
-  GPIO_WriteBit(GPIOD, GPIO_Pin_4, on ? Bit_SET : Bit_RESET);
+  GPIO_WriteBit(GPIOD, GPIO_Pin_4, on ? Bit_RESET : Bit_SET);
 }
 
 uint8_t spi_transfer(uint8_t data)
