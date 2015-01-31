@@ -26,7 +26,6 @@
 
 #include "mcode-config.h"
 
-#ifndef MCODE_EMULATE_I80
 #include <avr/io.h>
 #include <stdlib.h>
 #include <string.h>
@@ -463,26 +462,3 @@ void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, 
 
   hw_i80_parts_end ();
 }
-
-#else /* MCODE_EMULATE_I80 */
-#include "emu-hw-i80.h"
-#include "emu-common.h"
-
-void hw_i80_init (void) { emu_hw_i80_init (); }
-void hw_i80_deinit (void) { emu_hw_i80_deinit (); }
-void hw_i80_set_read_callback (hw_i80_read_callback aCallback) { emu_hw_i80_set_read_callback (aCallback); }
-void hw_i80_read (uint8_t cmd, uint8_t length) { emu_hw_i80_read (cmd, length); }
-void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *data) { emu_hw_i80_write (cmd, length, data); }
-void hw_i80_write_P (uint8_t cmd, uint8_t length, const uint8_t *data) { emu_hw_i80_write (cmd, length, data); }
-void hw_i80_reset (void) { emu_hw_i80_reset (); }
-
-void hw_i80_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length) { emu_hw_i80_write_const_short (cmd, constValue, length); }
-void hw_i80_write_const (uint8_t cmd, uint16_t constValue, uint16_t length) { emu_hw_i80_write_const (cmd, constValue, length); }
-void hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length) { emu_hw_i80_write_const_long (cmd, constValue, length); }
-
-void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{ emu_hw_i80_write_bitmap (cmd, length, pData, offValue, onValue); }
-void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{ emu_hw_i80_write_bitmap_P (cmd, length, pData, offValue, onValue); }
-
-#endif /* MCODE_EMULATE_I80 */

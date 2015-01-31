@@ -22,21 +22,55 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_EMU_HW_UART_H
-#define MCODE_EMU_HW_UART_H
+#include "mtick.h"
 
-/*typedef void (*hw_uart_char_event) (unsigned int aChar);*/
-#include "hw-uart.h"
+#include <gtk/gtk.h>
 
-void emu_hw_uart_init (void);
-void emu_hw_uart_deinit (void);
+static uint64_t TheMSecCounter = 0;
+static guint TheTimeoutSourceId = 0;
 
-void emu_hw_uart_set_callback (hw_uart_char_event aCallback);
+static gboolean mtick_timeout_handler(gpointer data);
 
-void emu_hw_uart_start_read (void);
+void mtick_init(void)
+{
+  if (!TheTimeoutSourceId) {
+    TheTimeoutSourceId = g_timeout_add(1, mtick_timeout_handler, NULL);
+  }
+}
 
-void emu_hw_uart_write_uint (unsigned int value);
-void emu_hw_uart_write_string (const char *aString);
-void emu_hw_uart_write_string_P (const char *aString);
+void mtick_deinit(void)
+{
+}
 
-#endif /* MCODE_EMU_HW_UART_H */
+void mtick_add(mcode_tick tick)
+{
+}
+
+void mtick_stop(void)
+{
+  if (TheTimeoutSourceId) {
+    g_source_remove(TheTimeoutSourceId);
+    TheTimeoutSourceId = 0;
+  }
+}
+
+void mtick_start(void)
+{
+}
+
+void mtick_sleep(uint32_t mticks)
+{
+  const uint64_t target = TheMSecCounter + mticks + 1;
+  while (TheMSecCounter < target);
+}
+
+uint64_t mtick_count(void)
+{
+  return TheMSecCounter;
+}
+
+gboolean mtick_timeout_handler(gpointer data)
+{
+  ++TheMSecCounter;
+  return TRUE;
+}

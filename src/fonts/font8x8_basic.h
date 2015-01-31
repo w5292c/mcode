@@ -20,18 +20,18 @@
 
 #ifdef __AVR__
 #include <avr/pgmspace.h>
-#else /* __AVR__ */
-#include "emu-common.h"
 #endif /* __AVR__ */
+
+#include <stdint.h>
 
 // Constant: font8x8_basic
 // Contains an 8x8 font map for unicode points U+0020 - U+007F (basic latin)
+#ifdef __AVR__
 static const uint8_t font8x8_basic[96][8] PROGMEM = {
-#ifdef TEST_SPACE
-    { 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02},   // U+0020 (space)
-#else /* TEST_SPACE */
+#else /* __AVR__ */
+static const uint8_t font8x8_basic[96][8] = {
+#endif /* __AVR__ */
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+0020 (space)
-#endif /* TEST_SPACE */
     { 0x18, 0x3C, 0x3C, 0x18, 0x18, 0x00, 0x18, 0x00},   // U+0021 (!)
     { 0x36, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+0022 (")
     { 0x36, 0x36, 0x7F, 0x36, 0x7F, 0x36, 0x36, 0x00},   // U+0023 (#)

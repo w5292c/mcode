@@ -61,6 +61,7 @@ int main(void)
   cmd_engine_deinit();
   lcd_deinit();
   mcode_hw_leds_deinit();
+  mtick_deinit();
   mcode_scheduler_deinit();
   return 0;
 }

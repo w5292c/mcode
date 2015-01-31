@@ -28,16 +28,10 @@
 #include "hw-i80.h"
 #include "hw-lcd.h"
 #include "hw-uart.h"
+#include "emu-common.h"
 #include "customwidget.h"
 
-#ifdef __AVR__
-#include <avr/pgmspace.h>
-#else /* __AVR__ */
-#include "emu-common.h"
-
-#include <stdio.h>
 #include <stdlib.h>
-#endif /* __AVR__ */
 
 #define LCD_S95513_WR_RAM_START UINT8_C(0x2C)
 #define LCD_S95513_WR_RAM_CONT UINT8_C(0x3C)
@@ -54,7 +48,6 @@ static uint16_t TheNextColumn = 0;
 static uint8_t TheBufferIndex = 0;
 static uint16_t TheColumnStart = 0;
 static uint8_t TheCurrentCommand = 0;
-/*static hw_i80_read_callback TheReadCallback = NULL;*/
 
 static uint32_t emu_hw_lcd_s95513_to_color (quint32 data);
 static void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color);
@@ -93,20 +86,8 @@ void hw_i80_deinit(void)
   TheWidget = NULL;
 }
 
-/*void emu_hw_lcd_s95513_set_read_callback (hw_i80_read_callback aCallback)
-{
-  TheReadCallback = aCallback;
-}*/
-
 void hw_i80_read(uint8_t cmd, uint8_t length)
 {
-#if 0
-  if (TheReadCallback)
-  {
-    /**@todo Implement reading, return empty data for now */
-    (*TheReadCallback) (0, NULL);
-  }
-#endif
 }
 
 void hw_i80_write(uint8_t cmd, uint8_t length, const uint8_t *data)
@@ -128,34 +109,6 @@ void emu_hw_lcd_s95513_write_words (uint8_t cmd, uint8_t length, const uint16_t 
     emu_hw_lcd_s95513_handle_data_word (*data++);
   }
 }
-
-#if 0
-void emu_hw_lcd_s95513_write_words_P (uint8_t cmd, uint8_t length, const uint16_t *data)
-{
-  emu_hw_lcd_s95513_write_words (cmd, length, data);
-}
-
-void emu_hw_lcd_s95513_write_const_short (uint8_t cmd, uint16_t constValue, uint8_t length)
-{
-  emu_hw_lcd_s95513_write_const_long (cmd, constValue, length);
-}
-
-void emu_hw_lcd_s95513_write_const (uint8_t cmd, uint16_t constValue, uint16_t length)
-{
-  emu_hw_lcd_s95513_write_const_long (cmd, constValue, length);
-}
-
-void emu_hw_lcd_s95513_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length)
-{
-  uint32_t i;
-
-  emu_hw_lcd_s95513_handle_cmd (cmd);
-  for (i = 0; i < length; ++i)
-  {
-    emu_hw_lcd_s95513_handle_data_word (constValue);
-  }
-}
-#endif
 
 void hw_i80_reset (void)
 {
@@ -365,11 +318,6 @@ void lcd_set_bl(bool on)
 }
 
 uint32_t lcd_read_id(void)
-{
-  return 0;
-}
-
-uint64_t mtick_count(void)
 {
   return 0;
 }

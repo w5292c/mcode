@@ -23,13 +23,12 @@
  */
 
 #include "main.h"
+#include "mtick.h"
 #include "console.h"
 #include "hw-uart.h"
 #include "hw-leds.h"
 #include "scheduler.h"
-#include "emu-common.h"
 #include "cmd-engine.h"
-#include "emu-common.h"
 #include "line-editor-uart.h"
 
 #include <stdio.h>
@@ -45,69 +44,66 @@ int main (int argc, char **argv)
   QApplication app(argc, argv);
 
   /* override the signal handler */
-  if (SIG_ERR == signal(SIGINT, main_sigint_handler))
-  {
-    hw_uart_write_string_P (PSTR("Error: cannot override signal handler\r\n"));
+  if (SIG_ERR == signal(SIGINT, main_sigint_handler)) {
+    hw_uart_write_string("Error: cannot override signal handler\r\n");
     return -1;
   }
-  atexit (main_at_exit);
+  atexit(main_at_exit);
 
   /* first, init the scheduler */
-  mcode_scheduler_init ();
+  mcode_scheduler_init();
+  mtick_init();
   /* now, UART can be initialized */
-  hw_uart_init ();
+  hw_uart_init();
   /* init LEDs */
-  mcode_hw_leds_init ();
+  mcode_hw_leds_init();
   /* init the line editor and the command engine */
   line_editor_uart_init();
   console_init();
   cmd_engine_init();
 
-  /* now, enable the interrupts */
-  sei ();
-
   /* Write some 'hello' text */
-  hw_uart_write_string_P (PSTR("main: ready\r\nTest value: ["));
-  hw_uart_write_uint (0x12afu);
-  hw_uart_write_string_P (PSTR("]\r\n"));
+  hw_uart_write_string("main: ready\r\nTest value: [");
+  hw_uart_write_uint(0x12afu);
+  hw_uart_write_string("]\r\n");
   /* start the command engine, and switch to the scheduler, it never exits */
-  cmd_engine_start ();
-  mcode_scheduler_start ();
+  cmd_engine_start();
+  mcode_scheduler_start();
 
-  cmd_engine_deinit ();
-  line_editor_uart_deinit ();
-  mcode_scheduler_deinit ();
-  hw_uart_deinit ();
-  pthread_exit (NULL);
+  cmd_engine_deinit();
+  line_editor_uart_deinit();
+  mtick_deinit();
+  mcode_scheduler_deinit();
+  hw_uart_deinit();
+  pthread_exit(NULL);
   return 0;
 }
 
-static void main_at_exit (void)
+static void main_at_exit(void)
 {
-  cmd_engine_deinit ();
+  cmd_engine_deinit();
 }
 
-void main_sigint_handler (int signo)
+void main_sigint_handler(int signo)
 {
-  if (SIGINT == signo)
-  {
-    hw_uart_write_string_P (PSTR("MAIN: got exit signal\r\n"));
-    mcode_scheduler_stop ();
+  if (SIGINT == signo) {
+    hw_uart_write_string("MAIN: got exit signal\r\n");
+    mcode_scheduler_stop();
   }
 }
 
-void main_request_exit (void)
+void main_request_exit(void)
 {
-  hw_uart_write_string_P (PSTR("MAIN: exit request\r\n"));
-  mcode_scheduler_stop ();
+  hw_uart_write_string("MAIN: exit request\r\n");
+  mcode_scheduler_stop();
 }
 
-void mcode_main_start (void)
+void mcode_main_start(void)
 {
-  QApplication::exec ();
+  QApplication::exec();
 }
 
-void mcode_main_quit (void)
+void mcode_main_quit(void)
 {
-  QApplication::exit (0);
+  QApplication::exit(0);
 }

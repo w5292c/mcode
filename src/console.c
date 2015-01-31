@@ -24,6 +24,7 @@
 
 #include "console.h"
 
+#include "utils.h"
 #include "fonts.h"
 #include "hw-lcd.h"
 #include "hw-uart.h"
@@ -130,22 +131,24 @@ void console_write_byte (uint8_t byte)
   lcd_write_bitmap(UINT8_C (0x2C), 8, pChar, TheOffColor, TheOnColor);
 }
 
-void console_write_string (const char *pString)
+void console_write_string(const char *pString)
 {
   uint8_t ch;
-  while ((ch = *pString++))
-  {
+  while ((ch = *pString++)) {
     console_write_byte (ch);
   }
 }
 
-void console_write_string_P (const char *pString)
+void console_write_string_P(const char *pString)
 {
+#ifdef __AVR__
   uint8_t ch;
-  while ((ch = pgm_read_byte((const unsigned char *)(pString++))))
-  {
+  while ((ch = pgm_read_byte((const unsigned char *)(pString++)))) {
     console_write_byte (ch);
   }
+#else /* __AVR__ */
+  console_write_string(pString);
+#endif /* __AVR__ */
 }
 
 void console_set_color (uint16_t color)

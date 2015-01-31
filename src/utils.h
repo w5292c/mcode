@@ -40,6 +40,8 @@ bool char_is_whitespace(char ch);
 bool char_is_numeric(char ch);
 bool char_is_hex(char ch);
 
+char nibble_to_char(uint8_t nibble);
+
 const char *string_skip_whitespace(const char *str);
 const char *string_next_number(const char *str, int *value);
 const char *string_next_token(const char *str, int *length);

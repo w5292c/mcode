@@ -23,47 +23,36 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/utils.c
   ${MCODE_TOP}/src/console.c
-  ${MCODE_TOP}/src/hw-uart.c
   ${MCODE_TOP}/src/scheduler.c
+  ${MCODE_TOP}/src/emu/mtick.c
   ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/emu/hw-leds.c
+  ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/cmd-test-image.c
   ${MCODE_TOP}/src/line-editor-uart.c
   ${MCODE_TOP}/src/emu/hw-lcd-s95513.cpp
 )
 
 set ( SRC_LIST_QT
-  ${MCODE_TOP}/src/customwidget.cpp
+  ${MCODE_TOP}/src/emu/customwidget.cpp
 )
 
 set ( HEADERS_LIST_QT
-  ${MCODE_TOP}/src/customwidget.h
+  ${MCODE_TOP}/src/emu/customwidget.h
 )
 
 QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 
 option ( MCODE_EMULATE_LED "Enable LEDs emulation" ON )
-option ( MCODE_EMULATE_UART "Enable UART emulation" ON )
 option ( MCODE_EMULATE_I80 "Enable I80 interface emulation" ON )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
-option ( MCODE_EMULATE_I80_LCD1 "Add LCD1 device to I80 bus" ON )
 option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 option ( USE_EMULATION_LAYER "Build Library with emulator layer" ON )
 option ( MCODE_EMULATE_LCD_S95513 "Emulate LCD with controller s95513" ON )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
-
-if (MCODE_EMULATE_UART)
-  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-uart.c )
-endif()
-#if (MCODE_EMULATE_I80)
-#  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-i80.c )
-#endif ()
-if (MCODE_EMULATE_I80_LCD1)
-  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/emu-hw-i80-lcd1.c )
-endif (MCODE_EMULATE_I80_LCD1)
 
 #if (MCODE_EMULATE_LCD_S95513)
 #  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/hw-lcd-s95513.cpp )
@@ -76,14 +65,6 @@ target_link_libraries ( console-test  ${QT_LIBRARIES} )
 
 include_directories ( "${PROJECT_BINARY_DIR}/include/" )
 
-if (MCODE_EMULATE_UART)
-  message ( STATUS "CONFIG: Enabled UART emulation" )
-endif ()
-
 if (MCODE_EMULATE_I80)
   message ( STATUS "CONFIG: Enabled I80 emulation" )
-endif ()
-
-if (MCODE_EMULATE_I80_LCD1)
-  message ( STATUS "CONFIG: Emulated LCD1 device is connected to I80 bus" )
 endif ()

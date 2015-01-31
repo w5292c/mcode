@@ -80,6 +80,16 @@ bool char_is_hex(char ch)
   }
 }
 
+char nibble_to_char(uint8_t nibble)
+{
+  nibble = nibble & 0x0FU;
+  if (nibble < 10) {
+    return '0' + nibble;
+  } else {
+    return 'A' + nibble - 10;
+  }
+}
+
 const char *string_skip_whitespace(const char *str)
 {
   if (str) {
