@@ -26,6 +26,7 @@
 #define MCODE_CONSOLE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,6 +40,10 @@ void console_clear_screen (void);
 void console_write_byte (uint8_t byte);
 void console_write_string (const char *pString);
 void console_write_string_P (const char *pString);
+
+void console_write_uint16(uint16_t value, bool skipZeros);
+void console_write_uint32(uint32_t value, bool skipZeros);
+void console_write_uint64(uint64_t value, bool skipZeros);
 
 void console_set_color (uint16_t color);
 void console_set_bg_color (uint16_t color);

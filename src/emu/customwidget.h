@@ -34,13 +34,16 @@ public:
   AcCustomWidget(QWidget *pParent = 0);
   ~AcCustomWidget();
 
-  void setPixel (uint x, uint y, QRgb color);
-  QRgb getPixel (uint x, uint y) const;
+  void setPixel(uint x, uint y, QRgb color);
+  QRgb getPixel(uint x, uint y) const;
+
+  void setScrollPosition(uint scrollPosition);
 
 protected:
   void paintEvent(QPaintEvent *pEvent);
 
 private:
+  uint m_scrollPosition;
   quint32 *m_pScreenData;
 };
 

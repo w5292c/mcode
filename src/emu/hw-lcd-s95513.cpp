@@ -49,6 +49,8 @@ static uint8_t TheBufferIndex = 0;
 static uint16_t TheColumnStart = 0;
 static uint8_t TheCurrentCommand = 0;
 
+static AcCustomWidget *TheWidget = NULL;
+
 static uint32_t emu_hw_lcd_s95513_to_color (quint32 data);
 static void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color);
 
@@ -65,12 +67,13 @@ static void emu_hw_lcd_s95513_handle_data_word (uint16_t word);
 
 void lcd_set_scroll_start(uint16_t start)
 {
-  hw_uart_write_string_P (PSTR ("EMU: lcd_set_scroll_start("));
-  hw_uart_write_uint (start);
-  hw_uart_write_string_P (PSTR (")\r\n"));
+  if (TheWidget) {
+    TheWidget->setScrollPosition(start);
+  } else {
+    hw_uart_write_string_P(PSTR("lcd_set_scroll_start: no widget\r\n"));
+  }
 }
 
-static AcCustomWidget *TheWidget = NULL;
 void hw_i80_init(void)
 {
   if (!TheWidget)

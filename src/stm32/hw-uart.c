@@ -116,23 +116,6 @@ void hw_uart_start_read (void)
 {
 }
 
-static int8_t vtoch (uint8_t value)
-{
-  value = value & 0x0FU;
-  if (value < 10 && value >= 0)
-  {
-    return '0' + value;
-  }
-  else if (value >= 10 && value < 16)
-  {
-    return 'A' + value - 10;
-  }
-  else
-  {
-    return '@';
-  }
-}
-
 void hw_uart_write_uint(uint16_t value)
 {
   hw_uart_write_uint16(value, false);
@@ -166,10 +149,10 @@ void hw_uart_write_uint16(uint16_t value, bool skipZeros)
 {
   int i;
   char buffer[5];
-  buffer[0] = vtoch (0x0FU & (value >> 12));
-  buffer[1] = vtoch (0x0FU & (value >>  8));
-  buffer[2] = vtoch (0x0FU & (value >>  4));
-  buffer[3] = vtoch (0x0FU & value);
+  buffer[0] = nibble_to_char(0x0FU & (value >> 12));
+  buffer[1] = nibble_to_char(0x0FU & (value >>  8));
+  buffer[2] = nibble_to_char(0x0FU & (value >>  4));
+  buffer[3] = nibble_to_char(0x0FU & value);
   buffer[4] = 0;
   if (skipZeros) {
     for (i = 0; i < 3; ++i) {

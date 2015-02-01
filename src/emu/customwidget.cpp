@@ -28,7 +28,8 @@
 #include <QPainter>
 
 AcCustomWidget::AcCustomWidget(QWidget *pParent) :
-  QWidget(pParent)
+  QWidget(pParent),
+  m_scrollPosition(0)
 {
   qDebug() << "AcCustomWidget::AcCustomWidget: " << (const void *)this;
   m_pScreenData = (quint32 *)malloc (4*320*480);
@@ -68,9 +69,19 @@ void AcCustomWidget::setPixel (uint x, uint y, QRgb color)
   }
 }
 
-QRgb AcCustomWidget::getPixel (uint x, uint y) const
+QRgb AcCustomWidget::getPixel(uint x, uint y) const
 {
+  y += m_scrollPosition;
+  if (y >= 480) {
+    y -= 480;
+  }
   return m_pScreenData[320*y+x];
+}
+
+void AcCustomWidget::setScrollPosition(uint scrollPosition)
+{
+  m_scrollPosition = (scrollPosition % 480);
+  update();
 }
 
 void AcCustomWidget::paintEvent(QPaintEvent *pEvent)
@@ -89,7 +100,7 @@ void AcCustomWidget::paintEvent(QPaintEvent *pEvent)
 
   for (int x = 0; x < 320; x++) {
     for (int y = 0; y < 480; y++) {
-      qp.setPen(getPixel (x, y));
+      qp.setPen(getPixel(x, y));
       qp.drawPoint(x, y);
     }
   }
