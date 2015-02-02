@@ -131,7 +131,9 @@ void cmd_engine_init (void)
 
 void cmd_engine_deinit (void)
 {
-/*  hw_i80_deinit ();*/
+#ifdef MCODE_HW_I80_ENABLED
+  hw_i80_deinit ();
+#endif /* MCODE_HW_I80_ENABLED */
   line_editor_uart_deinit ();
 }
 

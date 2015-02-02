@@ -31,17 +31,40 @@
 #include "cmd-engine.h"
 #include "line-editor-uart.h"
 
+#include <QDebug>
 #include <stdio.h>
 #include <signal.h>
+#include <QStringList>
 #include <QApplication>
+
+static uint16_t TheWidth = 240;
+static uint16_t TheHeight = 320;
 
 static void main_at_exit (void);
 static void main_sigint_handler (int signo);
 static void main_line_callback (const char *aString);
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
   QApplication app(argc, argv);
+  const QStringList &arguments = QCoreApplication::arguments();
+  // Parsing arguments
+  const uint sizeIndex = arguments.indexOf("-s");
+  if (sizeIndex >= 0 && argc >= sizeIndex + 2) {
+    const QString &sizeString = arguments[sizeIndex + 1];
+    const QStringList &sizes = sizeString.split("x");
+    if (2 == sizes.size()) {
+      bool ok1 = false;
+      bool ok2 = false;
+      const uint proposedWidth = sizes[0].toUInt(&ok1);
+      const uint proposedHeight = sizes[1].toUInt(&ok2);
+      if (ok1 && ok2 && proposedWidth && proposedHeight) {
+        TheWidth = proposedWidth;
+        TheHeight = proposedHeight;
+      }
+    }
+  }
+  qDebug() << "MAIN: LCD resolution: (" << TheWidth << "X" << TheHeight << ")";
 
   /* override the signal handler */
   if (SIG_ERR == signal(SIGINT, main_sigint_handler)) {
@@ -59,8 +82,8 @@ int main (int argc, char **argv)
   mcode_hw_leds_init();
   /* init the line editor and the command engine */
   line_editor_uart_init();
-  console_init();
   cmd_engine_init();
+  console_init();
 
   /* Write some 'hello' text */
   hw_uart_write_string("main: ready\r\nTest value: [");
@@ -106,4 +129,14 @@ void mcode_main_start(void)
 void mcode_main_quit(void)
 {
   QApplication::exit(0);
+}
+
+uint16_t main_base_width(void)
+{
+  return TheWidth;
+}
+
+uint16_t main_base_height(void)
+{
+  return TheHeight;
 }

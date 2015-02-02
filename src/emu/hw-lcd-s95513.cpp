@@ -24,6 +24,7 @@
 
 #include "hw-lcd.h"
 
+#include "main.h"
 #include "mtick.h"
 #include "hw-i80.h"
 #include "hw-lcd.h"
@@ -78,7 +79,7 @@ void hw_i80_init(void)
 {
   if (!TheWidget)
   {
-    TheWidget = new AcCustomWidget();
+    TheWidget = new AcCustomWidget(main_base_width(), main_base_height());
     TheWidget->show();
   }
 }
@@ -97,8 +98,7 @@ void hw_i80_write(uint8_t cmd, uint8_t length, const uint8_t *data)
 {
   uint8_t i;
   emu_hw_lcd_s95513_handle_cmd (cmd);
-  for (i = 0; i < length; ++i)
-  {
+  for (i = 0; i < length; ++i) {
     emu_hw_lcd_s95513_handle_data_byte (*data++);
   }
 }
@@ -106,28 +106,27 @@ void hw_i80_write(uint8_t cmd, uint8_t length, const uint8_t *data)
 void emu_hw_lcd_s95513_write_words (uint8_t cmd, uint8_t length, const uint16_t *data)
 {
   uint8_t i;
-  emu_hw_lcd_s95513_handle_cmd (cmd);
-  for (i = 0; i < length; ++i)
-  {
-    emu_hw_lcd_s95513_handle_data_word (*data++);
+  emu_hw_lcd_s95513_handle_cmd(cmd);
+  for (i = 0; i < length; ++i) {
+    emu_hw_lcd_s95513_handle_data_word(*data++);
   }
 }
 
-void hw_i80_reset (void)
+void hw_i80_reset(void)
 {
-  int x, y;
-  for (x = 0; x < 320; ++x)
-  {
-    for (y = 0; y < 480; ++y)
-    {
-      TheWidget->setPixel (x, y, 0xff008080);
+  uint x, y;
+  const uint nx = lcd_get_width();
+  const uint ny = lcd_get_height();
+  for (x = 0; x < nx; ++x) {
+    for (y = 0; y < ny; ++y) {
+      TheWidget->setPixel(x, y, 0xff008080);
     }
   }
 }
 
-void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color)
+void emu_hw_lcd_s95513_set_pixel(int x, int y, quint32 color)
 {
-  TheWidget->setPixel (x, y, color);
+  TheWidget->setPixel(x, y, color);
 }
 
 void hw_i80_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
@@ -290,12 +289,12 @@ void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
 
 uint16_t lcd_get_width(void)
 {
-  return 320;
+  return TheWidget->width();
 }
 
 uint16_t lcd_get_height(void)
 {
-  return 480;
+  return TheWidget->height();
 }
 
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)

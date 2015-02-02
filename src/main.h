@@ -25,13 +25,18 @@
 #ifndef MCODE_MAIN_H
 #define MCODE_MAIN_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void mcode_main_start (void);
-void mcode_main_quit (void);
-void main_request_exit (void);
+void mcode_main_start(void);
+void mcode_main_quit(void);
+void main_request_exit(void);
+
+uint16_t main_base_width(void);
+uint16_t main_base_height(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
