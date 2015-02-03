@@ -28,6 +28,7 @@
 #include "mtick.h"
 #include "hw-i80.h"
 #include "hw-lcd.h"
+#include "console.h"
 #include "hw-uart.h"
 #include "emu-common.h"
 #include "customwidget.h"
@@ -77,17 +78,10 @@ void lcd_set_scroll_start(uint16_t start)
 
 void hw_i80_init(void)
 {
-  if (!TheWidget)
-  {
-    TheWidget = new AcCustomWidget(main_base_width(), main_base_height());
-    TheWidget->show();
-  }
 }
 
 void hw_i80_deinit(void)
 {
-  delete TheWidget;
-  TheWidget = NULL;
 }
 
 void hw_i80_read(uint8_t cmd, uint8_t length)
@@ -297,6 +291,13 @@ uint16_t lcd_get_height(void)
   return TheWidget->height();
 }
 
+void lcd_set_size(uint16_t width, uint16_t height)
+{
+  TheWidget->setSize(width, height);
+  console_init();
+  console_clear_screen();
+}
+
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
 {
   hw_i80_write_const_long (cmd, word, count);
@@ -358,4 +359,18 @@ void hw_i80_write_const_long(uint8_t cmd, uint16_t constValue, uint32_t length)
   for (i = 0; i < length; ++i) {
     emu_hw_lcd_s95513_handle_data_word(constValue);
   }
+}
+
+void lcd_init(uint16_t width, uint16_t height)
+{
+  if (!TheWidget) {
+    TheWidget = new AcCustomWidget(width, height);
+    TheWidget->show();
+  }
+}
+
+void lcd_deinit(void)
+{
+  delete TheWidget;
+  TheWidget = NULL;
 }

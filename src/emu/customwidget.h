@@ -38,9 +38,8 @@ public:
   QRgb getPixel(uint x, uint y) const;
 
   uint width() const;
-  void setWidth(uint width);
   uint height() const;
-  void setHeigth(uint height);
+  void setSize(uint width, uint height);
   void setScrollPosition(uint scrollPosition);
 
 protected:

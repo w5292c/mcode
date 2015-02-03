@@ -53,7 +53,7 @@ static uint8_t lcd_read_register(uint8_t addr, uint8_t param);
 
 #define INLINE_BYTES(str) ((const uint8 *)str)
 
-void lcd_init(void)
+void lcd_init(uint16_t width, uint16_t height)
 {
   /* GPIO configuration */
   /* Enable clocks */
@@ -115,6 +115,9 @@ void lcd_init(void)
   while (0x00009341 != lcd_read_id());
 
   lcd_spi_init();
+
+  /* Handle the current LCD size */
+  lcd_set_size(width, height);
 }
 
 void lcd_deinit(void)
@@ -160,6 +163,17 @@ uint16_t lcd_get_width(void)
 uint16_t lcd_get_height(void)
 {
   return 320;
+}
+
+void lcd_set_size(uint16_t width, uint16_t height)
+{
+  if (width != lcd_get_width() || height != lcd_get_height()) {
+    hw_uart_write_string("W: lcd_set_size(0x");
+    hw_uart_write_uint16(width, true);
+    hw_uart_write_string(", 0x");
+    hw_uart_write_uint16(height, true);
+    hw_uart_write_string(")\r\n");
+  }
 }
 
 uint32_t lcd_read_id(void)

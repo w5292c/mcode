@@ -26,9 +26,11 @@
 
 #include "hw-i80.h"
 #include "hw-uart.h"
+#include <avr/pgmspace.h>
 
-void lcd_init(void)
+void lcd_init(uint16_t width, uint16_t height)
 {
+  lcd_set_size(width, height);
 }
 
 void lcd_deinit(void)
@@ -61,6 +63,15 @@ uint16_t lcd_get_width(void)
 uint16_t lcd_get_height(void)
 {
   return 320;
+}
+
+void lcd_set_size(uint16_t width, uint16_t height)
+{
+  hw_uart_write_string_P(PSTR("W: lcd_set_size(0x"));
+  hw_uart_write_uint16(width, true);
+  hw_uart_write_string_P(PSTR(", 0x"));
+  hw_uart_write_uint16(height, true);
+  hw_uart_write_string_P(PSTR(")\r\n"));
 }
 
 void lcd_set_scroll_start(uint16_t start)

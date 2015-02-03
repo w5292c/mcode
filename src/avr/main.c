@@ -23,6 +23,7 @@
  */
 
 #include "mtick.h"
+#include "hw-lcd.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "scheduler.h"
@@ -38,6 +39,7 @@ int main (void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mtick_init();
+  lcd_init(320, 480);
   /* now, UART can be initialized */
   hw_uart_init();
   /* init LEDs */

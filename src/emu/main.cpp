@@ -24,6 +24,7 @@
 
 #include "main.h"
 #include "mtick.h"
+#include "hw-lcd.h"
 #include "console.h"
 #include "hw-uart.h"
 #include "hw-leds.h"
@@ -78,6 +79,7 @@ int main(int argc, char **argv)
   mtick_init();
   /* now, UART can be initialized */
   hw_uart_init();
+  lcd_init(TheWidth, TheHeight);
   /* init LEDs */
   mcode_hw_leds_init();
   /* init the line editor and the command engine */
@@ -95,6 +97,7 @@ int main(int argc, char **argv)
 
   cmd_engine_deinit();
   line_editor_uart_deinit();
+  lcd_deinit();
   mtick_deinit();
   mcode_scheduler_deinit();
   hw_uart_deinit();

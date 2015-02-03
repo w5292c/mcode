@@ -45,7 +45,7 @@ int main(void)
   mtick_init();
   mcode_hw_leds_init();
   hw_uart_init();
-  lcd_init();
+  lcd_init(240, 320);
   mtick_add(main_mtick);
   hw_uart_write_string("ARM variant started.\r\n");
 #ifdef MCODE_DEBUG_BLINKING

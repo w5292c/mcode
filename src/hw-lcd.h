@@ -37,11 +37,17 @@ extern "C" {
 
 typedef void (*lcd_read_cb)(int length, const uint8_t *data);
 
-void lcd_init(void);
+void lcd_init(uint16_t width, uint16_t height);
 void lcd_deinit(void);
 
 uint16_t lcd_get_width(void);
 uint16_t lcd_get_height(void);
+/*!
+ * @internal
+ * @brief Sets the LCD size, if possible, e.g. in the emulator
+ * @note Do not use this method
+ */
+void lcd_set_size(uint16_t width, uint16_t height);
 
 void lcd_turn(bool on);
 void lcd_cls(uint16_t color);

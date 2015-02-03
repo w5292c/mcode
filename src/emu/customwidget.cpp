@@ -35,8 +35,7 @@ AcCustomWidget::AcCustomWidget(uint width, uint height, QWidget *pParent) :
 {
   qDebug() << "AcCustomWidget::AcCustomWidget: " << (const void *)this;
   m_pScreenData = (quint32 *)malloc (4*width*height);
-  setMaximumSize(width, height);
-  setMinimumSize(width, height);
+  resize(width, height);
 
   QColor colors[] = {
     QColor(255, 0, 0),
@@ -85,21 +84,17 @@ uint AcCustomWidget::width() const
   return m_width;
 }
 
-void AcCustomWidget::setWidth(uint width)
-{
-  m_width = width;
-  update();
-}
-
 uint AcCustomWidget::height() const
 {
   return m_height;
 }
 
-void AcCustomWidget::setHeigth(uint height)
+void AcCustomWidget::setSize(uint width, uint height)
 {
-  m_height - height;
-  update();
+  m_width = width;
+  m_height = height;
+  resize(width, height);
+  updateGeometry();
 }
 
 void AcCustomWidget::setScrollPosition(uint scrollPosition)
