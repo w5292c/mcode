@@ -729,5 +729,5 @@ void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColu
   const uint16_t sLine = (uint16_t)(line << 3);
   const uint16_t eLine = sLine + 7;
   lcd_set_window(sCol, eCol, sLine, eLine);
-  lcd_write_const_words(UINT8_C(0x2c), TheOffColor, ((TheColumnCount - TheCurrentColumn) << 6));
+  lcd_write_const_words(UINT8_C(0x2c), TheOffColor, ((endColumn - startColumn) << 6));
 }
