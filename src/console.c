@@ -41,6 +41,7 @@
 
 static int8_t TheSavedLinePos = 0;
 static int8_t TheSavedColumnPos = 0;
+static int8_t TheSavedScrollPos = 0;
 
 static int8_t TheCurrentLine = 0;
 static int8_t TheCurrentColumn = 0;
@@ -668,50 +669,63 @@ void console_escape_cursor_forward (const char *pArgs)
     }
   }
 }
-void console_escape_cursor_backward (const char *pArgs)
+void console_escape_cursor_backward(const char *pArgs)
 {
   uint8_t columns = 0;
   pArgs = console_next_num_token (pArgs, &columns);
-  if (pArgs && !console_next_num_token (pArgs, NULL))
-  {
+  if (pArgs && !console_next_num_token (pArgs, NULL)) {
     TheCurrentColumn -= columns;
-    if (TheCurrentColumn < 0 || TheCurrentColumn >= TheColumnCount)
-    {
+    if (TheCurrentColumn < 0 || TheCurrentColumn >= TheColumnCount) {
       TheCurrentColumn = 0;
     }
   }
 }
 
-void console_escape_save_cursor_pos (const char *pArgs)
+void console_escape_save_cursor_pos(const char *pArgs)
 {
-  if (!(*pArgs))
-  {
+  if (!(*pArgs)) {
     TheSavedLinePos = TheCurrentLine;
     TheSavedColumnPos = TheCurrentColumn;
+    TheSavedScrollPos = TheCurrentScrollPos;
   }
 }
 
-void console_escape_restore_cursor_pos (const char *pArgs)
+void console_escape_restore_cursor_pos(const char *pArgs)
 {
-  if (!(*pArgs))
-  {
+  if (!(*pArgs)) {
     TheCurrentLine = TheSavedLinePos;
     TheCurrentColumn = TheSavedColumnPos;
+    const int8_t diffScrollPos = TheCurrentScrollPos - TheSavedScrollPos;
+    TheCurrentLine -= diffScrollPos;
+    if (TheCurrentLine < 0) {
+      /*! @todo Check if this is possible to enter here, if yes, impelement proper handling */
+      hw_uart_write_string_P(PSTR("E: console_escape_restore_cursor_pos: wrong line: 0x"));
+      hw_uart_write_uint32(TheCurrentLine, false);
+      hw_uart_write_string_P(PSTR("\r\n"));
+      TheCurrentLine = 0;
+    }
+    if (TheCurrentLine >= TheLineCount) {
+      /*! @todo Check if this is possible to enter here, if yes, impelement proper handling */
+      hw_uart_write_string_P(PSTR("E: console_escape_restore_cursor_pos: wrong line: 0x"));
+      hw_uart_write_uint32(TheCurrentLine, false);
+      hw_uart_write_string_P(PSTR("\r\n"));
+      TheCurrentLine = TheLineCount - 1;
+    }
 
     TheSavedLinePos = 0;
     TheSavedColumnPos = 0;
+    TheSavedScrollPos = 0;
   }
 }
 
-void console_escape_erase_line (const char *pArgs)
+void console_escape_erase_line(const char *pArgs)
 {
-  if (!*pArgs)
-  {
+  if (!*pArgs) {
     console_escape_clear_line (TheCurrentLine, TheCurrentColumn, -1);
   }
 }
 
-void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColumn)
+void console_escape_clear_line(uint8_t line, int8_t startColumn, int8_t endColumn)
 {
   if (startColumn < 0) {
     startColumn = 0;

@@ -84,7 +84,7 @@ static const char TheTestEscPositionManagement[] PROGMEM =
   "\033[u\033[s\033[4B2. Line 4 of the menu;"
   "\033[u\033[s\033[5B2. Line 5 of the menu;"
   "\033[u\033[7B\033[3DErase line test: \033[s1234567890\033[s123456789012345678901"
-  "\033[u\033[K";
+  "\033[u\033[KZ";
 
 static const char TheLongTestText[] PROGMEM =
   "That's it! Now your data is in the Program Space. You can compile, link, and che"
