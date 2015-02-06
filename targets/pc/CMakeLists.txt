@@ -43,20 +43,12 @@ set ( HEADERS_LIST_QT
 
 QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 
-option ( MCODE_EMULATE_LED "Enable LEDs emulation" ON )
-option ( MCODE_EMULATE_I80 "Enable I80 interface emulation" ON )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
 option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
-option ( USE_EMULATION_LAYER "Build Library with emulator layer" ON )
-option ( MCODE_EMULATE_LCD_S95513 "Emulate LCD with controller s95513" ON )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
-
-#if (MCODE_EMULATE_LCD_S95513)
-#  set ( SRC_LIST ${SRC_LIST} ${MCODE_TOP}/src/hw-lcd-s95513.cpp )
-#endif (MCODE_EMULATE_LCD_S95513)
 
 add_executable( console-test ${SRC_LIST} ${HEADERS_MOC} ${SRC_LIST_QT} )
 target_link_libraries ( console-test ${GTK2_0_LIBRARIES} )
@@ -64,7 +56,3 @@ target_link_libraries ( console-test ${CMAKE_THREAD_LIBS_INIT} )
 target_link_libraries ( console-test  ${QT_LIBRARIES} )
 
 include_directories ( "${PROJECT_BINARY_DIR}/include/" )
-
-if (MCODE_EMULATE_I80)
-  message ( STATUS "CONFIG: Enabled I80 emulation" )
-endif ()

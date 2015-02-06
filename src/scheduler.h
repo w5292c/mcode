@@ -25,7 +25,7 @@
 #ifndef MCODE_SCHEDULER_H
 #define MCODE_SCHEDULER_H
 
-#include "global.h"
+#include "mglobal.h"
 
 #ifdef __cplusplus
 extern "C" {

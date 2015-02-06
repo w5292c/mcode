@@ -31,12 +31,6 @@
 
 #include <string.h>
 
-#ifdef __AVR__
-#include <avr/pgmspace.h>
-#else /* __AVR__ */
-#include "emu-common.h"
-#endif /* __AVR__ */
-
 #define CONSOLE_HTAB_SIZE (4)
 
 static int8_t TheSavedLinePos = 0;

@@ -22,13 +22,32 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_EMU_COMMON
-#define MCODE_EMU_COMMON
+#ifndef MCODE_GLOBAL_H
+#define MCODE_GLOBAL_H
 
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#else /* __AVR__ */
 #define PROGMEM
 #define PSTR(value) (value)
 #define strcmp_P strcmp
 #define strncmp_P strncmp
 #define strlen_P strlen
+#endif /* __AVR__ */
 
-#endif /* MCODE_EMU_COMMON */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define WEAK_API(return_type) return_type __attribute__((weak))
+
+/**
+ * Generic function template without any parameters
+ */
+typedef void (*mcode_tick)(void);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* MCODE_GLOBAL_H */

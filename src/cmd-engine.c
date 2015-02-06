@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "hw-i80.h"
 #include "hw-lcd.h"
+#include "mglobal.h"
 #include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
@@ -36,16 +37,7 @@
 #include "cmd-test-image.h"
 #include "line-editor-uart.h"
 
-#include <ctype.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-
-#ifdef __AVR__
-#include <avr/pgmspace.h>
-#else /* __AVR__ */
-#include "emu-common.h"
-#endif /* __AVR__ */
 
 #ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_reset (void);

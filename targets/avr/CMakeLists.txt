@@ -36,7 +36,6 @@ set (SRC_LIST
 )
 
 option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
-option ( USE_EMULATION_LAYER "Build Library with emulator layer" OFF )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

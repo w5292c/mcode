@@ -25,6 +25,8 @@
 #ifndef MCODE_HW_LCD_H
 #define MCODE_HW_LCD_H
 
+#include "mglobal.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 

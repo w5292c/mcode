@@ -24,8 +24,6 @@
 
 #include "hw-uart.h"
 
-#include "emu-common.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,20 +40,18 @@ static void *emu_hw_uart_thread (void *threadid);
 
 void hw_uart_init(void)
 {
-  if (!TheKeyEventThread)
-  {
+  if (!TheKeyEventThread) {
     /* get the original termios information */
     tcgetattr( STDIN_FILENO, &TheStoredTermIos);
 
     long t = 0;
     running_request = 1;
     const int failed = pthread_create(&TheKeyEventThread, NULL, emu_hw_uart_thread, (void *)t);
-    if (failed)
-    {
+    if (failed) {
       running_request = 0;
-      hw_uart_write_string_P (PSTR("Error: cannot create key-event thread, code: "));
-      hw_uart_write_uint (failed);
-      hw_uart_write_string_P (PSTR("\r\n"));
+      hw_uart_write_string("Error: cannot create key-event thread, code: ");
+      hw_uart_write_uint(failed);
+      hw_uart_write_string("\r\n");
       exit (-1);
     }
   }
@@ -63,24 +59,21 @@ void hw_uart_init(void)
 
 void hw_uart_deinit(void)
 {
-  if (TheKeyEventThread)
-  {
+  if (TheKeyEventThread) {
     int failed = pthread_cancel (TheKeyEventThread);
-    if (failed)
-    {
-      hw_uart_write_string_P (PSTR("Error: cannot cancel thread, code: "));
-      hw_uart_write_uint (failed);
-      hw_uart_write_string_P (PSTR("\r\n"));
+    if (failed) {
+      hw_uart_write_string("Error: cannot cancel thread, code: ");
+      hw_uart_write_uint(failed);
+      hw_uart_write_string("\r\n");
       exit (-1);
     }
     void *status;
     running_request = 0;
     failed = pthread_join(TheKeyEventThread, &status);
-    if (failed)
-    {
-      hw_uart_write_string_P (PSTR("Error: cannot join key-event thread, code: "));
-      hw_uart_write_uint (failed);
-      hw_uart_write_string_P (PSTR("\r\n"));
+    if (failed) {
+      hw_uart_write_string("Error: cannot join key-event thread, code: ");
+      hw_uart_write_uint(failed);
+      hw_uart_write_string("\r\n");
       exit (-1);
     }
 
@@ -199,9 +192,9 @@ void *emu_hw_uart_thread(void *threadid)
   }
 
   /* terminating thread */
-  hw_uart_write_string_P (PSTR("emu_hw_uart_thread, finishing: "));
-  hw_uart_write_uint (1234);
-  hw_uart_write_string_P (PSTR("\r\n"));
+  hw_uart_write_string("emu_hw_uart_thread, finishing: ");
+  hw_uart_write_uint(1234);
+  hw_uart_write_string("\r\n");
   pthread_exit(NULL);
   return NULL;
 }

@@ -25,7 +25,7 @@
 #ifndef MCODE_MTICK_H
 #define MCODE_MTICK_H
 
-#include "global.h"
+#include "mglobal.h"
 
 #include <stdint.h>
 

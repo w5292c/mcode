@@ -30,7 +30,6 @@
 #include "hw-lcd.h"
 #include "console.h"
 #include "hw-uart.h"
-#include "emu-common.h"
 #include "customwidget.h"
 
 #include <stdlib.h>
@@ -72,7 +71,7 @@ void lcd_set_scroll_start(uint16_t start)
   if (TheWidget) {
     TheWidget->setScrollPosition(start);
   } else {
-    hw_uart_write_string_P(PSTR("lcd_set_scroll_start: no widget\r\n"));
+    hw_uart_write_string("lcd_set_scroll_start: no widget\r\n");
   }
 }
 
@@ -195,11 +194,11 @@ void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte)
     emu_hw_lcd_s95513_handle_data_set_page_addr (byte);
     break;
   default:
-    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_handle_data_byte (cmd: "));
-    hw_uart_write_uint (TheCurrentCommand);
-    hw_uart_write_string_P (PSTR (", byte: "));
-    hw_uart_write_uint (byte);
-    hw_uart_write_string_P (PSTR (")\r\n"));
+    hw_uart_write_string("EMU: emu_hw_lcd_s95513_handle_data_byte (cmd: ");
+    hw_uart_write_uint(TheCurrentCommand);
+    hw_uart_write_string(", byte: ");
+    hw_uart_write_uint(byte);
+    hw_uart_write_string(")\r\n");
     break;
   }
 }
@@ -219,11 +218,11 @@ void emu_hw_lcd_s95513_handle_data_word (uint16_t word)
     emu_hw_lcd_s95513_handle_data_set_page_addr ((uint8_t) word);
     break;
   default:
-    hw_uart_write_string_P (PSTR ("EMU: emu_hw_lcd_s95513_handle_data_word (cmd: "));
-    hw_uart_write_uint (TheCurrentCommand);
-    hw_uart_write_string_P (PSTR (", word: "));
-    hw_uart_write_uint (word);
-    hw_uart_write_string_P (PSTR (")\r\n"));
+    hw_uart_write_string("EMU: emu_hw_lcd_s95513_handle_data_word (cmd: ");
+    hw_uart_write_uint(TheCurrentCommand);
+    hw_uart_write_string(", word: ");
+    hw_uart_write_uint(word);
+    hw_uart_write_string(")\r\n");
     break;
   }
 }

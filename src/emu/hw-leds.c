@@ -25,7 +25,6 @@
 #include "hw-leds.h"
 
 #include "hw-uart.h"
-#include "emu-common.h"
 
 static uint8_t TheLedStates = 0;
 
@@ -43,20 +42,17 @@ void mcode_hw_leds_deinit (void)
 
 void mcode_hw_leds_set (int index, int on)
 {
-  hw_uart_write_string_P (PSTR("Setting LED"));
-  hw_uart_write_uint (index);
-  hw_uart_write_string_P (PSTR(": "));
-  hw_uart_write_string_P (on ? PSTR("ON"): PSTR("OFF"));
-  hw_uart_write_string_P (PSTR("\r\n"));
+  hw_uart_write_string("Setting LED");
+  hw_uart_write_uint(index);
+  hw_uart_write_string(": ");
+  hw_uart_write_string(on ? "ON" : "OFF");
+  hw_uart_write_string("\r\n");
 
-  if (index >= 0 && index < 8)
-  {
-    if (on)
-    {
+  if (index >= 0 && index < 8) {
+    if (on) {
       TheLedStates |= (1U << index);
     }
-    else
-    {
+    else {
       TheLedStates &= ~(1U << index);
     }
   }
