@@ -32,8 +32,6 @@
 #include "hw-uart.h"
 #include "customwidget.h"
 
-#include <stdlib.h>
-
 #define LCD_S95513_WR_RAM_START UINT8_C(0x2C)
 #define LCD_S95513_WR_RAM_CONT UINT8_C(0x3C)
 #define LCD_S95513_SET_COLUMN_ADDR UINT8_C(0x2A)

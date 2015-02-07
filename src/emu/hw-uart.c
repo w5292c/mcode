@@ -42,7 +42,7 @@ void hw_uart_init(void)
 {
   if (!TheKeyEventThread) {
     /* get the original termios information */
-    tcgetattr( STDIN_FILENO, &TheStoredTermIos);
+    tcgetattr(STDIN_FILENO, &TheStoredTermIos);
 
     long t = 0;
     running_request = 1;
@@ -155,37 +155,30 @@ void hw_uart_set_callback(hw_uart_char_event aCallback)
 void *emu_hw_uart_thread(void *threadid)
 {
   int escIndex = 0;
-  uint escChar = 0;
+  unsigned int escChar = 0;
 
   /* upate termios attributes, so, we receive getchar on each character entered, no echo */
   static struct termios newt;
   newt = TheStoredTermIos;
   newt.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
-  while (running_request)
-  {
+  while (running_request) {
     const unsigned int ch = getchar ();
-    if (escIndex)
-    {
+    if (escIndex) {
       escChar = escChar | (ch << (8 * escIndex));
       ++escIndex;
     }
-    if (27 == ch)
-    {
+    if (27 == ch) {
       escChar = ch;
       escIndex = 1;
     }
 
-    if (TheCallback && (escIndex == 3 || (!escIndex)))
-    {
-      if (escIndex)
-      {
+    if (TheCallback && (escIndex == 3 || (!escIndex))) {
+      if (escIndex) {
         (*TheCallback) (escChar);
         escIndex = 0;
-      }
-      else
-      {
+      } else {
         (*TheCallback) (ch);
       }
     }

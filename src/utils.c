@@ -25,7 +25,6 @@
 #include "utils.h"
 
 #include <string.h>
-#include <stdlib.h>
 
 uint16_t glob_str_to_uint16(const char *pHexString)
 {

@@ -32,14 +32,14 @@
 extern "C" {
 #endif
 
-typedef void (*hw_uart_char_event) (unsigned int aChar);
+typedef void (*hw_uart_char_event)(char aChar);
 
-void hw_uart_init (void);
-void hw_uart_deinit (void);
+void hw_uart_init(void);
+void hw_uart_deinit(void);
 
-void hw_uart_set_callback (hw_uart_char_event aCallback);
+void hw_uart_set_callback(hw_uart_char_event aCallback);
 
-void hw_uart_start_read (void);
+void hw_uart_start_read(void);
 
 void hw_uart_write_uint(uint16_t value);
 void hw_uart_write_uint16(uint16_t value, bool skipZeros);

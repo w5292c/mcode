@@ -27,7 +27,6 @@
 #include "hw-i80.h"
 
 #include <stdint.h>
-#include <stdlib.h>
 
 void lcd_turn(bool on)
 {

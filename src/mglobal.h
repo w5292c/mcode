@@ -25,6 +25,9 @@
 #ifndef MCODE_GLOBAL_H
 #define MCODE_GLOBAL_H
 
+#define __need_NULL
+#include <stddef.h>
+
 #ifdef __AVR__
 #include <avr/pgmspace.h>
 #else /* __AVR__ */

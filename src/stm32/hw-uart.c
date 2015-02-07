@@ -29,9 +29,7 @@
 #include "mcode-config.h"
 #include "line-editor-uart.h"
 
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <stm32f10x.h>
 
