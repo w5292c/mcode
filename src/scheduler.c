@@ -27,7 +27,7 @@
 #include <string.h>
 
 #ifdef __linux__
-#include <gtk/gtk.h>
+#include <glib.h>
 #endif /* __linux__ */
 
 #define MCODE_TICKS_COUNT (8)

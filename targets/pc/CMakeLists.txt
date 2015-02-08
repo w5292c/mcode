@@ -6,12 +6,12 @@ find_package ( Threads )
 find_package ( Qt4       REQUIRED )
 find_package ( PkgConfig REQUIRED )
 
-pkg_check_modules ( GTK2_0        gtk+-2.0        REQUIRED )
-link_directories ( ${GTK2_0_LIBRARY_DIRS} )
+pkg_check_modules ( GLIB2_0       glib-2.0        REQUIRED )
+link_directories ( ${GLIB2_0_LIBRARY_DIRS} )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
-include_directories ( ${GTK2_0_INCLUDE_DIRS} ${MCODE_TOP}/src/ )
+include_directories ( ${GLIB2_0_INCLUDE_DIRS} ${MCODE_TOP}/src/ )
 
 INCLUDE ( ${QT_USE_FILE} )
 ADD_DEFINITIONS ( ${QT_DEFINITIONS} )
@@ -51,7 +51,7 @@ option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
 add_executable( console-test ${SRC_LIST} ${HEADERS_MOC} ${SRC_LIST_QT} )
-target_link_libraries ( console-test ${GTK2_0_LIBRARIES} )
+target_link_libraries ( console-test ${GLIB2_0_LIBRARIES} )
 target_link_libraries ( console-test ${CMAKE_THREAD_LIBS_INIT} )
 target_link_libraries ( console-test  ${QT_LIBRARIES} )
 

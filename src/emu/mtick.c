@@ -24,7 +24,7 @@
 
 #include "mtick.h"
 
-#include <gtk/gtk.h>
+#include <glib.h>
 
 static uint64_t TheMSecCounter = 0;
 static guint TheTimeoutSourceId = 0;
