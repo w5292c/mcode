@@ -28,7 +28,6 @@
 #include "hw-uart.h"
 
 #include <ctype.h>
-#include <stdio.h>
 #include <string.h>
 
 #define LINE_EDITOR_UART_BUFFER_LENGTH (64)

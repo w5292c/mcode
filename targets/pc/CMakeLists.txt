@@ -19,17 +19,17 @@ ADD_DEFINITIONS ( -D__STDC_CONSTANT_MACROS )
 
 set ( SRC_LIST
   ${MCODE_TOP}/src/emu/main.cpp
+  ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/hw-lcd.c
+  ${MCODE_TOP}/src/common/console.c
+  ${MCODE_TOP}/src/common/cmd-engine.c
+  ${MCODE_TOP}/src/common/line-editor-uart.c
   ${MCODE_TOP}/src/fonts.c
-  ${MCODE_TOP}/src/utils.c
-  ${MCODE_TOP}/src/console.c
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/emu/mtick.c
-  ${MCODE_TOP}/src/cmd-engine.c
   ${MCODE_TOP}/src/emu/hw-leds.c
   ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/cmd-test-image.c
-  ${MCODE_TOP}/src/line-editor-uart.c
   ${MCODE_TOP}/src/emu/hw-lcd-s95513.cpp
 )
 
