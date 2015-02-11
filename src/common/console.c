@@ -59,10 +59,10 @@ static void console_config_lcd_for_pos (uint8_t column, uint8_t line);
 static const char *console_next_num_token (const char *pString, uint8_t *pValue);
 static void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t endColumn);
 
-/* 2104 3210 | 3450 1234 */
-/* GGGR RRRR | GGGB BBBB */
-static uint16_t TheOnColor = 0xFFFFU;
-static uint16_t TheOffColor = 0x0000U;
+/* 4321 0543 | 2104 3210 */
+/* RRRR RGGG | GGGB BBBB */
+static uint16_t TheOnColor = UINT16_C(0xFFFFU);
+static uint16_t TheOffColor = UINT16_C(0x0000U);
 
 void console_init(void)
 {
@@ -458,8 +458,8 @@ void console_escape_set_mode (const char *pArgs)
   if (!(*pArgs))
   {
     /* empty arguments, reset the console modes */
-    TheOnColor = 0xFFFFU;
-    console_set_bg_color (0x0000U);
+    TheOnColor = UINT16_C(0xFFFF);
+    console_set_bg_color(UINT16_C(0x0000));
     return;
   }
   else
@@ -471,77 +471,77 @@ void console_escape_set_mode (const char *pArgs)
       {
       case 0:
         /* reset text mode */
-        TheOnColor = 0xFFFFU;
-        console_set_bg_color (0x0000U);
+        TheOnColor = UINT16_C(0xFFFF);
+        console_set_bg_color(UINT16_C(0x0000));
         break;
       case 30:
         /* set foreground color: black */
-        TheOnColor = 0x0000U;
+        TheOnColor = UINT16_C(0x0000);
         break;
       case 31:
         /* set foreground color: red */
-        TheOnColor = 0x001fU;
+        TheOnColor = UINT16_C(0xF800);
         break;
       case 32:
-        /* set foreground color: red */
-        TheOnColor = 0xe0e0U;
+        /* set foreground color: green */
+        TheOnColor = UINT16_C(0x07E0);
         break;
       case 33:
         /* set foreground color: yellow */
-        TheOnColor = 0xe0ffU;
+        TheOnColor = UINT16_C(0xFFE0);
         break;
       case 34:
         /* set foreground color: blue */
-        TheOnColor = 0x1f00U;
+        TheOnColor = UINT16_C(0x001F);
         break;
       case 35:
         /* set foreground color: magenta */
-        TheOnColor = 0x1f1fU;
+        TheOnColor = UINT16_C(0xF81F);
         break;
       case 36:
         /* set foreground color: cyan */
-        TheOnColor = 0xffe0U;
+        TheOnColor = UINT16_C(0x07FF);
         break;
       case 37:
         /* set foreground color: white */
-        TheOnColor = 0xffffU;
+        TheOnColor = UINT16_C(0xFFFF);
         break;
       case 40:
         /* set background color: black */
-        console_set_bg_color (0x0000U);
+        console_set_bg_color(UINT16_C(0x0000));
         break;
       case 41:
         /* set background color: red */
-        console_set_bg_color (0x001fU);
+        console_set_bg_color(UINT16_C(0xF800));
         break;
       case 42:
         /* set background color: green */
-        console_set_bg_color (0xe0e0U);
+        console_set_bg_color(UINT16_C(0x07E0));
         break;
       case 43:
         /* set background color: yellow */
-        console_set_bg_color (0xe0ffU);
+        console_set_bg_color(UINT16_C(0xFFE0));
         break;
       case 44:
         /* set background color: blue */
-        console_set_bg_color (0x1f00U);
+        console_set_bg_color(UINT16_C(0x001F));
         break;
       case 45:
         /* set background color: magenta */
-        console_set_bg_color (0x1f1fu);
+        console_set_bg_color(UINT16_C(0xF81F));
         break;
       case 46:
         /* set background color: cyan */
-        console_set_bg_color (0xffe0U);
+        console_set_bg_color(UINT16_C(0x07FF));
         break;
       case 47:
         /* set background color: white */
-        console_set_bg_color (0xffffu);
+        console_set_bg_color(UINT16_C(0xFFFF));
         break;
       default:
-        hw_uart_write_string_P (PSTR ("DEBUG: console_escape_set_mode: unknown mode: ["));
-        hw_uart_write_string (pArgs);
-        hw_uart_write_string_P (PSTR ("]\r\n"));
+        hw_uart_write_string_P(PSTR("DEBUG: console_escape_set_mode: unknown mode: ["));
+        hw_uart_write_string(pArgs);
+        hw_uart_write_string_P(PSTR("]\r\n"));
         break;
       }
     }
@@ -737,5 +737,5 @@ void console_escape_clear_line(uint8_t line, int8_t startColumn, int8_t endColum
   const uint16_t sLine = (uint16_t)(line << 3);
   const uint16_t eLine = sLine + 7;
   lcd_set_window(sCol, eCol, sLine, eLine);
-  lcd_write_const_words(UINT8_C(0x2c), TheOffColor, ((endColumn - startColumn) << 6));
+  lcd_write_const_words(UINT8_C(0x2C), TheOffColor, ((endColumn - startColumn) << 6));
 }
