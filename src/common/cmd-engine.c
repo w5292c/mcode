@@ -227,7 +227,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_uint32(id, false);
     hw_uart_write_string("\r\n");
   }
-#ifdef MCODE_HW_I80_ENABLED
   else if (!strcmp_P(aString, PSTR("timg")))
   {
     cmd_test_image();
@@ -236,7 +235,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     cmd_test_image_large();
   }
-#endif /* MCODE_HW_I80_ENABLED */
 #ifdef MCODE_CONSOLE_ENABLED
   else if (!strcmp_P(aString, PSTR("cls")))
   {

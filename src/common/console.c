@@ -61,8 +61,8 @@ static void console_escape_clear_line (uint8_t line, int8_t startColumn, int8_t 
 
 /* 4321 0543 | 2104 3210 */
 /* RRRR RGGG | GGGB BBBB */
-static uint16_t TheOnColor = UINT16_C(0xFFFFU);
-static uint16_t TheOffColor = UINT16_C(0x0000U);
+static uint16_t TheOnColor = UINT16_C(0xFFFF);
+static uint16_t TheOffColor = UINT16_C(0x0000);
 
 void console_init(void)
 {
