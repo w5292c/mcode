@@ -86,9 +86,6 @@ void console_clear_screen(void)
   TheCurrentLine = 0;
   TheCurrentColumn = 0;
 
-  /* turn the LCD on */
-  lcd_turn(true);
-
   /* clear the screen, fill the background color */
   lcd_cls(TheOffColor);
 }

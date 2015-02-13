@@ -29,6 +29,7 @@
 
 AcCustomWidget::AcCustomWidget(uint width, uint height, QWidget *pParent) :
   QWidget(pParent),
+  m_on(false),
   m_width(width),
   m_height(height),
   m_scrollPosition(0)
@@ -36,19 +37,6 @@ AcCustomWidget::AcCustomWidget(uint width, uint height, QWidget *pParent) :
   qDebug() << "AcCustomWidget::AcCustomWidget: " << (const void *)this;
   m_pScreenData = (quint32 *)malloc (4*width*height);
   resize(width, height);
-
-  QColor colors[] = {
-    QColor(255, 0, 0),
-    QColor(0, 255, 0),
-    QColor(0, 0, 255),
-    QColor(255, 255, 0)
-  };
-
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
-      setPixel (x, y, colors[(x + y)%4].rgb ());
-    }
-  }
 }
 
 AcCustomWidget::~AcCustomWidget()
@@ -57,15 +45,20 @@ AcCustomWidget::~AcCustomWidget()
   free(m_pScreenData);
 }
 
+void AcCustomWidget::turn(bool on)
+{
+  m_on = on;
+  update();
+}
+
 void AcCustomWidget::setPixel (uint x, uint y, QRgb color)
 {
-  if (x >= 0 && x < m_width && y >= 0 && y < m_height)
-  {
+  if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
     m_pScreenData[m_width*y+x] = color;
-    update();
-  }
-  else
-  {
+    if (m_on) {
+      update();
+    }
+  } else {
     printf("AcCustomWidget::setPixel: wrong request: at (%u, %u), color: %u\r\n", x, y, color);
   }
 }
@@ -107,20 +100,26 @@ void AcCustomWidget::paintEvent(QPaintEvent *pEvent)
 {
   QPainter qp(this);
 
-  const QSize &size = this->size();
+  if (m_on) {
+    for (uint x = 0; x < m_width; x++) {
+      for (uint y = 0; y < m_height; y++) {
+        qp.setPen(getPixel(x, y));
+        qp.drawPoint(x, y);
+      }
+    }
+  } else {
+    const QColor colors[] = {
+      QColor(255, 0, 0),
+      QColor(0, 255, 0),
+      QColor(0, 0, 255),
+      QColor(255, 255, 0)
+    };
 
-  QColor myColor(100, 255, 255);
-  QColor colors[] = {
-    QColor(255, 0, 0),
-    QColor(0, 255, 0),
-    QColor(0, 0, 255),
-    QColor(255, 255, 0)
-  };
-
-  for (int x = 0; x < m_width; x++) {
-    for (int y = 0; y < m_height; y++) {
-      qp.setPen(getPixel(x, y));
-      qp.drawPoint(x, y);
+    for (uint x = 0; x < m_width; x++) {
+      for (uint y = 0; y < m_height; y++) {
+        qp.setPen(colors[(x + y)%4].rgb());
+        qp.drawPoint(x, y);
+      }
     }
   }
 

@@ -34,6 +34,8 @@ public:
   AcCustomWidget(uint width, uint height, QWidget *pParent = 0);
   ~AcCustomWidget();
 
+  void turn(bool on);
+
   void setPixel(uint x, uint y, QRgb color);
   QRgb getPixel(uint x, uint y) const;
 
@@ -46,6 +48,7 @@ protected:
   void paintEvent(QPaintEvent *pEvent);
 
 private:
+  bool m_on;
   uint m_width;
   uint m_height;
   uint m_scrollPosition;

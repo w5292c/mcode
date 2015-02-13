@@ -307,6 +307,7 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
 
 void lcd_turn(bool on)
 {
+  TheWidget->turn(on);
 }
 
 void lcd_reset(void)
