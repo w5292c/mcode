@@ -34,6 +34,7 @@ public:
   AcCustomWidget(uint width, uint height, QWidget *pParent = 0);
   ~AcCustomWidget();
 
+  void reset();
   void turn(bool on);
 
   void setPixel(uint x, uint y, QRgb color);

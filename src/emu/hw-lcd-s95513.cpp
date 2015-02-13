@@ -105,14 +105,12 @@ void emu_hw_lcd_s95513_write_words (uint8_t cmd, uint8_t length, const uint16_t 
 
 void hw_i80_reset(void)
 {
-  uint x, y;
-  const uint nx = lcd_get_width();
-  const uint ny = lcd_get_height();
-  for (x = 0; x < nx; ++x) {
-    for (y = 0; y < ny; ++y) {
-      TheWidget->setPixel(x, y, 0xff008080);
-    }
-  }
+  TheWidget->reset();
+
+  console_set_color(UINT16_C(0xFFFF));
+  console_set_bg_color(UINT16_C(0x0000));
+
+  console_clear_screen();
 }
 
 void emu_hw_lcd_s95513_set_pixel(int x, int y, quint32 color)

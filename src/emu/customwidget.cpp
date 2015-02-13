@@ -45,6 +45,14 @@ AcCustomWidget::~AcCustomWidget()
   free(m_pScreenData);
 }
 
+void AcCustomWidget::reset()
+{
+  turn(false);
+
+  memset(m_pScreenData, 0, sizeof(quint32)*m_width*m_height);
+  update();
+}
+
 void AcCustomWidget::turn(bool on)
 {
   m_on = on;
