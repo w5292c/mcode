@@ -26,6 +26,7 @@
 
 #include "mtick.h"
 #include "hw-uart.h"
+#include "console.h"
 
 #include <stdarg.h>
 #include <stm32f10x.h>
@@ -111,13 +112,9 @@ void lcd_init(uint16_t width, uint16_t height)
 
   SPI_Cmd(SPI1, ENABLE);
 
-  lcd_reset();
-  while (0x00009341 != lcd_read_id());
-
-  lcd_spi_init();
-
   /* Handle the current LCD size */
   lcd_set_size(width, height);
+  lcd_reset();
 }
 
 void lcd_deinit(void)
@@ -126,10 +123,17 @@ void lcd_deinit(void)
 
 void lcd_reset(void)
 {
+  /* HW reset */
   GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_RESET);
   mtick_sleep(10);
   GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_SET);
   mtick_sleep(10);
+
+  /* wait for LCD ready */
+  while (0x00009341 != lcd_read_id());
+
+  /* initialize the LCD module */
+  lcd_spi_init();
 }
 
 void lcd_set_read_cb(lcd_read_cb cb)
@@ -232,7 +236,13 @@ void lcd_spi_init(void)
   lcd_command(0x29);
   mtick_sleep(20);
 
+#if 1 /* clear screen in console code */
+  console_set_color(UINT16_C(0xFFFF));
+  console_set_bg_color(UINT16_C(0x0000));
+  console_clear_screen();
+#else /* clear screen in console code */
   lcd_cls(0x0000);
+#endif /* clear screen in console code */
 }
 
 void lcd_spi_set_cs(bool selected)
