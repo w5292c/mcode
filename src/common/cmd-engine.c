@@ -27,6 +27,7 @@
 #include "main.h"
 #include "mtick.h"
 #include "utils.h"
+#include "system.h"
 #include "hw-i80.h"
 #include "hw-lcd.h"
 #include "mglobal.h"
@@ -146,6 +147,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> exit/quit - exit\r\n"));
 #endif /* __linux__ == 1 */
     hw_uart_write_string_P(PSTR("> ut - Show uptime\r\n"));
+    hw_uart_write_string_P(PSTR("> reboot - Initiate system reboot\r\n"));
 #ifdef MCODE_CONSOLE_ENABLED
     hw_uart_write_string_P(PSTR("> color xxxx - set text color\r\n"));
     hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
@@ -185,6 +187,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("Uptime: 0x"));
     hw_uart_write_uint64(mtick_count(), true);
     hw_uart_write_string_P(PSTR("\r\n"));
+  } else if (!strcmp_P(aString, PSTR("reboot"))) {
+    hw_uart_write_string_P(PSTR("\r\n"));
+    reboot();
   }
 #ifdef MCODE_HW_I80_ENABLED
   else if (!strncmp_P(aString, PSTR("w "), 2))

@@ -29,6 +29,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/stm32/mtick.c
+  ${MCODE_TOP}/src/stm32/system.c
   ${MCODE_TOP}/src/stm32/hw-leds.c
   ${MCODE_TOP}/src/stm32/hw-uart.c
   ${MCODE_TOP}/src/stm32/hw-lcd-spi.c
