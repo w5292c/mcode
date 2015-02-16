@@ -28,6 +28,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/scheduler.c
   ${MCODE_TOP}/src/emu/mtick.c
+  ${MCODE_TOP}/src/emu/system.c
   ${MCODE_TOP}/src/emu/hw-leds.c
   ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/emu/hw-lcd-s95513.cpp

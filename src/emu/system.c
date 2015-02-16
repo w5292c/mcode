@@ -26,9 +26,7 @@
 
 #include "hw-uart.h"
 
-#include <avr/pgmspace.h>
-
 void reboot(void)
 {
-  hw_uart_write_string_P(PSTR("\r\nSystem reboot has been requested, but it is not implemented.\r\n"));
+  hw_uart_write_string("\r\nSystem reboot has been requested, but it is not implemented.\r\n");
 }
