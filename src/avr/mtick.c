@@ -27,6 +27,7 @@
 #include "scheduler.h"
 
 #include <stdbool.h>
+#include <avr/interrupt.h>
 
 #ifndef MCODE_MTICKS_COUNT
 #define MCODE_MTICKS_COUNT (10)
@@ -41,6 +42,20 @@ static void mcode_mtick_scheduler_tick(void);
 void mtick_init(void)
 {
   mcode_scheduler_add(mcode_mtick_scheduler_tick);
+
+  /* Reset the Timer2 counter */
+  TCNT2 = 0x00U;
+  /* Timer2 compare register: 1001.73913Hz */
+  OCR2 = 114;
+  /* Clear OCF2 / clear pending interrupts */
+  TIFR  = (1<<OCF2);
+  /* Enable Timer2 Compare Interrupt */
+  TIMSK = (1<<OCIE2);
+  /* Set the control register */
+  TCCR2 =
+    (1<<WGM21)|(0<<WGM20)| /*< Mode: CTC */
+    (0<<COM21)|(0<<COM21)| /*< No port output */
+    (1<<CS22)|(0<<CS21)|(0<<CS20); /* Prescaler: 64 */
 }
 
 void mtick_deinit(void)
@@ -68,10 +83,8 @@ void mtick_start(void)
 
 void mtick_sleep(uint32_t mticks)
 {
-#if 0
   const uint64_t target = TheMSecCounter + mticks + 1;
   while (TheMSecCounter < target);
-#endif /* 0 */
 }
 
 uint64_t mtick_count(void)
@@ -95,4 +108,12 @@ void mcode_mtick_scheduler_tick(void)
       (*tick)();
     }
   }
+}
+
+/* This is a 1 KHz timer2 handler */
+ISR(TIMER2_COMP_vect)
+{
+  ++TheMSecCounter;
+  /* set the flag */
+  TheSceduledFlag = true;
 }
