@@ -26,6 +26,7 @@
 #define MCODE_HW_SPI_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +34,8 @@ extern "C" {
 
 void spi_init(void);
 void spi_deinit(void);
+
+void spi_set_cs(bool selected);
 
 uint8_t spi_transfer(uint8_t data);
 

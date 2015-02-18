@@ -25,6 +25,7 @@
 #include "hw-lcd.h"
 
 #include "mtick.h"
+#include "hw-spi.h"
 #include "hw-uart.h"
 #include "console.h"
 
@@ -48,7 +49,6 @@ static lcd_read_cb TheReadCallback = 0;
 static void lcd_spi_init(void);
 static void lcd_write_cmd(uint8_t cmd);
 static void lcd_write_byte(uint8_t data);
-static void lcd_spi_set_cs(bool selected);
 static void lcd_spi_set_command(bool cmd);
 static uint8_t lcd_read_register(uint8_t addr, uint8_t param);
 
@@ -56,24 +56,13 @@ static uint8_t lcd_read_register(uint8_t addr, uint8_t param);
 
 void lcd_init(uint16_t width, uint16_t height)
 {
+  /* Initialize SPI first */
+  spi_init();
+
   /* GPIO configuration */
   /* Enable clocks */
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
-
-  SPI_InitTypeDef spiConfig;
-  spiConfig.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-  spiConfig.SPI_Mode = SPI_Mode_Master;
-  spiConfig.SPI_DataSize = SPI_DataSize_8b;
-  spiConfig.SPI_CPOL = SPI_CPOL_High;
-  spiConfig.SPI_CPHA = SPI_CPHA_2Edge;
-  spiConfig.SPI_NSS = SPI_NSS_Soft;
-  spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
-  spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
-  spiConfig.SPI_CRCPolynomial = 7;
-  SPI_Init(SPI1, &spiConfig);
 
   /* Configure the pins */
   GPIO_InitTypeDef pinConfig;
@@ -93,24 +82,6 @@ void lcd_init(uint16_t width, uint16_t height)
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &pinConfig);
   GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_RESET);
-  /* Configure PB6 pin (SPI_CS) */
-  pinConfig.GPIO_Pin = GPIO_Pin_6;
-  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
-  GPIO_Init(GPIOB, &pinConfig);
-  /* Configure PA7 pin (SPI_MOSI) */
-  pinConfig.GPIO_Pin = GPIO_Pin_7;
-  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
-  GPIO_Init(GPIOA, &pinConfig);
-  /* Configure PA5 pin (SPI_SCK) */
-  pinConfig.GPIO_Pin = GPIO_Pin_5;
-  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
-  GPIO_Init(GPIOA, &pinConfig);
-  /* Configure PA6 pin (SPI_MISO) */
-  pinConfig.GPIO_Pin = GPIO_Pin_6;
-  pinConfig.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-  GPIO_Init(GPIOA, &pinConfig);
-
-  SPI_Cmd(SPI1, ENABLE);
 
   /* Handle the current LCD size */
   lcd_set_size(width, height);
@@ -119,6 +90,7 @@ void lcd_init(uint16_t width, uint16_t height)
 
 void lcd_deinit(void)
 {
+  spi_deinit();
 }
 
 void lcd_reset(void)
@@ -148,15 +120,6 @@ void lcd_read(uint8_t cmd, uint8_t length)
 void lcd_set_bl(bool on)
 {
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, on ? Bit_RESET : Bit_SET);
-}
-
-uint8_t spi_transfer(uint8_t data)
-{
-  SPI_I2S_SendData(SPI1, data);
-  while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) != RESET) {}
-  while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET) {}
-  const uint8_t byte = SPI_I2S_ReceiveData(SPI1);
-  return byte;
 }
 
 uint16_t lcd_get_width(void)
@@ -245,11 +208,6 @@ void lcd_spi_init(void)
 #endif /* clear screen in console code */
 }
 
-void lcd_spi_set_cs(bool selected)
-{
-  GPIO_WriteBit(GPIOB, GPIO_Pin_6, selected ? Bit_SET : Bit_RESET);
-}
-
 void lcd_spi_set_command(bool cmd)
 {
   GPIO_WriteBit(GPIOB, GPIO_Pin_7, cmd ? Bit_SET : Bit_RESET);
@@ -258,17 +216,17 @@ void lcd_spi_set_command(bool cmd)
 void lcd_write_cmd(uint8_t cmd)
 {
   lcd_spi_set_command(false);
-  lcd_spi_set_cs(false);
+  spi_set_cs(true);
   spi_transfer(cmd);
-  lcd_spi_set_cs(true);
+  spi_set_cs(false);
 }
 
 void lcd_write_byte(uint8_t data)
 {
   lcd_spi_set_command(true);
-  lcd_spi_set_cs(false);
+  spi_set_cs(true);
   spi_transfer(data);
-  lcd_spi_set_cs(true);
+  spi_set_cs(false);
 }
 
 uint8_t lcd_read_register(uint8_t addr, uint8_t param)
@@ -277,11 +235,11 @@ uint8_t lcd_read_register(uint8_t addr, uint8_t param)
   lcd_write_cmd(0xD9U);
   lcd_write_byte(0x10 + param);
   lcd_spi_set_command(false);
-  lcd_spi_set_cs(false);
+  spi_set_cs(true);
   spi_transfer(addr);
   lcd_spi_set_command(true);
   data = spi_transfer(0xffu);
-  lcd_spi_set_cs(true);
+  spi_set_cs(false);
   return data;
 }
 
