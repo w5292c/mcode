@@ -31,6 +31,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/hw-i80.c
   ${MCODE_TOP}/src/avr/hw-lcd.c
   ${MCODE_TOP}/src/avr/system.c
+  ${MCODE_TOP}/src/avr/hw-spi.c
   ${MCODE_TOP}/src/avr/hw-leds.c
   ${MCODE_TOP}/src/avr/hw-uart.c
   ${MCODE_TOP}/src/avr/hw-lcd-s95513.c
