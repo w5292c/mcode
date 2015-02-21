@@ -24,11 +24,21 @@
 
 #include "system.h"
 
+#include "mtick.h"
 #include "hw-uart.h"
 
+#include <avr/wdt.h>
 #include <avr/pgmspace.h>
+#include <avr/interrupt.h>
 
 void reboot(void)
 {
-  hw_uart_write_string_P(PSTR("\r\nSystem reboot has been requested, but it is not implemented.\r\n"));
+  hw_uart_write_string_P(PSTR("\r\nSystem reboot has been requested.\r\n"));
+/*  mtick_sleep(1);*/
+  /* Disable all interrupts */
+  cli();
+  /* Enable the Watchdog timer with the smallest timeout */
+  wdt_enable(WDTO_15MS);
+  /* Peacefully wait for the system reset */
+  for(;;);
 }

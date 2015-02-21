@@ -151,6 +151,7 @@ void hw_uart_write_string (const char *aString)
   }
 
 #else /* MCODE_HW_UART_SYNC_WRITE */
+#error "Async UART write has not been implemented"
   if (TheWriteBufferStart) {
     memmove (&TheWriteBuffer[0], &TheWriteBuffer[TheWriteBufferStart], TheWriteBufferStart);
 
