@@ -37,6 +37,8 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/hw-lcd-s95513.c
 )
 
+option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
+option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )

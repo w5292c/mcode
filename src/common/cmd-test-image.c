@@ -28,7 +28,6 @@
 
 void cmd_test_image(void)
 {
-#ifndef __AVR__
   const uint16_t width = lcd_get_width();
   const uint16_t height = lcd_get_height();
 
@@ -47,12 +46,10 @@ void cmd_test_image(void)
     lcd_set_window(0, width - 1, startY, endY);
     lcd_write_const_words(UINT8_C(0x2C), TestColors[i], pixelCount);
   }
-#endif /* __AVR__ */
 }
 
 void cmd_test_image_large(void)
 {
-#ifndef __AVR__
   const uint16_t width = lcd_get_width();
   const uint16_t height = lcd_get_height();
 
@@ -71,5 +68,4 @@ void cmd_test_image_large(void)
     lcd_set_window(startX, endX, 0, height - 1);
     lcd_write_const_words(UINT8_C(0x2C), TestColors[i], pixelCount);
   }
-#endif /* __AVR__ */
 }

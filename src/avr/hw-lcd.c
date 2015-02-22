@@ -26,7 +26,11 @@
 
 #include "hw-i80.h"
 #include "hw-uart.h"
+
 #include <avr/pgmspace.h>
+
+static uint32_t TheLcdId = 0;
+static void lcd_read_callback(int length, const unsigned char *data);
 
 void lcd_init(uint16_t width, uint16_t height)
 {
@@ -52,17 +56,19 @@ void lcd_set_bl(bool on)
 
 uint32_t lcd_read_id(void)
 {
-  return 0;
+  hw_i80_set_read_callback(lcd_read_callback);
+  hw_i80_read(0xBFU, 5);
+  return TheLcdId;
 }
 
 uint16_t lcd_get_width(void)
 {
-  return 240;
+  return 320;
 }
 
 uint16_t lcd_get_height(void)
 {
-  return 320;
+  return 480;
 }
 
 void lcd_set_size(uint16_t width, uint16_t height)
@@ -105,4 +111,18 @@ void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
 void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
 {
   hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
+}
+
+void lcd_read_callback(int length, const unsigned char *data)
+{
+  if (5 == length && 0xFFU == data[4]) {
+    TheLcdId = data[0]; TheLcdId <<= 8;
+    TheLcdId |= data[1]; TheLcdId <<= 8;
+    TheLcdId |= data[2]; TheLcdId <<= 8;
+    TheLcdId |= data[3];
+  } else {
+    hw_uart_write_string_P(PSTR("lcd_read_callback: wrong length: 0x"));
+    hw_uart_write_uint16(length, false);
+    hw_uart_write_string_P(PSTR("\r\n"));
+  }
 }

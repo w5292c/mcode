@@ -32,14 +32,41 @@ void lcd_turn(bool on)
 {
   if (on) {
     /* exit_sleep_mode */
-    hw_i80_write (UINT8_C(0x11), 0, NULL);
+    hw_i80_write(UINT8_C(0x11), 0, NULL);
+    hw_i80_write(UINT8_C(0x50), 0, NULL);
+    uint8_t bytes[5];
+    bytes[0] = 0x07;
+    bytes[1] = 0x42;
+    bytes[2] = 0x18;
+    /* Power setting */
+    hw_i80_write(UINT8_C(0xD0), 3, bytes);
+    bytes[0] = 0x00;
+    bytes[1] = 0x07;
+    bytes[2] = 0x10;
+    /* VCOM */
+    hw_i80_write(UINT8_C(0xD1), 3, bytes);
+    bytes[0] = 0x01;
+    bytes[1] = 0x02;
+    /* Power setting for norm. mode */
+    hw_i80_write(UINT8_C(0xD2), 2, bytes);
+    bytes[0] = 0x10;
+    bytes[1] = 0x3B;
+    bytes[2] = 0x00;
+    bytes[3] = 0x02;
+    bytes[4] = 0x11;
+    /* Panel driving setting */
+    hw_i80_write(UINT8_C(0xC0), 5, bytes);
+    bytes[0] = 0x03;
+    /* Frame rate & inv. */
+    hw_i80_write(UINT8_C(0xC5), 1, bytes);
+    bytes[0] = 0x55;
+    /* set_pixel_format: 16bpp */
+    hw_i80_write (UINT8_C(0x3A), 1, bytes);
+    bytes[0] = 0x48;
+    hw_i80_write (UINT8_C(0x36), 1, bytes);
+    /* @todo Implement gamma: 0xC8, 0x00, 0x32, 0x36, 0x45, 0x06, 0x16, 0x37, 0x75, 0x77, 0x54, 0x0C, 0x00, */
     /* set_display_on */
     hw_i80_write (UINT8_C(0x29), 0, NULL);
-    /* set_pixel_format: 18bpp */
-    uint8_t byte = 0x55;
-    hw_i80_write (UINT8_C(0x3A), 1, &byte);
-    byte = UINT8_C(0x02);
-    hw_i80_write (UINT8_C(0x36), 1, &byte);
     lcd_set_scroll_start(UINT16_C(0));
   } else {
     /* set_display_off */

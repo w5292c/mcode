@@ -40,6 +40,7 @@ int main (void)
   mcode_scheduler_init();
   mtick_init();
   lcd_init(320, 480);
+  console_init();
   /* now, UART can be initialized */
   hw_uart_init();
   /* init LEDs */

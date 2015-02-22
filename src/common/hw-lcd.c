@@ -26,8 +26,8 @@
 
 void lcd_cls(uint16_t color)
 {
-  const uint16_t width = lcd_get_width();
-  const uint16_t height = lcd_get_height();
+  const uint32_t width = lcd_get_width();
+  const uint32_t height = lcd_get_height();
   lcd_set_window(0, width - 1, 0, height - 1);
   lcd_write_const_words(0x2C, color, width*height);
 }

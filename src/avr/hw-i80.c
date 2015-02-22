@@ -36,20 +36,28 @@
 |---------------------------------------------------------------------------|
 |  # | LCD Pin | UC Pin | Comment                                           |
 |----|---------|--------|---------------------------------------------------|
-|  1 |      D0 |    PA0 |                                                   |
-|  2 |      D1 |    PA1 |                                                   |
-|  3 |      D2 |    PA2 |                                                   |
-|  4 |      D3 |    PA3 |                                                   |
-|  5 |      D4 |    PA4 |                                                   |
-|  6 |      D5 |    PA5 |                                                   |
-|  7 |      D6 |    PA6 |                                                   |
-|  8 |      D7 |    PA7 |                                                   |
+|  1 |     D00 |    PA0 |                                                   |
+|  2 |     D01 |    PA1 |                                                   |
+|  3 |     D02 |    PA2 |                                                   |
+|  4 |     D03 |    PA3 |                                                   |
+|  5 |     D04 |    PA4 |                                                   |
+|  6 |     D05 |    PA5 |                                                   |
+|  7 |     D06 |    PA6 |                                                   |
+|  8 |     D07 |    PA7 |                                                   |
+|  9 |     D08 |    PB0 |                                                   |
+| 10 |     D09 |    PB1 |                                                   |
+| 11 |     D10 |    PB2 |                                                   |
+| 12 |     D11 |    PB3 |                                                   |
+| 13 |     D12 |    PB4 |                                                   |
+| 14 |     D13 |    PB5 |                                                   |
+| 15 |     D14 |    PB6 |                                                   |
+| 16 |     D15 |    PB7 |                                                   |
 |----|---------|--------|---------------------------------------------------|
-|  9 |      CS |    PC0 | TBC; Prev pin: PB0                                |
-| 10 |      WR |    PC1 | TBC; Prev pin: PB1                                |
-| 11 |      RD |    PC6 | TBC; Prev pin: PB2                                |
-| 12 |   A0/RS |    PC7 | TBC; Prev pin: PB3                                |
-| 13 |   RESET |    PD7 | TBC; Prev pin: PB4                                |
+| 17 |      CS |    PC0 | TBC; Prev pin: PB0                                |
+| 18 |      WR |    PC1 | TBC; Prev pin: PB1                                |
+| 19 |      RD |    PC6 | TBC; Prev pin: PB2                                |
+| 20 |   A0/RS |    PC7 | TBC; Prev pin: PB3                                |
+| 21 |   RESET |    PD7 | TBC; Prev pin: PB4                                |
 |---------------------------------------------------------------------------|
 */
 /* Available pins: PC0, PC1, PC6, PC7, PD7 */
@@ -102,7 +110,7 @@ inline static void hw_i80_write_data (uint8_t data) { PORTA = data; }
 
 inline static void hw_i80_write_data_2 (uint16_t data) { PORTA = (uint8_t)data; PORTB = (uint8_t)(data>>8); }
 
-inline static void hw_i80_read_write_delay (void) { /* _NOP (); */ }
+inline static void hw_i80_read_write_delay (void) { _NOP (); }
 
 static void hw_i80_setup_ports (void) {
   /* Configure C and D-ports, outputs: CS, WR, RD, RS, RESET */
