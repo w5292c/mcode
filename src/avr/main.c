@@ -26,6 +26,7 @@
 #include "hw-lcd.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
+#include "console.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
 #include "line-editor-uart.h"

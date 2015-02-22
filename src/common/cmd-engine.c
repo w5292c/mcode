@@ -311,54 +311,26 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_HW_I80_ENABLED
 void cmd_engine_read(const char *aCommand)
 {
-  int success = 1;
-  unsigned char command = 0;
-  unsigned char dataLength = 0;
+  uint8_t command = 0;
+  uint8_t dataLength = 0;
 
   /* first, retrieve the command code */
-  if (isxdigit(aCommand[0]) && isxdigit(aCommand[1]))
-  {
-    command = strtoul(aCommand, NULL, 16);
-    aCommand += 2;
-  }
-  else
-  {
-    success = 0;
-  }
+  int value = 0;
+  aCommand = string_skip_whitespace(aCommand);
+  aCommand = string_next_number(aCommand, &value);
+  command = (uint8_t)value;
+  aCommand = string_skip_whitespace(aCommand);
 
-  if (success)
-  {
-    /* skip whitespace */
-    while(isspace(aCommand[0]))
-    {
-      ++aCommand;
-    }
-
-    const char ch0 = aCommand[0];
-    if (ch0 && isxdigit(ch0))
-    {
-      char *end = NULL;
-      dataLength = strtoul(aCommand, &end, 16);
-      success = ((dataLength < 17) && end && !(*end));
-      if (!success)
-      {
-        dataLength = 0;
-      }
-    }
-    else if (ch0)
-    {
-      success = 0;
-    }
+  if (aCommand) {
+    value = 0;
+    string_next_number(aCommand, &value);
+    dataLength = (uint8_t)value;
   }
 
-  if (success && dataLength)
-  {
-    /* execute the command on success and if we have non-zero data length */
+  if (dataLength) {
     hw_i80_read(command, dataLength);
-  }
-  else
-  {
-    hw_uart_write_string_P(PSTR("Wrong args, format: R CC LL\r\n"));
+  } else {
+    hw_uart_write_string_P(PSTR("Wrong args, format: r <command> <number-of-byte-to-read>\r\n"));
     line_editor_uart_start();
   }
 }
@@ -437,7 +409,7 @@ void cmd_engine_write (const char *aCommand)
   const unsigned char ch1 = aCommand[1];
   const unsigned char ch2 = aCommand[2];
 
-  if (ch0 && ch1 && isxdigit (ch0) && isxdigit (ch1) && (' ' == ch2))
+  if (ch0 && ch1 && char_is_hex(ch0) && char_is_hex(ch1) && (' ' == ch2))
   {
     command = glob_get_byte (aCommand);
     aCommand += 3;
@@ -446,7 +418,7 @@ void cmd_engine_write (const char *aCommand)
     {
       volatile uint8_t chH = aCommand[0];
       volatile uint8_t chL = aCommand[1];
-      if (chH && chL && isxdigit (chH) && isxdigit (chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1))
+      if (chH && chL && char_is_hex(chH) && char_is_hex(chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1))
       {
         buffer[dataLength++] = (glob_ch_to_val (chH) << 4) | glob_ch_to_val (chL);
         aCommand += 2;
