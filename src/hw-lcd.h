@@ -69,6 +69,7 @@ void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint1
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count);
 
 void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
+void lcd_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
 
 #ifdef __cplusplus
 } /* extern "C" */

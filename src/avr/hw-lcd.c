@@ -113,6 +113,11 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
   hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
 }
 
+void lcd_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  hw_i80_write_bitmap_P(cmd, length, pData, offValue, onValue);
+}
+
 void lcd_read_callback(int length, const unsigned char *data)
 {
   if (5 == length && 0xFFU == data[4]) {

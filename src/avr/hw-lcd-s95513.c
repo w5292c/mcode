@@ -62,7 +62,7 @@ void lcd_turn(bool on)
     bytes[0] = 0x55;
     /* set_pixel_format: 16bpp */
     hw_i80_write (UINT8_C(0x3A), 1, bytes);
-    bytes[0] = 0x48;
+    bytes[0] = 0x09;
     hw_i80_write (UINT8_C(0x36), 1, bytes);
     /* @todo Implement gamma: 0xC8, 0x00, 0x32, 0x36, 0x45, 0x06, 0x16, 0x37, 0x75, 0x77, 0x54, 0x0C, 0x00, */
     /* set_display_on */

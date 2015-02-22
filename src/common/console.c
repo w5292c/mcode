@@ -120,7 +120,11 @@ void console_write_byte (uint8_t byte)
 
   /* now we are ready to send the char bitmap to the LCD module */
   const uint8_t *const pChar = mcode_fonts_get_char_bitmap (byte);
-  lcd_write_bitmap(UINT8_C (0x2C), 8, pChar, TheOffColor, TheOnColor);
+#ifndef __AVR__
+  lcd_write_bitmap(UINT8_C(0x2C), 8, pChar, TheOffColor, TheOnColor);
+#else /* __AVR__ */
+  lcd_write_bitmap_P(UINT8_C(0x2C), 8, pChar, TheOffColor, TheOnColor);
+#endif /* __AVR__ */
 }
 
 void console_write_string(const char *pString)
