@@ -34,11 +34,13 @@ static void lcd_read_callback(int length, const unsigned char *data);
 
 void lcd_init(uint16_t width, uint16_t height)
 {
+  hw_i80_init();
   lcd_set_size(width, height);
 }
 
 void lcd_deinit(void)
 {
+  hw_i80_deinit();
 }
 
 void lcd_reset(void)

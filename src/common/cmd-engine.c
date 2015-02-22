@@ -41,7 +41,6 @@
 #include <string.h>
 
 #ifdef MCODE_HW_I80_ENABLED
-static void cmd_engine_reset (void);
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
 static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
@@ -115,24 +114,20 @@ static const char TheLongTestText[] PROGMEM =
 void cmd_engine_init (void)
 {
 #ifdef MCODE_HW_I80_ENABLED
-  hw_i80_init ();
-  hw_i80_set_read_callback (cmd_engine_on_read_ready);
+  hw_i80_set_read_callback(cmd_engine_on_read_ready);
 #endif /* MCODE_HW_I80_ENABLED */
-  line_editor_uart_init ();
-  line_editor_uart_set_callback (cmd_engine_on_cmd_ready);
+  line_editor_uart_init();
+  line_editor_uart_set_callback(cmd_engine_on_cmd_ready);
 }
 
 void cmd_engine_deinit (void)
 {
-#ifdef MCODE_HW_I80_ENABLED
-  hw_i80_deinit ();
-#endif /* MCODE_HW_I80_ENABLED */
-  line_editor_uart_deinit ();
+  line_editor_uart_deinit();
 }
 
 void cmd_engine_start (void)
 {
-  line_editor_uart_start ();
+  line_editor_uart_start();
 }
 
 void cmd_engine_on_cmd_ready (const char *aString)
@@ -176,8 +171,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #endif /* MCODE_HW_I80_ENABLED */
   }
 #ifdef __linux__
-  else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit")))
-  {
+  else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
     /* EXIT command */
     main_request_exit();
     start_uart_editor = 0;
@@ -192,103 +186,63 @@ void cmd_engine_on_cmd_ready (const char *aString)
     reboot();
   }
 #ifdef MCODE_HW_I80_ENABLED
-  else if (!strncmp_P(aString, PSTR("w "), 2))
-  {
+  else if (!strncmp_P(aString, PSTR("w "), 2)) {
     /* WRITE command */
     cmd_engine_write(&aString[2]);
     start_uart_editor = 0;
-  }
-  else if (!strncmp_P(aString, PSTR("r "), 2))
-  {
+  } else if (!strncmp_P(aString, PSTR("r "), 2)) {
     /* READ command */
     cmd_engine_read(&aString[2]);
     start_uart_editor = 0;
   }
 #endif /* MCODE_HW_I80_ENABLED */
-  else if (!strncmp_P(aString, PSTR("led "), 4))
-  {
+  else if (!strncmp_P(aString, PSTR("led "), 4)) {
     cmd_engine_set_led(&aString[4]);
-  }
-  else if (!strcmp_P(aString, PSTR("reset")))
-  {
+  } else if (!strcmp_P(aString, PSTR("reset"))) {
     lcd_reset();
-#ifdef MCODE_HW_I80_ENABLED
-    cmd_engine_reset();
-#endif /* MCODE_HW_I80_ENABLED */
-  }
-  else if (!strcmp_P(aString, PSTR("on")))
-  {
+  } else if (!strcmp_P(aString, PSTR("on"))) {
     lcd_turn(true);
     lcd_set_bl(true);
-  }
-  else if (!strcmp_P(aString, PSTR("off")))
-  {
+  } else if (!strcmp_P(aString, PSTR("off"))) {
     lcd_set_bl(false);
     lcd_turn(false);
-  }
-  else if (!strcmp_P(aString, PSTR("lcd-id"))) {
+  } else if (!strcmp_P(aString, PSTR("lcd-id"))) {
     const uint32_t id = lcd_read_id();
     hw_uart_write_string("LCD ID: 0x");
     hw_uart_write_uint32(id, false);
     hw_uart_write_string("\r\n");
-  }
-  else if (!strcmp_P(aString, PSTR("timg")))
-  {
+  } else if (!strcmp_P(aString, PSTR("timg"))) {
     cmd_test_image();
-  }
-  else if (!strcmp_P(aString, PSTR("tlimg")))
-  {
+  } else if (!strcmp_P(aString, PSTR("tlimg"))) {
     cmd_test_image_large();
   }
 #ifdef MCODE_CONSOLE_ENABLED
-  else if (!strcmp_P(aString, PSTR("cls")))
-  {
+  else if (!strcmp_P(aString, PSTR("cls"))) {
     console_clear_screen();
-  }
-  else if (!strncmp_P(aString, PSTR("bg "), 3))
-  {
+  } else if (!strncmp_P(aString, PSTR("bg "), 3)) {
     cmd_engine_set_bg(&aString[3]);
-  }
-  else if (!strncmp_P(aString, PSTR("color "), 6))
-  {
+  } else if (!strncmp_P(aString, PSTR("color "), 6)) {
     cmd_engine_set_color(&aString[6]);
-  }
-  else if (!strncmp_P(aString, PSTR("scroll "), 7))
-  {
+  } else if (!strncmp_P(aString, PSTR("scroll "), 7)) {
     cmd_engine_set_scroll_start(&aString[7]);
-  }
-  else if (!strcmp_P(aString, PSTR("tstr")))
-  {
+  } else if (!strcmp_P(aString, PSTR("tstr"))) {
     console_write_string_P(TheLongTestText);
     console_write_string_P(TheLongTestText);
-  }
-  else if (!strcmp_P(aString, PSTR("esc-color")))
-  {
+  } else if (!strcmp_P(aString, PSTR("esc-color"))) {
     console_write_string_P(TheTestTextWithEscapeSequences);
-  }
-  else if (!strcmp_P(aString, PSTR("esc-pos")))
-  {
+  } else if (!strcmp_P(aString, PSTR("esc-pos"))) {
     console_write_string_P(TheTestEscPositionManagement);
-  }
-  else if (!strcmp_P(aString, PSTR("bs")))
-  {
+  } else if (!strcmp_P(aString, PSTR("bs"))) {
     console_write_string_P(PSTR ("\010"));
-  }
-  else if (!strcmp_P(aString, PSTR("tab")))
-  {
+  } else if (!strcmp_P(aString, PSTR("tab"))) {
     console_write_string_P(PSTR ("\t"));
-  }
-  else if (!strcmp_P(aString, PSTR("ch")))
-  {
+  } else if (!strcmp_P(aString, PSTR("ch"))) {
     static char str[] = "A";
     console_write_string(str);
-    if (++str[0] > 'Z')
-    {
+    if (++str[0] > 'Z') {
       str[0] = 'A';
     }
-  }
-  else if (!strcmp_P(aString, PSTR("line")))
-  {
+  } else if (!strcmp_P(aString, PSTR("line"))) {
     static uint8_t count = 0;
 
     console_write_string_P(PSTR("This is a text line #"));
@@ -296,14 +250,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
     console_write_string_P(PSTR("\r\n"));
   }
 #endif /* MCODE_CONSOLE_ENABLED */
-  else if (*aString)
-  {
+  else if (*aString) {
     /* got unrecognized non-empty command */
     hw_uart_write_string_P(PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));
   }
 
-  if (start_uart_editor)
-  {
+  if (start_uart_editor) {
     line_editor_uart_start();
   }
 }
@@ -367,11 +319,6 @@ void cmd_engine_set_led(const char *cmd)
 }
 
 #ifdef MCODE_HW_I80_ENABLED
-void cmd_engine_reset (void)
-{
-  hw_i80_reset ();
-}
-
 void cmd_engine_on_read_ready (int length, const unsigned char *pData)
 {
   hw_uart_write_string_P (PSTR("Got "));
@@ -379,16 +326,13 @@ void cmd_engine_on_read_ready (int length, const unsigned char *pData)
   hw_uart_write_string_P (PSTR(" bytes:\r\n"));
 
   int i;
-  for (i = 0; i < length; ++i)
-  {
+  for (i = 0; i < length; ++i) {
     hw_uart_write_uint (pData[i]);
-    if (i != length - 1)
-    {
+    if (i != length - 1) {
       hw_uart_write_string_P (PSTR(" "));
     }
   }
-  if (length)
-  {
+  if (length) {
     hw_uart_write_string_P (PSTR("\r\n"));
   }
   line_editor_uart_start ();
@@ -409,39 +353,29 @@ void cmd_engine_write (const char *aCommand)
   const unsigned char ch1 = aCommand[1];
   const unsigned char ch2 = aCommand[2];
 
-  if (ch0 && ch1 && char_is_hex(ch0) && char_is_hex(ch1) && (' ' == ch2))
-  {
+  if (ch0 && ch1 && char_is_hex(ch0) && char_is_hex(ch1) && (' ' == ch2)) {
     command = glob_get_byte (aCommand);
     aCommand += 3;
 
-    while (*aCommand)
-    {
+    while (*aCommand) {
       volatile uint8_t chH = aCommand[0];
       volatile uint8_t chL = aCommand[1];
-      if (chH && chL && char_is_hex(chH) && char_is_hex(chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1))
-      {
+      if (chH && chL && char_is_hex(chH) && char_is_hex(chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1)) {
         buffer[dataLength++] = (glob_ch_to_val (chH) << 4) | glob_ch_to_val (chL);
         aCommand += 2;
-      }
-      else
-      {
+      } else {
         success = 0;
         break;
       }
     }
-  }
-  else
-  {
+  } else {
     success = 0;
   }
 
-  if (success)
-  {
+  if (success) {
     /* pass the request to the I80 bus */
     hw_i80_write (command, dataLength, buffer);
-  }
-  else
-  {
+  } else {
     hw_uart_write_string_P (PSTR("Wrong args, format: W CC X1[X2[X3..XA]]\r\n"));
   }
   /* restart the command line prompt */
@@ -452,38 +386,29 @@ void cmd_engine_write (const char *aCommand)
 #ifdef MCODE_CONSOLE_ENABLED
 void cmd_engine_set_bg (const char *aParams)
 {
-  if (4 == strlen (aParams))
-  {
+  if (4 == strlen (aParams)) {
     const uint16_t param = glob_str_to_uint16 (aParams);
     console_set_bg_color (param);
-  }
-  else
-  {
+  } else {
     hw_uart_write_string_P (PSTR("Wrong args, format: bg XXXX\r\n"));
   }
 }
 
 void cmd_engine_set_color (const char *aParams)
 {
-  if (4 == strlen (aParams))
-  {
+  if (4 == strlen (aParams)) {
     const uint16_t param = glob_str_to_uint16 (aParams);
     console_set_color (param);
-  }
-  else
-  {
+  } else {
     hw_uart_write_string_P (PSTR("Wrong args, format: color XXXX\r\n"));
   }
 }
 
 void cmd_engine_set_scroll_start (const char *aParams)
 {
-  if (4 == strlen (aParams))
-  {
+  if (4 == strlen (aParams)) {
     lcd_set_scroll_start(glob_str_to_uint16 (aParams));
-  }
-  else
-  {
+  } else {
     hw_uart_write_string_P (PSTR("Wrong args, format: scroll <XXXX>\r\n"));
   }
 }

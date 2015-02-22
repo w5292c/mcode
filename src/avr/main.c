@@ -57,9 +57,13 @@ int main (void)
   hw_uart_write_string_P(PSTR("main: ready\r\nTest value: ["));
   hw_uart_write_uint(0x12afu);
   hw_uart_write_string_P(PSTR("]\r\n"));
-  /* start the command engine, and switch to the scheduler, it never exits */
   cmd_engine_start();
-  mtick_deinit();
+
+  /* start the scheduler, it never exits */
   mcode_scheduler_start();
+
+  /* Clean-up */
+  lcd_deinit();
+  mtick_deinit();
   return 0;
 }
