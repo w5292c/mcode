@@ -260,6 +260,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P(aString, PSTR("tstr")))
   {
     console_write_string_P(TheLongTestText);
+    console_write_string_P(TheLongTestText);
   }
   else if (!strcmp_P(aString, PSTR("esc-color")))
   {

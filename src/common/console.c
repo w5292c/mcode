@@ -468,82 +468,62 @@ void console_escape_set_mode (const char *pArgs)
     uint8_t value;
     while ((pArgs = console_next_num_token (pArgs, &value)))
     {
-      switch (value)
-      {
-      case 0:
+      if (!value) {
         /* reset text mode */
         TheOnColor = UINT16_C(0xFFFF);
         console_set_bg_color(UINT16_C(0x0000));
-        break;
-      case 30:
+      } else if (30 == value) {
         /* set foreground color: black */
         TheOnColor = UINT16_C(0x0000);
-        break;
-      case 31:
+      } else if (31 == value) {
         /* set foreground color: red */
         TheOnColor = UINT16_C(0xF800);
-        break;
-      case 32:
+      } else if (32 == value) {
         /* set foreground color: green */
         TheOnColor = UINT16_C(0x07E0);
-        break;
-      case 33:
+      } else if (33 == value) {
         /* set foreground color: yellow */
         TheOnColor = UINT16_C(0xFFE0);
-        break;
-      case 34:
+      } else if (34 == value) {
         /* set foreground color: blue */
         TheOnColor = UINT16_C(0x001F);
-        break;
-      case 35:
+      } else if (35 == value) {
         /* set foreground color: magenta */
         TheOnColor = UINT16_C(0xF81F);
-        break;
-      case 36:
+      } else if (36 == value) {
         /* set foreground color: cyan */
         TheOnColor = UINT16_C(0x07FF);
-        break;
-      case 37:
+      } else if (37 == value) {
         /* set foreground color: white */
         TheOnColor = UINT16_C(0xFFFF);
-        break;
-      case 40:
+      } else if (40 == value) {
         /* set background color: black */
         console_set_bg_color(UINT16_C(0x0000));
-        break;
-      case 41:
+      } else if (41 == value) {
         /* set background color: red */
         console_set_bg_color(UINT16_C(0xF800));
-        break;
-      case 42:
+      } else if (42 == value) {
         /* set background color: green */
         console_set_bg_color(UINT16_C(0x07E0));
-        break;
-      case 43:
+      } else if (43 == value) {
         /* set background color: yellow */
         console_set_bg_color(UINT16_C(0xFFE0));
-        break;
-      case 44:
+      } else if (44 == value) {
         /* set background color: blue */
         console_set_bg_color(UINT16_C(0x001F));
-        break;
-      case 45:
+      } else if (45 == value) {
         /* set background color: magenta */
         console_set_bg_color(UINT16_C(0xF81F));
-        break;
-      case 46:
+      } else if (46 == value) {
         /* set background color: cyan */
         console_set_bg_color(UINT16_C(0x07FF));
-        break;
-      case 47:
+      } else if (47 == value) {
         /* set background color: white */
         console_set_bg_color(UINT16_C(0xFFFF));
-        break;
-      default:
+      } else {
         hw_uart_write_string_P(PSTR("DEBUG: console_escape_set_mode: unknown mode: ["));
         hw_uart_write_string(pArgs);
         hw_uart_write_string_P(PSTR("]\r\n"));
-        break;
       }
     }
   }
