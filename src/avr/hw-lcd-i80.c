@@ -96,25 +96,13 @@ void lcd_set_size(uint16_t width, uint16_t height)
 
 void lcd_set_scroll_start(uint16_t start)
 {
-  uint8_t buffer[2];
-  buffer[0] = (uint8_t)(start>>8);
-  buffer[1] = (uint8_t)(start);
-  hw_i80_write(UINT8_C(0x37), 2, buffer);
+  lcd_command(0x37, start>>8, start);
 }
 
 void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd)
 {
-  uint8_t buffer[4];
-  buffer[0] = colStart>>8;
-  buffer[1] = colStart;
-  buffer[2] = colEnd>>8;
-  buffer[3] = colEnd;
-  hw_i80_write(UINT8_C(0x2A), 4, buffer);
-  buffer[0] = rowStart>>8;
-  buffer[1] = rowStart;
-  buffer[2] = rowEnd>>8;
-  buffer[3] = rowEnd;
-  hw_i80_write(UINT8_C(0x2B), 4, buffer);
+  lcd_command(0x2A, colStart>>8, colStart, colEnd>>8, colEnd);
+  lcd_command(0x2B, rowStart>>8, rowStart, rowEnd>>8, rowEnd);
 }
 
 void lcd_write(int len, ...)
