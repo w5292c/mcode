@@ -51,6 +51,7 @@ include_directories ( "${PROJECT_BINARY_DIR}/include/" )
 add_custom_command (
   TARGET console-test
   POST_BUILD
+  COMMAND avr-size console-test
   COMMAND avr-objcopy -O ihex -j .text -j .bss -j .data console-test console-test.flash.hex
   COMMAND avr-objcopy -O ihex -j .eeprom console-test console-test.eeprom.hex
   COMMAND avr-objcopy -O ihex -j .fuse console-test console-test.fuse.hex
