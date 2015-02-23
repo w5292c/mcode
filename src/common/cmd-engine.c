@@ -189,7 +189,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
   } else if (!strncmp_P(aString, PSTR("r "), 2)) {
     /* READ command */
     cmd_engine_read(&aString[2]);
-    start_uart_editor = 0;
   }
 #endif /* MCODE_HW_I80_ENABLED */
   else if (!strncmp_P(aString, PSTR("led "), 4)) {
