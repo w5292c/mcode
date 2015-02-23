@@ -44,7 +44,6 @@
  * 1. Vcc (+3.3V);
  * 2. GND;
  */
-static lcd_read_cb TheReadCallback = 0;
 
 static void lcd_spi_init(void);
 static void lcd_write_cmd(uint8_t cmd);
@@ -108,12 +107,7 @@ void lcd_reset(void)
   lcd_spi_init();
 }
 
-void lcd_set_read_cb(lcd_read_cb cb)
-{
-  TheReadCallback = cb;
-}
-
-void lcd_read(uint8_t cmd, uint8_t length)
+void lcd_read(uint8_t cmd, uint8_t length, uint8_t *data)
 {
 }
 

@@ -47,7 +47,7 @@ void lcd_reset(void)
   hw_i80_reset();
 }
 
-void lcd_read(uint8_t cmd, uint8_t length)
+void lcd_read(uint8_t cmd, uint8_t length, uint8_t *data)
 {
 }
 
@@ -67,7 +67,7 @@ uint32_t lcd_read_id(void)
     TheLcdId |= data[3];
   } else {
     TheLcdId = 0;
-    hw_uart_write_string_P(PSTR("lcd_read_callback: wrong data\r\n"));
+    hw_uart_write_string_P(PSTR("lcd_read_id: wrong data\r\n"));
   }
 
   return TheLcdId;
@@ -128,18 +128,4 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
 void lcd_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
 {
   hw_i80_write_bitmap_P(cmd, length, pData, offValue, onValue);
-}
-
-void lcd_read_callback(int length, const unsigned char *data)
-{
-  if (5 == length && 0xFFU == data[4]) {
-    TheLcdId = data[0]; TheLcdId <<= 8;
-    TheLcdId |= data[1]; TheLcdId <<= 8;
-    TheLcdId |= data[2]; TheLcdId <<= 8;
-    TheLcdId |= data[3];
-  } else {
-    hw_uart_write_string_P(PSTR("lcd_read_callback: wrong length: 0x"));
-    hw_uart_write_uint16(length, false);
-    hw_uart_write_string_P(PSTR("\r\n"));
-  }
 }

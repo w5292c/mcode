@@ -43,7 +43,6 @@
 #ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
-static void cmd_engine_on_read_ready (int length, const unsigned char *pData);
 #endif /* MCODE_HW_I80_ENABLED */
 static void cmd_engine_set_led (const char *cmd);
 static void cmd_engine_on_cmd_ready (const char *aString);
@@ -336,25 +335,6 @@ void cmd_engine_set_led(const char *cmd)
 }
 
 #ifdef MCODE_HW_I80_ENABLED
-void cmd_engine_on_read_ready(int length, const unsigned char *pData)
-{
-  hw_uart_write_string_P (PSTR("Got "));
-  hw_uart_write_uint (length);
-  hw_uart_write_string_P (PSTR(" bytes:\r\n"));
-
-  int i;
-  for (i = 0; i < length; ++i) {
-    hw_uart_write_uint (pData[i]);
-    if (i != length - 1) {
-      hw_uart_write_string_P (PSTR(" "));
-    }
-  }
-  if (length) {
-    hw_uart_write_string_P (PSTR("\r\n"));
-  }
-  line_editor_uart_start ();
-}
-
 void cmd_engine_write (const char *aCommand)
 {
   int success = 1;

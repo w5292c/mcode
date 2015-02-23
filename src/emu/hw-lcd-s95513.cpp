@@ -81,7 +81,7 @@ void hw_i80_deinit(void)
 {
 }
 
-void hw_i80_read(uint8_t cmd, uint8_t length)
+void hw_i80_read(uint8_t cmd, uint8_t length, uint8_t *data)
 {
 }
 
