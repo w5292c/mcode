@@ -120,12 +120,15 @@ void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint1
 void lcd_write(int len, ...)
 {
   int i;
-  uint8_t *data = alloca(len);
+  uint8_t *data = NULL;
+  if (len > 1) {
+    data = alloca(len - 1);
+  }
   va_list vl;
   va_start(vl, len);
   const uint8_t cmd = (uint8_t)va_arg(vl, unsigned int);
   for (i = 1; i < len; ++i) {
-    data[i] = (uint8_t)va_arg(vl, unsigned int);
+    data[i - 1] = (uint8_t)va_arg(vl, unsigned int);
   }
   va_end(vl);
   hw_i80_write(cmd, len - 1, data);
