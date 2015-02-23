@@ -27,6 +27,8 @@
 #include "hw-i80.h"
 #include "hw-uart.h"
 
+#include <alloca.h>
+#include <stdarg.h>
 #include <avr/pgmspace.h>
 
 static uint32_t TheLcdId = 0;
@@ -113,6 +115,20 @@ void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint1
   buffer[2] = rowEnd>>8;
   buffer[3] = rowEnd;
   hw_i80_write(UINT8_C(0x2B), 4, buffer);
+}
+
+void lcd_write(int len, ...)
+{
+  int i;
+  uint8_t *data = alloca(len);
+  va_list vl;
+  va_start(vl, len);
+  const uint8_t cmd = (uint8_t)va_arg(vl, unsigned int);
+  for (i = 1; i < len; ++i) {
+    data[i] = (uint8_t)va_arg(vl, unsigned int);
+  }
+  va_end(vl);
+  hw_i80_write(cmd, len - 1, data);
 }
 
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
