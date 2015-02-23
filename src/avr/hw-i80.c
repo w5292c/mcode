@@ -62,10 +62,6 @@
 */
 /* Available pins: PC0, PC1, PC6, PC7, PD7 */
 
-#define HW_I80_READ_BUFFER_LENGTH (16)
-static unsigned char TheReadBuffer[HW_I80_READ_BUFFER_LENGTH];
-static hw_i80_read_callback TheReadCallback = NULL;
-
 /**
  *
  */
@@ -133,11 +129,6 @@ void hw_i80_deinit (void)
   hw_i80_setup_ports ();
   /* make all the A-port pins as inputs, disable pull-up resistors */
   hw_i80_set_double_data_port_in ();
-}
-
-void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
-{
-  TheReadCallback = aCallback;
 }
 
 void hw_i80_write (uint8_t cmd, uint8_t length, const uint8_t *pData)
@@ -234,74 +225,61 @@ void hw_i80_write_imp (uint8_t cmd, uint8_t length, const uint8_t *pData, uint8_
   hw_i80_deactivate_cs ();
 }
 
-void hw_i80_read (uint8_t cmd, uint8_t length)
+void hw_i80_read(uint8_t cmd, uint8_t length, uint8_t *data)
 {
-  if (length > HW_I80_READ_BUFFER_LENGTH)
-  {
-    /* we cannot read more than the length of the buffer we have */
-    length = HW_I80_READ_BUFFER_LENGTH;
-  }
-
   /* activate CS */
-  hw_i80_activate_cs ();
+  hw_i80_activate_cs();
 
   /* activate D/CX */
-  hw_i80_activate_cmd ();
+  hw_i80_activate_cmd();
   /* configure PORTA as outputs */
-  hw_i80_set_data_port_out ();
+  hw_i80_set_data_port_out();
   /* send the command ID to the port A */
-  hw_i80_write_data (cmd);
+  hw_i80_write_data(cmd);
   /* activate WR */
-  hw_i80_activate_wr ();
+  hw_i80_activate_wr();
   /* some delay, todo: check if this is required */
-  hw_i80_read_write_delay ();
+  hw_i80_read_write_delay();
   /* deactivate WR */
-  hw_i80_deactivate_wr ();
+  hw_i80_deactivate_wr();
   /* some delay, todo: check if this is required */
-  hw_i80_read_write_delay ();
+  hw_i80_read_write_delay();
   /* deactivate D/CX */
-  hw_i80_activate_data ();
+  hw_i80_activate_data();
   /* confugure PORTA as input, do not enable pull-up resistors */
-  hw_i80_set_data_port_in ();
+  hw_i80_set_data_port_in();
   /* some delay, todo: check if this is required */
-  hw_i80_read_write_delay ();
+  hw_i80_read_write_delay();
 #if 1 /* incorrect read request, todo: check if this is required */
   /* activate WRX and RDX pins */
-  hw_i80_activate_rd_wr ();
+  hw_i80_activate_rd_wr();
   /* some delay, todo: check if this is required */
-  hw_i80_read_write_delay ();
+  hw_i80_read_write_delay();
   /* deactivate WRX and RDX */
-  hw_i80_deactivate_rd_wr ();
+  hw_i80_deactivate_rd_wr();
   /* some delay, todo: check if this is required */
-  hw_i80_read_write_delay ();
+  hw_i80_read_write_delay();
 #endif /* end: incorrect read request, todo: check if this is required */
   /* Read cycle */
-  memset (TheReadBuffer, 0, HW_I80_READ_BUFFER_LENGTH);
-  int i;
-  for (i = 0; i < length; ++i)
-  {
+  memset(data, 0, length);
+  uint8_t i;
+  for (i = 0; i < length; ++i) {
     /* correct reads, activate RDX */
-    hw_i80_activate_rd ();
+    hw_i80_activate_rd();
     /* some delay, todo: check if this is required */
-    hw_i80_read_write_delay ();
+    hw_i80_read_write_delay();
     /* Now, read the PORTA */
-    unsigned char data = hw_i80_read_data ();
-    TheReadBuffer[i] = data;
+    uint8_t readByte = hw_i80_read_data();
+    data[i] = readByte;
     /* and deactivate RDX */
-    hw_i80_deactivate_rd ();
+    hw_i80_deactivate_rd();
     /* some delay, todo: check if this is required */
-    hw_i80_read_write_delay ();
+    hw_i80_read_write_delay();
   }
 
   /* now, move to the idle state */
   /* deactivate CS */
-  hw_i80_deactivate_cs ();
-
-  /* and finally, notify the client */
-  if (TheReadCallback)
-  {
-    (*TheReadCallback) (length, TheReadBuffer);
-  }
+  hw_i80_deactivate_cs();
 }
 
 void hw_i80_reset (void)

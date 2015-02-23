@@ -113,9 +113,6 @@ static const char TheLongTestText[] PROGMEM =
 
 void cmd_engine_init (void)
 {
-#ifdef MCODE_HW_I80_ENABLED
-  hw_i80_set_read_callback(cmd_engine_on_read_ready);
-#endif /* MCODE_HW_I80_ENABLED */
   line_editor_uart_init();
   line_editor_uart_set_callback(cmd_engine_on_cmd_ready);
 }
@@ -263,9 +260,11 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_HW_I80_ENABLED
 void cmd_engine_read(const char *aCommand)
 {
+  uint8_t buffer[16];
   uint8_t command = 0;
   uint8_t dataLength = 0;
 
+  memset(buffer, 0, 16);
   /* first, retrieve the command code */
   int value = 0;
   aCommand = string_skip_whitespace(aCommand);
@@ -279,11 +278,29 @@ void cmd_engine_read(const char *aCommand)
     dataLength = (uint8_t)value;
   }
 
+  /* Our read buffer is 16 bytes long */
+  if (dataLength > 16) {
+    dataLength = 16;
+  }
+
   if (dataLength) {
-    hw_i80_read(command, dataLength);
+    hw_i80_read(command, dataLength, buffer);
+
+    /* Display the result */
+    hw_uart_write_string_P(PSTR("Got "));
+    hw_uart_write_uint(dataLength);
+    hw_uart_write_string_P(PSTR(" bytes:\r\n"));
+
+    uint8_t i;
+    for (i = 0; i < dataLength; ++i) {
+      hw_uart_write_uint(buffer[i]);
+      if (i != dataLength - 1) {
+        hw_uart_write_string_P(PSTR(" "));
+      }
+    }
+    hw_uart_write_string_P (PSTR("\r\n"));
   } else {
     hw_uart_write_string_P(PSTR("Wrong args, format: r <command> <number-of-byte-to-read>\r\n"));
-    line_editor_uart_start();
   }
 }
 #endif /* MCODE_HW_I80_ENABLED */
@@ -319,7 +336,7 @@ void cmd_engine_set_led(const char *cmd)
 }
 
 #ifdef MCODE_HW_I80_ENABLED
-void cmd_engine_on_read_ready (int length, const unsigned char *pData)
+void cmd_engine_on_read_ready(int length, const unsigned char *pData)
 {
   hw_uart_write_string_P (PSTR("Got "));
   hw_uart_write_uint (length);

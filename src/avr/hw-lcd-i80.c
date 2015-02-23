@@ -30,7 +30,6 @@
 #include <avr/pgmspace.h>
 
 static uint32_t TheLcdId = 0;
-static void lcd_read_callback(int length, const unsigned char *data);
 
 void lcd_init(uint16_t width, uint16_t height)
 {
@@ -58,8 +57,19 @@ void lcd_set_bl(bool on)
 
 uint32_t lcd_read_id(void)
 {
-  hw_i80_set_read_callback(lcd_read_callback);
-  hw_i80_read(0xBFU, 5);
+  uint8_t data[5] = {0};
+  hw_i80_read(0xBFU, 5, data);
+
+  if (0xFFU == data[4]) {
+    TheLcdId = data[0]; TheLcdId <<= 8;
+    TheLcdId |= data[1]; TheLcdId <<= 8;
+    TheLcdId |= data[2]; TheLcdId <<= 8;
+    TheLcdId |= data[3];
+  } else {
+    TheLcdId = 0;
+    hw_uart_write_string_P(PSTR("lcd_read_callback: wrong data\r\n"));
+  }
+
   return TheLcdId;
 }
 

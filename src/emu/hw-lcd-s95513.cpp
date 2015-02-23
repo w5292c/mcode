@@ -272,10 +272,6 @@ void emu_hw_lcd_s95513_handle_data_write_ram (uint16_t word)
   }
 }
 
-void hw_i80_set_read_callback (hw_i80_read_callback aCallback)
-{
-}
-
 uint16_t lcd_get_width(void)
 {
   return TheWidget->width();
