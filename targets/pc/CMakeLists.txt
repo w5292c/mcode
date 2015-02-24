@@ -23,6 +23,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/hw-lcd.c
   ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/cmd-engine.c
+  ${MCODE_TOP}/src/common/hw-lcd-i80.c
   ${MCODE_TOP}/src/common/cmd-test-image.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
   ${MCODE_TOP}/src/fonts.c

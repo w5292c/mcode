@@ -93,34 +93,6 @@ void lcd_set_size(uint16_t width, uint16_t height)
   hw_uart_write_string_P(PSTR(")\r\n"));
 }
 
-void lcd_set_scroll_start(uint16_t start)
-{
-  lcd_command(0x37, start>>8, start);
-}
-
-void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd)
-{
-  lcd_command(0x2A, colStart>>8, colStart, colEnd>>8, colEnd);
-  lcd_command(0x2B, rowStart>>8, rowStart, rowEnd>>8, rowEnd);
-}
-
-void lcd_write(int len, ...)
-{
-  int i;
-  uint8_t *data = NULL;
-  if (len > 1) {
-    data = alloca(len - 1);
-  }
-  va_list vl;
-  va_start(vl, len);
-  const uint8_t cmd = (uint8_t)va_arg(vl, unsigned int);
-  for (i = 1; i < len; ++i) {
-    data[i - 1] = (uint8_t)va_arg(vl, unsigned int);
-  }
-  va_end(vl);
-  hw_i80_write(cmd, len - 1, data);
-}
-
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
 {
   hw_i80_write_const_long (cmd, word, count);

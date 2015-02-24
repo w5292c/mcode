@@ -32,46 +32,51 @@
 #include "hw-uart.h"
 #include "customwidget.h"
 
+#define LCD_SET_SCROLL_START UINT8_C(0x37)
 #define LCD_S95513_WR_RAM_START UINT8_C(0x2C)
 #define LCD_S95513_WR_RAM_CONT UINT8_C(0x3C)
 #define LCD_S95513_SET_COLUMN_ADDR UINT8_C(0x2A)
 #define LCD_S95513_SET_PAGE_ADDR UINT8_C(0x2B)
 
-static uint8_t TheBuffer[8];
+enum EmuState {
+  EmuStateIdle,
+  EmuStateUnbuffered,
+  EmuStateInProg,
+  EmuStateFinished,
+  EmuStateError
+};
+
+// Command data buffer management
+static const uint32_t KBufferSize = 24;
+static uint32_t TheBufferIndex = 0;
+static uint8_t TheBuffer[KBufferSize];
+static EmuState TheEmuState = EmuStateIdle;
+
 static uint16_t ThePageEnd = 0;
 static uint16_t TheNextPage = 0;
 static uint16_t ThePageStart = 0;
 static uint16_t TheColumnEnd = 0;
 static uint8_t TheNormalFlag = 1;
 static uint16_t TheNextColumn = 0;
-static uint8_t TheBufferIndex = 0;
 static uint16_t TheColumnStart = 0;
 static uint8_t TheCurrentCommand = 0;
 
 static AcCustomWidget *TheWidget = NULL;
 
-static uint32_t emu_hw_lcd_s95513_to_color (quint32 data);
-static void emu_hw_lcd_s95513_set_pixel (int x, int y, quint32 color);
+static uint32_t emu_hw_lcd_s95513_to_color(quint32 data);
+static void emu_hw_lcd_s95513_set_pixel(int x, int y, quint32 color);
 
 /**
  * Commands
  */
-static void emu_hw_lcd_s95513_handle_data_write_ram (uint16_t word);
-static void emu_hw_lcd_s95513_handle_data_set_page_addr (uint8_t byte);
-static void emu_hw_lcd_s95513_handle_data_set_column_addr (uint8_t byte);
+static void emu_hw_lcd_set_scroll_pos();
+static void emu_hw_lcd_s95513_handle_data_write_ram(uint16_t word);
+static void emu_hw_lcd_s95513_handle_data_set_page_addr(uint8_t byte);
+static void emu_hw_lcd_s95513_handle_data_set_column_addr(uint8_t byte);
 
-static void emu_hw_lcd_s95513_handle_cmd (uint8_t cmd);
-static void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte);
-static void emu_hw_lcd_s95513_handle_data_word (uint16_t word);
-
-void lcd_set_scroll_start(uint16_t start)
-{
-  if (TheWidget) {
-    TheWidget->setScrollPosition(start);
-  } else {
-    hw_uart_write_string("lcd_set_scroll_start: no widget\r\n");
-  }
-}
+static void emu_hw_lcd_s95513_handle_cmd(uint8_t cmd);
+static void emu_hw_lcd_s95513_handle_data_byte(uint8_t byte);
+static void emu_hw_lcd_s95513_handle_data_word(uint16_t word);
 
 void hw_i80_read(uint8_t cmd, uint8_t length, uint8_t *data)
 {
@@ -80,13 +85,13 @@ void hw_i80_read(uint8_t cmd, uint8_t length, uint8_t *data)
 void hw_i80_write(uint8_t cmd, uint8_t length, const uint8_t *data)
 {
   uint8_t i;
-  emu_hw_lcd_s95513_handle_cmd (cmd);
+  emu_hw_lcd_s95513_handle_cmd(cmd);
   for (i = 0; i < length; ++i) {
-    emu_hw_lcd_s95513_handle_data_byte (*data++);
+    emu_hw_lcd_s95513_handle_data_byte(*data++);
   }
 }
 
-void emu_hw_lcd_s95513_write_words (uint8_t cmd, uint8_t length, const uint16_t *data)
+void emu_hw_lcd_s95513_write_words(uint8_t cmd, uint8_t length, const uint16_t *data)
 {
   uint8_t i;
   emu_hw_lcd_s95513_handle_cmd(cmd);
@@ -119,19 +124,14 @@ void hw_i80_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uin
   emu_hw_lcd_s95513_handle_cmd (cmd);
   /* write loop */
   currentByte = *pData++;
-  for (bitMask = UINT8_C (0x01); ; )
-  {
+  for (bitMask = UINT8_C (0x01); ; ) {
     emu_hw_lcd_s95513_handle_data_word ((currentByte & bitMask) ? onValue : offValue);
     bitMask = (bitMask << 1);
-    if (!bitMask)
-    {
-      if (pData < pDataEnd)
-      {
+    if (!bitMask) {
+      if (pData < pDataEnd) {
         bitMask = UINT8_C (0x01);
         currentByte = *pData++;
-      }
-      else
-      {
+      } else {
         break;
       }
     }
@@ -151,7 +151,7 @@ uint32_t emu_hw_lcd_s95513_to_color (uint32_t data)
   return 0xff000000u|(red << 16)|(green << 8)| blue;
 }
 
-void emu_hw_lcd_s95513_handle_cmd (uint8_t cmd)
+void emu_hw_lcd_s95513_handle_cmd(uint8_t cmd)
 {
   TheNormalFlag = 1;
   TheBufferIndex = 0;
@@ -162,24 +162,58 @@ void emu_hw_lcd_s95513_handle_cmd (uint8_t cmd)
   case LCD_S95513_WR_RAM_START:
     TheNextPage = ThePageStart;
     TheNextColumn = TheColumnStart;
+    TheEmuState = EmuStateUnbuffered;
     break;
   default:
+    TheEmuState = EmuStateIdle;
     break;
   }
 }
 
-void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte)
+void emu_hw_lcd_s95513_handle_data_byte(uint8_t byte)
 {
+  if (EmuStateIdle == TheEmuState) {
+    TheEmuState = EmuStateInProg;
+  } else if (EmuStateFinished == TheEmuState || EmuStateError == TheEmuState) {
+    if (EmuStateFinished == TheEmuState) {
+      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_byte: finished\r\n");
+    } else {
+      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_byte: error\r\n");
+    }
+    return;
+  }
+
+  if (EmuStateInProg == TheEmuState) {
+    if (TheBufferIndex < KBufferSize) {
+      TheBuffer[TheBufferIndex++] = byte;
+    } else {
+      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_byte: data buffer overflow\r\n");
+      return;
+    }
+  }
+
   switch (TheCurrentCommand)
   {
+  case LCD_SET_SCROLL_START:
+    if (2 == TheBufferIndex) {
+      emu_hw_lcd_set_scroll_pos();
+      TheEmuState = EmuStateFinished;
+    }
+    break;
   case LCD_S95513_WR_RAM_CONT:
   case LCD_S95513_WR_RAM_START:
     emu_hw_lcd_s95513_handle_data_write_ram (byte);
   case LCD_S95513_SET_COLUMN_ADDR:
-    emu_hw_lcd_s95513_handle_data_set_column_addr (byte);
+    if (4 == TheBufferIndex) {
+      emu_hw_lcd_s95513_handle_data_set_column_addr (byte);
+      TheEmuState = EmuStateFinished;
+    }
     break;
   case LCD_S95513_SET_PAGE_ADDR:
-    emu_hw_lcd_s95513_handle_data_set_page_addr (byte);
+    if (4 == TheBufferIndex) {
+      emu_hw_lcd_s95513_handle_data_set_page_addr (byte);
+      TheEmuState = EmuStateFinished;
+    }
     break;
   default:
     hw_uart_write_string("EMU: emu_hw_lcd_s95513_handle_data_byte (cmd: ");
@@ -191,19 +225,51 @@ void emu_hw_lcd_s95513_handle_data_byte (uint8_t byte)
   }
 }
 
-void emu_hw_lcd_s95513_handle_data_word (uint16_t word)
+void emu_hw_lcd_s95513_handle_data_word(uint16_t word)
 {
+  if (EmuStateIdle == TheEmuState) {
+    TheEmuState = EmuStateInProg;
+  } else if (EmuStateFinished == TheEmuState || EmuStateError == TheEmuState) {
+    if (EmuStateFinished == TheEmuState) {
+      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_word: finished\r\n");
+    } else {
+      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_word: error\r\n");
+    }
+    return;
+  }
+
+  if (EmuStateInProg == TheEmuState) {
+    if (TheBufferIndex < KBufferSize) {
+      TheBuffer[TheBufferIndex++] = static_cast<uint8_t>(word);
+    } else {
+      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_word: data buffer overflow\r\n");
+      return;
+    }
+  }
+
   switch (TheCurrentCommand)
   {
+  case LCD_SET_SCROLL_START:
+    if (2 == TheBufferIndex) {
+      emu_hw_lcd_set_scroll_pos();
+      TheEmuState = EmuStateFinished;
+    }
+    break;
   case LCD_S95513_WR_RAM_CONT:
   case LCD_S95513_WR_RAM_START:
     emu_hw_lcd_s95513_handle_data_write_ram (word);
     break;
   case LCD_S95513_SET_COLUMN_ADDR:
-    emu_hw_lcd_s95513_handle_data_set_column_addr ((uint8_t) word);
+    if (4 == TheBufferIndex) {
+      emu_hw_lcd_s95513_handle_data_set_column_addr ((uint8_t) word);
+      TheEmuState = EmuStateFinished;
+    }
     break;
   case LCD_S95513_SET_PAGE_ADDR:
-    emu_hw_lcd_s95513_handle_data_set_page_addr ((uint8_t) word);
+    if (4 == TheBufferIndex) {
+      emu_hw_lcd_s95513_handle_data_set_page_addr ((uint8_t) word);
+      TheEmuState = EmuStateFinished;
+    }
     break;
   default:
     hw_uart_write_string("EMU: emu_hw_lcd_s95513_handle_data_word (cmd: ");
@@ -215,49 +281,34 @@ void emu_hw_lcd_s95513_handle_data_word (uint16_t word)
   }
 }
 
-void emu_hw_lcd_s95513_handle_data_set_page_addr (uint8_t byte)
+void emu_hw_lcd_s95513_handle_data_set_page_addr(uint8_t byte)
 {
-  if (TheNormalFlag)
-  {
-    TheBuffer[TheBufferIndex++] = byte;
-    if (4 == TheBufferIndex)
-    {
-      ThePageStart = (TheBuffer[0] << 8) | TheBuffer[1];
-      ThePageEnd = (TheBuffer[2] << 8) | TheBuffer[3];
-      TheNormalFlag = 0;
-    }
-  }
+  Q_ASSERT(4 == TheBufferIndex);
+
+  ThePageStart = (TheBuffer[0] << 8) | TheBuffer[1];
+  ThePageEnd = (TheBuffer[2] << 8) | TheBuffer[3];
 }
 
-void emu_hw_lcd_s95513_handle_data_set_column_addr (uint8_t byte)
+void emu_hw_lcd_s95513_handle_data_set_column_addr(uint8_t byte)
 {
-  if (TheNormalFlag)
-  {
-    TheBuffer[TheBufferIndex++] = byte;
-    if (4 == TheBufferIndex)
-    {
-      TheColumnStart = (TheBuffer[0] << 8) | TheBuffer[1];
-      TheColumnEnd = (TheBuffer[2] << 8) | TheBuffer[3];
-      TheNormalFlag = 0;
-    }
-  }
+  Q_ASSERT(4 == TheBufferIndex);
+
+  TheColumnStart = (TheBuffer[0] << 8) | TheBuffer[1];
+  TheColumnEnd = (TheBuffer[2] << 8) | TheBuffer[3];
 }
 
-void emu_hw_lcd_s95513_handle_data_write_ram (uint16_t word)
+void emu_hw_lcd_s95513_handle_data_write_ram(uint16_t word)
 {
-  if (TheNormalFlag)
-  {
+  if (TheNormalFlag) {
     /* got next color sample, put it to the surface */
     const uint32_t color = emu_hw_lcd_s95513_to_color (word);
     emu_hw_lcd_s95513_set_pixel (TheNextColumn, TheNextPage, color);
 
     TheNextColumn++;
-    if (TheNextColumn > TheColumnEnd)
-    {
+    if (TheNextColumn > TheColumnEnd) {
       TheNextColumn = TheColumnStart;
       TheNextPage++;
-      if (TheNextPage > ThePageEnd)
-      {
+      if (TheNextPage > ThePageEnd) {
         TheNormalFlag = 0;
       }
     }
@@ -309,23 +360,6 @@ uint32_t lcd_read_id(void)
   return 0;
 }
 
-void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd)
-{
-  uint8_t buffer[4];
-  /* set_column_address */
-  buffer[0] = UINT8_C(colStart>>8);
-  buffer[1] = UINT8_C(colStart);
-  buffer[2] = UINT8_C(colEnd>>8);
-  buffer[3] = UINT8_C(colEnd);
-  hw_i80_write(UINT8_C(0x2A), 4, buffer);
-  /* set_page_address */
-  buffer[0] = UINT8_C(rowStart>>8);
-  buffer[1] = UINT8_C(rowStart);
-  buffer[2] = UINT8_C(rowEnd>>8);
-  buffer[3] = UINT8_C(rowEnd);
-  hw_i80_write(UINT8_C(0x2B), 4, buffer);
-}
-
 void hw_i80_write_const_short(uint8_t cmd, uint16_t constValue, uint8_t length)
 {
   hw_i80_write_const_long(cmd, constValue, length);
@@ -357,4 +391,16 @@ void lcd_deinit(void)
 {
   delete TheWidget;
   TheWidget = NULL;
+}
+
+void emu_hw_lcd_set_scroll_pos()
+{
+  Q_ASSERT(2 == TheBufferIndex);
+
+  if (TheWidget) {
+    const uint scrollPos = (static_cast<uint>(TheBuffer[0]) << 8) | (TheBuffer[1]);
+    TheWidget->setScrollPosition(scrollPos);
+  } else {
+    hw_uart_write_string("lcd_set_scroll_start: no widget\r\n");
+  }
 }

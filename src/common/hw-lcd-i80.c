@@ -24,21 +24,24 @@
 
 #include "hw-lcd.h"
 
-void lcd_cls(uint16_t color)
-{
-  const uint32_t width = lcd_get_width();
-  const uint32_t height = lcd_get_height();
-  lcd_set_window(0, width - 1, 0, height - 1);
-  lcd_write_const_words(0x2C, color, width*height);
-}
+#include "hw-i80.h"
 
-void lcd_set_scroll_start(uint16_t start)
-{
-  lcd_command(0x37, start>>8, start);
-}
+#include <alloca.h>
+#include <stdarg.h>
 
-void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint16_t rowEnd)
+void lcd_write(int len, ...)
 {
-  lcd_command(0x2A, colStart>>8, colStart, colEnd>>8, colEnd);
-  lcd_command(0x2B, rowStart>>8, rowStart, rowEnd>>8, rowEnd);
+  int i;
+  uint8_t *data = NULL;
+  if (len > 1) {
+    data = alloca(len - 1);
+  }
+  va_list vl;
+  va_start(vl, len);
+  const uint8_t cmd = (uint8_t)va_arg(vl, unsigned int);
+  for (i = 1; i < len; ++i) {
+    data[i - 1] = (uint8_t)va_arg(vl, unsigned int);
+  }
+  va_end(vl);
+  hw_i80_write(cmd, len - 1, data);
 }
