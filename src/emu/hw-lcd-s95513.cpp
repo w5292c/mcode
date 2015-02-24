@@ -73,14 +73,6 @@ void lcd_set_scroll_start(uint16_t start)
   }
 }
 
-void hw_i80_init(void)
-{
-}
-
-void hw_i80_deinit(void)
-{
-}
-
 void hw_i80_read(uint8_t cmd, uint8_t length, uint8_t *data)
 {
 }

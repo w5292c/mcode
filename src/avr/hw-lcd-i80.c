@@ -31,8 +31,6 @@
 #include <stdarg.h>
 #include <avr/pgmspace.h>
 
-static uint32_t TheLcdId = 0;
-
 void lcd_init(uint16_t width, uint16_t height)
 {
   hw_i80_init();
@@ -51,6 +49,7 @@ void lcd_reset(void)
 
 void lcd_read(uint8_t cmd, uint8_t length, uint8_t *data)
 {
+  hw_i80_read(cmd, length, data);
 }
 
 void lcd_set_bl(bool on)
@@ -60,19 +59,19 @@ void lcd_set_bl(bool on)
 uint32_t lcd_read_id(void)
 {
   uint8_t data[5] = {0};
-  hw_i80_read(0xBFU, 5, data);
+  lcd_read(UINT8_C(0xBF), 5, data);
 
-  if (0xFFU == data[4]) {
-    TheLcdId = data[0]; TheLcdId <<= 8;
-    TheLcdId |= data[1]; TheLcdId <<= 8;
-    TheLcdId |= data[2]; TheLcdId <<= 8;
-    TheLcdId |= data[3];
+  uint32_t lcdId = 0;
+  if (UINT8_C(0xFF) == data[4]) {
+    lcdId  = data[0]; lcdId <<= 8;
+    lcdId |= data[1]; lcdId <<= 8;
+    lcdId |= data[2]; lcdId <<= 8;
+    lcdId |= data[3];
   } else {
-    TheLcdId = 0;
     hw_uart_write_string_P(PSTR("lcd_read_id: wrong data\r\n"));
   }
 
-  return TheLcdId;
+  return lcdId;
 }
 
 uint16_t lcd_get_width(void)
