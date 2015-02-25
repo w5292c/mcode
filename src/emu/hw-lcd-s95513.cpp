@@ -332,23 +332,9 @@ void lcd_set_size(uint16_t width, uint16_t height)
   console_clear_screen();
 }
 
-void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
-{
-  hw_i80_write_const_long (cmd, word, count);
-}
-
-void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{
-  hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
-}
-
 void lcd_turn(bool on)
 {
   TheWidget->turn(on);
-}
-
-void lcd_reset(void)
-{
 }
 
 void lcd_set_bl(bool on)

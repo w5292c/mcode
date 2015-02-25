@@ -29,6 +29,16 @@
 #include <alloca.h>
 #include <stdarg.h>
 
+void lcd_reset(void)
+{
+  hw_i80_reset();
+}
+
+void lcd_read(uint8_t cmd, uint8_t length, uint8_t *data)
+{
+  hw_i80_read(cmd, length, data);
+}
+
 void lcd_write(int len, ...)
 {
   int i;
@@ -44,4 +54,19 @@ void lcd_write(int len, ...)
   }
   va_end(vl);
   hw_i80_write(cmd, len - 1, data);
+}
+
+void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
+{
+  hw_i80_write_const_long(cmd, word, count);
+}
+
+void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
+}
+
+void lcd_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  hw_i80_write_bitmap_P(cmd, length, pData, offValue, onValue);
 }

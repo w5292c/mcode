@@ -27,8 +27,6 @@
 #include "hw-i80.h"
 #include "hw-uart.h"
 
-#include <alloca.h>
-#include <stdarg.h>
 #include <avr/pgmspace.h>
 
 void lcd_init(uint16_t width, uint16_t height)
@@ -40,16 +38,6 @@ void lcd_init(uint16_t width, uint16_t height)
 void lcd_deinit(void)
 {
   hw_i80_deinit();
-}
-
-void lcd_reset(void)
-{
-  hw_i80_reset();
-}
-
-void lcd_read(uint8_t cmd, uint8_t length, uint8_t *data)
-{
-  hw_i80_read(cmd, length, data);
 }
 
 void lcd_set_bl(bool on)
@@ -91,19 +79,4 @@ void lcd_set_size(uint16_t width, uint16_t height)
   hw_uart_write_string_P(PSTR(", 0x"));
   hw_uart_write_uint16(height, true);
   hw_uart_write_string_P(PSTR(")\r\n"));
-}
-
-void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
-{
-  hw_i80_write_const_long (cmd, word, count);
-}
-
-void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{
-  hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
-}
-
-void lcd_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{
-  hw_i80_write_bitmap_P(cmd, length, pData, offValue, onValue);
 }
