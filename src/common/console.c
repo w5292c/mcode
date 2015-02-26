@@ -239,48 +239,34 @@ uint8_t console_handle_utf8 (uint8_t byte)
 
 uint8_t console_handle_control_codes (uint8_t byte)
 {
-  const uint8_t controlCode = (byte < 32 && byte != 27);
-  if (controlCode)
-  {
-    switch (byte)
-    {
-    case '\r':
+  bool forcedLineDown = false;
+  const bool controlCode = (byte < 32 && byte != 27);
+  if (controlCode) {
+    if ('\r' == byte) {
       TheCurrentColumn = 0;
-      break;
-    case 9: /*Horizontal Tab */
-      {
-        const uint8_t originalColumn = TheCurrentColumn;
-        TheCurrentColumn = (TheCurrentColumn/CONSOLE_HTAB_SIZE + 1) * CONSOLE_HTAB_SIZE;
-        console_escape_clear_line (TheCurrentLine, originalColumn, TheCurrentColumn);
-        if (TheCurrentColumn >= TheColumnCount)
-        {
-          TheCurrentColumn = 0;
-          /* fall though to next-line */
-        }
-        else
-        {
-          break;
-        }
-      }
-    case 11: /* vertical tab */
-    case '\n':
-      ++TheCurrentLine;
-      if (TheCurrentLine >= TheLineCount)
-      {
-        /* roll 1 text line up */
-        console_roll_up ();
-        TheCurrentLine = TheLineCount - 1;
-      }
-      break;
-    case 8: /* backspace */
-      if (--TheCurrentColumn < 0)
-      {
+    } else if (8 == byte) {
+      /* backspace */
+      if (--TheCurrentColumn < 0) {
         TheCurrentColumn = 0;
       }
-      console_escape_clear_line (TheCurrentLine, TheCurrentColumn, TheCurrentColumn + 1);
-      break;
-    default:
-      break;
+      console_escape_clear_line(TheCurrentLine, TheCurrentColumn, TheCurrentColumn + 1);
+    } else if (9 == byte) {
+      /* horizontal Tab */
+      const uint8_t originalColumn = TheCurrentColumn;
+      TheCurrentColumn = (TheCurrentColumn/CONSOLE_HTAB_SIZE + 1) * CONSOLE_HTAB_SIZE;
+      console_escape_clear_line (TheCurrentLine, originalColumn, TheCurrentColumn);
+      if (TheCurrentColumn >= TheColumnCount) {
+        TheCurrentColumn = 0;
+        forcedLineDown = true;
+      }
+    }
+    if (11 == byte || '\n' == byte || forcedLineDown) {
+      ++TheCurrentLine;
+      if (TheCurrentLine >= TheLineCount) {
+        /* roll 1 text line up */
+        console_roll_up();
+        TheCurrentLine = TheLineCount - 1;
+      }
     }
   }
 
@@ -351,16 +337,13 @@ uint8_t console_handle_escape_sequence (uint8_t byte)
   static uint8_t escapeSequenceIndex = 0;
 
   uint8_t result = 0;
-  switch (escapeSequence)
-  {
-  case 0:
+  if (0 == escapeSequence) {
     if (27 == byte)
     {
       escapeSequence = 1;
       result = 1;
     }
-    break;
-  case 1:
+  } else if (1 == escapeSequence) {
     if ('[' == byte)
     {
       /* 'ESC[' detected, start recording parameters */
@@ -369,8 +352,7 @@ uint8_t console_handle_escape_sequence (uint8_t byte)
       escapeSequenceIndex = 0;
       result = 1;
     }
-    break;
-  case 2:
+  } else if (2 == escapeSequence) {
     /**@todo At this point we might have received the closing suffix, probably,
              makes sense to check for it before reporting an error */
     if (escapeSequenceIndex < sizeof (EscSequenceBuffer) - 1)
@@ -405,9 +387,6 @@ uint8_t console_handle_escape_sequence (uint8_t byte)
     }
 
     result = 1;
-    break;
-  default:
-    break;
   }
 
   return result;

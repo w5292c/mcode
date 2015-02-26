@@ -76,7 +76,7 @@ void main_tick(void)
   }
   TheDelay = 0;
 
-  switch(TheCase) {
+  switch (TheCase) {
   case 0:
     mcode_hw_leds_set(1, 1);
     mcode_hw_leds_set(2, 0);

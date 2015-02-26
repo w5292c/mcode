@@ -185,7 +185,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strncmp_P(aString, PSTR("w "), 2)) {
     /* WRITE command */
     cmd_engine_write(&aString[2]);
-    start_uart_editor = 0;
   } else if (!strncmp_P(aString, PSTR("r "), 2)) {
     /* READ command */
     cmd_engine_read(&aString[2]);
@@ -301,6 +300,48 @@ void cmd_engine_read(const char *aCommand)
     hw_uart_write_string_P(PSTR("Wrong args, format: r <command> <number-of-byte-to-read>\r\n"));
   }
 }
+
+void cmd_engine_write(const char *aCommand)
+{
+  int success = 1;
+  int dataLength = 0;
+  unsigned char command;
+#define MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH (32)
+  unsigned char buffer[MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH];
+
+  memset(buffer, 0, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH);
+
+  /* parse arguments */
+  const unsigned char ch0 = aCommand[0];
+  const unsigned char ch1 = aCommand[1];
+  const unsigned char ch2 = aCommand[2];
+
+  if (ch0 && ch1 && char_is_hex(ch0) && char_is_hex(ch1) && (' ' == ch2)) {
+    command = glob_get_byte (aCommand);
+    aCommand += 3;
+
+    while (*aCommand) {
+      volatile uint8_t chH = aCommand[0];
+      volatile uint8_t chL = aCommand[1];
+      if (chH && chL && char_is_hex(chH) && char_is_hex(chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1)) {
+        buffer[dataLength++] = (glob_ch_to_val(chH) << 4) | glob_ch_to_val(chL);
+        aCommand += 2;
+      } else {
+        success = 0;
+        break;
+      }
+    }
+  } else {
+    success = 0;
+  }
+
+  if (success) {
+    /* pass the request to the I80 bus */
+    hw_i80_write(command, dataLength, buffer);
+  } else {
+    hw_uart_write_string_P (PSTR("Wrong args, format: W CC X1[X2[X3..XA]]\r\n"));
+  }
+}
 #endif /* MCODE_HW_I80_ENABLED */
 
 /**
@@ -332,52 +373,6 @@ void cmd_engine_set_led(const char *cmd)
     hw_uart_write_string_P (PSTR("Wrong args, format: L I 0/1\r\n> I - the LED index [0..1]\r\n> 0/1 - turm OFF/ON\r\n"));
   }
 }
-
-#ifdef MCODE_HW_I80_ENABLED
-void cmd_engine_write (const char *aCommand)
-{
-  int success = 1;
-  int dataLength = 0;
-  unsigned char command;
-#define MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH (32)
-  unsigned char buffer[MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH];
-
-  memset (buffer, 0, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH);
-
-  /* parse arguments */
-  const unsigned char ch0 = aCommand[0];
-  const unsigned char ch1 = aCommand[1];
-  const unsigned char ch2 = aCommand[2];
-
-  if (ch0 && ch1 && char_is_hex(ch0) && char_is_hex(ch1) && (' ' == ch2)) {
-    command = glob_get_byte (aCommand);
-    aCommand += 3;
-
-    while (*aCommand) {
-      volatile uint8_t chH = aCommand[0];
-      volatile uint8_t chL = aCommand[1];
-      if (chH && chL && char_is_hex(chH) && char_is_hex(chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1)) {
-        buffer[dataLength++] = (glob_ch_to_val (chH) << 4) | glob_ch_to_val (chL);
-        aCommand += 2;
-      } else {
-        success = 0;
-        break;
-      }
-    }
-  } else {
-    success = 0;
-  }
-
-  if (success) {
-    /* pass the request to the I80 bus */
-    hw_i80_write (command, dataLength, buffer);
-  } else {
-    hw_uart_write_string_P (PSTR("Wrong args, format: W CC X1[X2[X3..XA]]\r\n"));
-  }
-  /* restart the command line prompt */
-  line_editor_uart_start ();
-}
-#endif /* MCODE_HW_I80_ENABLED */
 
 #ifdef MCODE_CONSOLE_ENABLED
 void cmd_engine_set_bg (const char *aParams)
