@@ -1,9 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-add_definitions( "-mmcu=atmega32 -g -Os -Wall -Wstrict-prototypes" )
-set ( CMAKE_EXE_LINKER_FLAGS "-mmcu=atmega32" )
-set ( CMAKE_SHARED_LINKER_FLAGS "-mmcu=atmega32" )
-set ( CMAKE_MODULE_LINKER_FLAGS "-mmcu=atmega32" )
+add_definitions( -mmcu=atmega32 -g -Os -Wall -Wstrict-prototypes )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 include_directories( ${MCODE_TOP}/src/ )
@@ -53,7 +50,8 @@ add_custom_command (
   TARGET console-test
   POST_BUILD
   COMMAND avr-size console-test
-  COMMAND avr-objcopy -O ihex -j .text -j .bss -j .data console-test console-test.flash.hex
+  COMMAND avr-objdump -h -S console-test > console-test.lst
+  COMMAND avr-objcopy -j .text -j .data -O ihex console-test console-test.flash.hex
   COMMAND avr-objcopy -O ihex -j .eeprom console-test console-test.eeprom.hex
   COMMAND avr-objcopy -O ihex -j .fuse console-test console-test.fuse.hex
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
