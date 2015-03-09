@@ -20,22 +20,25 @@ set (SRC_LIST
   ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/scheduler.c
   ${MCODE_TOP}/src/common/cmd-engine.c
-  ${MCODE_TOP}/src/common/hw-lcd-i80.c
+#  ${MCODE_TOP}/src/common/hw-lcd-i80.c
   ${MCODE_TOP}/src/common/cmd-test-image.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
+  ${MCODE_TOP}/src/common/hw-lcd-ili9341.c
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/avr/mtick.c
-#  ${MCODE_TOP}/src/avr/fuses.c
-  ${MCODE_TOP}/src/avr/hw-i80.c
+##  ${MCODE_TOP}/src/avr/fuses.c
+#  ${MCODE_TOP}/src/avr/hw-i80.c
   ${MCODE_TOP}/src/avr/system.c
   ${MCODE_TOP}/src/avr/hw-spi.c
+  ${MCODE_TOP}/src/avr/hw-lcd.c
   ${MCODE_TOP}/src/avr/hw-leds.c
   ${MCODE_TOP}/src/avr/hw-uart.c
-  ${MCODE_TOP}/src/avr/hw-lcd-i80.c
-  ${MCODE_TOP}/src/avr/hw-lcd-s95513.c
+  ${MCODE_TOP}/src/avr/hw-lcd-spi.c
+#  ${MCODE_TOP}/src/avr/hw-lcd-i80.c
+#  ${MCODE_TOP}/src/avr/hw-lcd-s95513.c
 )
 
-option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
+option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
 

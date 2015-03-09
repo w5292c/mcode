@@ -57,6 +57,7 @@ uint32_t lcd_read_id(void);
 
 void lcd_reset(void);
 
+void lcd_set_address(bool a0);
 void lcd_read(uint8_t cmd, uint8_t length, uint8_t *data);
 void lcd_write(int len, ...);
 

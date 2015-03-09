@@ -63,6 +63,7 @@ void hw_uart_init (void)
   memset ((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
   memset ((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
 #ifndef MCODE_HW_UART_SYNC_WRITE
+#error Async write is not supported
   TheWriteBufferEnd = 0;
   TheWriteBufferStart = 0;
   memset (TheWriteBuffer, 0, HW_UART_WRITE_BUFFER_LENGTH);
@@ -181,6 +182,7 @@ void hw_uart_write_string_P (const char *aString)
   }
 
 #else /* MCODE_HW_UART_SYNC_WRITE */
+#error Async is not supported
   /**@todo implement async version */
 #endif /* MCODE_HW_UART_SYNC_WRITE*/
 }

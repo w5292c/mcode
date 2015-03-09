@@ -21,49 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-#include "mtick.h"
 #include "hw-lcd.h"
-#include "hw-leds.h"
-#include "hw-uart.h"
-#include "console.h"
-#include "scheduler.h"
-#include "cmd-engine.h"
-#include "line-editor-uart.h"
 
-#include <avr/io.h>
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
-
-int main (void)
+uint16_t lcd_get_width(void)
 {
-  /* first, init the scheduler */
-  mcode_scheduler_init();
-  mtick_init();
-  /* now, UART can be initialized */
-  hw_uart_init();
-  lcd_init(320, 480);
-  console_init();
-  /* init LEDs */
-  mcode_hw_leds_init();
-  /* init the line editor and the command engine */
-  line_editor_uart_init();
-  cmd_engine_init();
+  return 240;
+}
 
-  /* now, enable the interrupts */
-  sei();
+uint16_t lcd_get_height(void)
+{
+  return 320;
+}
 
-  /* Write some 'hello' text */
-  hw_uart_write_string_P(PSTR("\r\nmain: ready\r\nTest value: ["));
-  hw_uart_write_uint(0x12afu);
-  hw_uart_write_string_P(PSTR("]\r\n"));
-  cmd_engine_start();
-
-  /* start the scheduler, it never exits */
-  mcode_scheduler_start();
-
-  /* Clean-up */
-  lcd_deinit();
-  mtick_deinit();
-  return 0;
+void lcd_turn(bool on)
+{
+  lcd_command(on ? 0x29 : 0x28);
 }

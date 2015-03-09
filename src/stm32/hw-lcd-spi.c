@@ -284,8 +284,3 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
     }
   }
 }
-
-void lcd_turn(bool on)
-{
-  lcd_command(on ? 0x29 : 0x28);
-}

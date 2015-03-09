@@ -24,7 +24,10 @@
 
 #include "hw-spi.h"
 
+#include "hw-uart.h"
+
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 
 /*!
  * SPI HW configuration:
@@ -40,16 +43,18 @@
 
 void spi_init(void)
 {
+  /* First, configure CS as output */
+  /* This MUST be done BEFORE configuring SPI as a master */
+  DDRB |= (1U<<DDB4);
+  spi_set_cs(false);
+  /* Enable SPI, Master, set clock rate fck/2 */
+  SPCR = (1U<<SPE) | (1U<<MSTR);
+  /* Reset SPI2X flag */
+  SPSR |= (1U<<SPI2X);
   /* Set SS, MOSI and SCK output */
   DDRB |= (1U<<DDB4) | (1U<<DDB5) | (1U<<DDB7);
   /* Set MISO input */
   DDRB &= ~(1U<<DDB6);
-  /* Set CS HIGH (unselected) */
-  PORTB |= (1U<<PB4);
-  /* Enable SPI, Master, set clock rate fck/16 */
-  SPCR = (1U<<SPE) | (1U<<MSTR) | (1U<<SPR0);
-  /* Reset SPI2X flag */
-  SPSR &= ~(1U<<SPI2X);
 }
 
 void spi_deinit(void)
@@ -58,7 +63,7 @@ void spi_deinit(void)
 
 void spi_set_cs(bool selected)
 {
-  if (selected) {
+  if (!selected) {
     PORTB |= (1U<<PB4);
   } else {
     PORTB &= ~(1U<<PB4);
