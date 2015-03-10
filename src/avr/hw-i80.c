@@ -374,76 +374,34 @@ void hw_i80_parts_end (void)
   hw_i80_deactivate_cs ();
 }
 
-void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+void hw_i80_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
 {
   uint8_t bitMask;
   uint8_t currentByte;
   const uint8_t *const pDataEnd = pData + length;
 
-  hw_i80_parts_begin ();
-  hw_i80_parts_write_cmd (cmd);
+  hw_i80_parts_begin();
+  hw_i80_parts_write_cmd(cmd);
 
   /* write loop */
-  currentByte = *pData++;
-  for (bitMask = UINT8_C (0x01); ; )
-  {
+  currentByte = pgm_read_byte(pData++);
+  for (bitMask = UINT8_C(0x01); ; ) {
     const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
-    hw_i80_write_data_2 (currentData);
-    hw_i80_activate_wr ();
-    hw_i80_read_write_delay ();
-    hw_i80_deactivate_wr ();
-    hw_i80_read_write_delay ();
+    hw_i80_write_data_2(currentData);
+    hw_i80_activate_wr();
+    hw_i80_read_write_delay();
+    hw_i80_deactivate_wr();
+    hw_i80_read_write_delay();
     bitMask = (bitMask << 1);
-    if (!bitMask)
-    {
-      if (pData < pDataEnd)
-      {
-        bitMask = UINT8_C (0x01);
-        currentByte = *pData++;
-      }
-      else
-      {
+    if (!bitMask) {
+      if (pData < pDataEnd) {
+        bitMask = UINT8_C(0x01);
+        currentByte = pgm_read_byte(pData++);
+      } else {
         break;
       }
     }
   }
 
-  hw_i80_parts_end ();
-}
-
-void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{
-  uint8_t bitMask;
-  uint8_t currentByte;
-  const uint8_t *const pDataEnd = pData + length;
-
-  hw_i80_parts_begin ();
-  hw_i80_parts_write_cmd (cmd);
-
-  /* write loop */
-  currentByte = pgm_read_byte (pData++);
-  for (bitMask = UINT8_C (0x01); ; )
-  {
-    const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
-    hw_i80_write_data_2 (currentData);
-    hw_i80_activate_wr ();
-    hw_i80_read_write_delay ();
-    hw_i80_deactivate_wr ();
-    hw_i80_read_write_delay ();
-    bitMask = (bitMask << 1);
-    if (!bitMask)
-    {
-      if (pData < pDataEnd)
-      {
-        bitMask = UINT8_C (0x01);
-        currentByte = pgm_read_byte (pData++);
-      }
-      else
-      {
-        break;
-      }
-    }
-  }
-
-  hw_i80_parts_end ();
+  hw_i80_parts_end();
 }

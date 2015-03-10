@@ -90,15 +90,15 @@ void console_clear_screen(void)
   lcd_cls(TheOffColor);
 }
 
-void console_write_byte (uint8_t byte)
+void console_write_byte(uint8_t byte)
 {
-  if (console_handle_escape_sequence (byte)) {
+  if (console_handle_escape_sequence(byte)) {
     return;
   }
-  if (console_handle_control_codes (byte)) {
+  if (console_handle_control_codes(byte)) {
     return;
   }
-  if (console_handle_utf8 (byte)) {
+  if (console_handle_utf8(byte)) {
     return;
   }
 
@@ -114,24 +114,20 @@ void console_write_byte (uint8_t byte)
     TheCurrentColumn = 0;
   }
 
-  console_config_lcd_for_pos (TheCurrentColumn, TheCurrentLine);
+  console_config_lcd_for_pos(TheCurrentColumn, TheCurrentLine);
   /* move to the next column */
   ++TheCurrentColumn;
 
   /* now we are ready to send the char bitmap to the LCD module */
-  const uint8_t *const pChar = mcode_fonts_get_char_bitmap (byte);
-#ifndef __AVR__
+  const uint8_t *const pChar = mcode_fonts_get_char_bitmap(byte);
   lcd_write_bitmap(UINT8_C(0x2C), 8, pChar, TheOffColor, TheOnColor);
-#else /* __AVR__ */
-  lcd_write_bitmap_P(UINT8_C(0x2C), 8, pChar, TheOffColor, TheOnColor);
-#endif /* __AVR__ */
 }
 
 void console_write_string(const char *pString)
 {
   uint8_t ch;
   while ((ch = *pString++)) {
-    console_write_byte (ch);
+    console_write_byte(ch);
   }
 }
 

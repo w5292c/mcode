@@ -24,6 +24,32 @@
 
 #include "hw-lcd.h"
 
-void lcd_set_bl(bool on)
+#include "hw-spi.h"
+
+void lcd_write_cmd(uint8_t cmd)
 {
+  lcd_set_address(false);
+  spi_set_cs(true);
+  spi_transfer(cmd);
+  spi_set_cs(false);
+}
+
+void lcd_write_byte(uint8_t data)
+{
+  lcd_set_address(true);
+  spi_set_cs(true);
+  spi_transfer(data);
+  spi_set_cs(false);
+}
+
+uint8_t lcd_read_byte(uint8_t cmd)
+{
+  uint8_t data;
+  lcd_set_address(false);
+  spi_set_cs(true);
+  spi_transfer(cmd);
+  lcd_set_address(true);
+  data = spi_transfer(UINT8_C(0xFF));
+  spi_set_cs(false);
+  return data;
 }

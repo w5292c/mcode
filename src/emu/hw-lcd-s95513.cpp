@@ -138,12 +138,7 @@ void hw_i80_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uin
   }
 }
 
-void hw_i80_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{
-  hw_i80_write_bitmap(cmd, length, pData, offValue, onValue);
-}
-
-uint32_t emu_hw_lcd_s95513_to_color (uint32_t data)
+uint32_t emu_hw_lcd_s95513_to_color(uint32_t data)
 {
   const uint8_t red =   (0xffu&((0xf800U&data)>>8));
   const uint8_t green = (0xffu&((0x07E0U&data)>>3));

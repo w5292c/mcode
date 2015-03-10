@@ -49,10 +49,9 @@ void hw_i80_write_const_long (uint8_t cmd, uint16_t constValue, uint32_t length)
  * - If the corresponding bit is 0: write offValue;
  * - If the corresponding bit is 1: write onValue;
  */
-void hw_i80_write_bitmap (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
-void hw_i80_write_bitmap_P (uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
+void hw_i80_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
 
-void hw_i80_reset (void);
+void hw_i80_reset(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

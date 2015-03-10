@@ -58,7 +58,6 @@ uint32_t lcd_read_id(void);
 void lcd_reset(void);
 
 void lcd_set_address(bool a0);
-void lcd_read(uint8_t cmd, uint8_t length, uint8_t *data);
 void lcd_write(int len, ...);
 
 void lcd_set_scroll_start(uint16_t start);
@@ -67,7 +66,10 @@ void lcd_set_window(uint16_t colStart, uint16_t colEnd, uint16_t rowStart, uint1
 void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count);
 
 void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
-void lcd_write_bitmap_P(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue);
+
+void lcd_write_cmd(uint8_t cmd);
+void lcd_write_byte(uint8_t data);
+uint8_t lcd_read_byte(uint8_t cmd);
 
 #ifdef __cplusplus
 } /* extern "C" */
