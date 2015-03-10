@@ -39,6 +39,11 @@ extern "C" {
 
 void lcd_init(uint16_t width, uint16_t height);
 void lcd_deinit(void);
+/*!
+ * @internal
+ * @brief Device-specific initialization
+ */
+void lcd_device_init(void);
 
 uint16_t lcd_get_width(void);
 uint16_t lcd_get_height(void);

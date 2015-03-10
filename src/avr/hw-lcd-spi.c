@@ -47,8 +47,6 @@ SPI LCD HW configuration
 ============================
 */
 
-static void lcd_spi_init(void);
-
 void lcd_init(uint16_t width, uint16_t height)
 {
   spi_init();
@@ -93,58 +91,5 @@ void lcd_reset(void)
   while (0x00009341 != lcd_read_id());
 
   /* initialize the LCD module */
-  lcd_spi_init();
-}
-
-void lcd_spi_init(void)
-{
- /* SW reset */
-  lcd_command(0x01);
-  mtick_sleep(5);
-  /* Display OFF */
-  lcd_command(0x28);
-  /* Power control A: default */
-  lcd_command(0xCB, 0x39, 0X2C, 0x00, 0x34, 0x02);
-  /* Power control B: default */
-  lcd_command(0xCF, 0x00, 0x83, 0x30);
-  /* Power on sequence control */
-  lcd_command(0xED, 0x64, 0x03, 0x12, 0x81);
-  /* Driver timing control A */
-  lcd_command(0xE8, 0x85, 0x01, 0x79);
-  /* Driver timing control B */
-  lcd_command(0xEA, 0x00, 0x00);
-  /* Pump ratio control */
-  lcd_command(0xF7, 0x20);
-  /* Power control */
-  lcd_command(0xC0, 0x26);
-  lcd_command(0xC1, 0x11);
-  /* VCOM */
-  lcd_command(0xC5, 0x35, 0x3E);
-  lcd_command(0xC7, 0xBE);
-  /* Memory access control: 16 bits per pixel */
-  lcd_command(0x3A, 0x55);
-  /* Memory Access Control */
-  lcd_command(0x36U, 0x48);
-  /* Frame rate */
-  lcd_command(0xB1, 0x00, 0x1B);
-  /* Gamma set */
-  lcd_command(0x26, 0x01);
-  /* Entry Mode Set */
-  lcd_command(0xB7, 0x07);
-  /* Display Function Control */
-  lcd_command(0xB6, 0x0A, 0x82, 0x27, 0x00);
-  /* Exit Sleep */
-  lcd_command(0x11);
-  mtick_sleep(100);
-  /* Display: ON */
-  lcd_command(0x29);
-  mtick_sleep(20);
-
-#if 1 /* clear screen in console code */
-  console_set_color(UINT16_C(0xFFFF));
-  console_set_bg_color(UINT16_C(0x0000));
-  console_clear_screen();
-#else /* clear screen in console code */
-  lcd_cls(0x0000);
-#endif /* clear screen in console code */
+  lcd_device_init();
 }
