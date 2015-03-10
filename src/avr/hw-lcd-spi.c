@@ -26,6 +26,7 @@
 
 #include "mtick.h"
 #include "hw-spi.h"
+#include "hw-uart.h"
 #include "console.h"
 
 #include <avr/io.h>
@@ -50,6 +51,7 @@ SPI LCD HW configuration
 void lcd_init(uint16_t width, uint16_t height)
 {
   spi_init();
+  lcd_set_size(width, height);
 
   /* Configure D/C (address) line (PC7) as output */
   DDRC |= (1U << DDC7);
@@ -92,4 +94,15 @@ void lcd_reset(void)
 
   /* initialize the LCD module */
   lcd_device_init();
+}
+
+void lcd_set_size(uint16_t width, uint16_t height)
+{
+  if (lcd_get_width() != width || lcd_get_height() != height) {
+    hw_uart_write_string_P(PSTR("W: lcd_set_size(0x"));
+    hw_uart_write_uint16(width, true);
+    hw_uart_write_string_P(PSTR(", 0x"));
+    hw_uart_write_uint16(height, true);
+    hw_uart_write_string_P(PSTR("): unsupported resolution\r\n"));
+  }
 }

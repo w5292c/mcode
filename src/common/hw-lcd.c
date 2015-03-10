@@ -26,10 +26,10 @@
 
 #include <stdarg.h>
 
-#ifdef AVR_MEGA
+#ifdef __AVR__
 /*#include <avr/io.h>*/
 #include <avr/pgmspace.h>
-#endif /* AVR_MEGA */
+#endif /* __AVR__ */
 
 void lcd_cls(uint16_t color)
 {
@@ -82,11 +82,11 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
 
   lcd_write_cmd(cmd);
   /* write loop */
-#ifdef AVR_MEGA
+#ifdef __AVR__
   currentByte = pgm_read_byte(pData++);
-#else /* AVR_MEGA */
+#else /* __AVR__ */
   currentByte = *pData++;
-#endif /* AVR_MEGA */
+#endif /* __AVR__ */
   for (bitMask = UINT8_C(0x01); ; ) {
     const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
     lcd_write_byte(currentData>>8);
@@ -95,11 +95,11 @@ void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16
     if (!bitMask) {
       if (pData < pDataEnd) {
         bitMask = UINT8_C(0x01);
-#ifdef AVR_MEGA
+#ifdef __AVR__
         currentByte = pgm_read_byte(pData++);
-#else /* AVR_MEGA */
+#else /* __AVR__ */
         currentByte = *pData++;
-#endif /* AVR_MEGA */
+#endif /* __AVR__ */
       }
       else {
         break;
