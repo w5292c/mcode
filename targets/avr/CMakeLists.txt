@@ -25,6 +25,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/common/cmd-test-image.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
   ${MCODE_TOP}/src/common/hw-lcd-ili9341.c
+#  ${MCODE_TOP}/src/common/hw-lcd-ili9481.c
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/avr/mtick.c
 ##  ${MCODE_TOP}/src/avr/fuses.c
@@ -36,7 +37,6 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/hw-uart.c
   ${MCODE_TOP}/src/avr/hw-lcd-spi.c
 #  ${MCODE_TOP}/src/avr/hw-lcd-i80.c
-#  ${MCODE_TOP}/src/avr/hw-lcd-s95513.c
 )
 
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
