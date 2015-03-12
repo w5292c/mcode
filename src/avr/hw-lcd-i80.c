@@ -40,14 +40,10 @@ void lcd_deinit(void)
   hw_i80_deinit();
 }
 
-void lcd_set_bl(bool on)
-{
-}
-
 uint32_t lcd_read_id(void)
 {
   uint8_t data[5] = {0};
-  lcd_read(UINT8_C(0xBF), 5, data);
+  hw_i80_read(UINT8_C(0xBF), 5, data);
 
   uint32_t lcdId = 0;
   if (UINT8_C(0xFF) == data[4]) {
@@ -60,16 +56,6 @@ uint32_t lcd_read_id(void)
   }
 
   return lcdId;
-}
-
-uint16_t lcd_get_width(void)
-{
-  return 320;
-}
-
-uint16_t lcd_get_height(void)
-{
-  return 480;
 }
 
 void lcd_set_size(uint16_t width, uint16_t height)

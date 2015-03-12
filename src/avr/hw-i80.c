@@ -405,3 +405,37 @@ void hw_i80_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uin
 
   hw_i80_parts_end();
 }
+
+void lcd_write_cmd(uint8_t cmd)
+{
+  hw_i80_parts_begin();
+  hw_i80_parts_write_cmd(cmd);
+  hw_i80_parts_end();
+}
+
+void lcd_write_byte(uint8_t data)
+{
+  hw_i80_parts_begin();
+  /* activate D/CX */
+  hw_i80_activate_data();
+  /* configure PORTA and/or PORTB as outputs */
+  hw_i80_set_double_data_port_out();
+  /* send the command ID to the port A */
+  hw_i80_write_data(data);
+  /* activate WR */
+  hw_i80_activate_wr();
+  /* some delay, todo: check if this is required */
+  hw_i80_read_write_delay();
+  /* deactivate WR */
+  hw_i80_deactivate_wr();
+  /* deactivate D/CX */
+  hw_i80_activate_data();
+  /* some delay, todo: check if this is required */
+  hw_i80_read_write_delay();
+  hw_i80_parts_end();
+}
+
+uint8_t lcd_read_byte(uint8_t cmd)
+{
+  return 0xA5;
+}

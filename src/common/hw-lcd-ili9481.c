@@ -36,7 +36,11 @@ uint16_t lcd_get_height(void)
 
 void lcd_turn(bool on)
 {
-  lcd_command(on ? UINT8_C(0x29) : UINT8_C(0x28));
+  if (on) {
+    lcd_device_init();
+  } else {
+    lcd_command(on ? UINT8_C(0x29) : UINT8_C(0x28));
+  }
 }
 
 void lcd_device_init(void)

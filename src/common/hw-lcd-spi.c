@@ -26,6 +26,10 @@
 
 #include "hw-spi.h"
 
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#endif /* __AVR__ */
+
 void lcd_write_cmd(uint8_t cmd)
 {
   lcd_set_address(false);
@@ -52,4 +56,50 @@ uint8_t lcd_read_byte(uint8_t cmd)
   data = spi_transfer(UINT8_C(0xFF));
   spi_set_cs(false);
   return data;
+}
+
+void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
+{
+  uint32_t i;
+  const uint8_t byte1 = word>>8;
+  const uint8_t byte2 = word;
+  lcd_write_cmd(cmd);
+  for (i = 0; i < count; ++i) {
+    lcd_write_byte(byte1);
+    lcd_write_byte(byte2);
+  }
+}
+
+void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
+{
+  uint8_t bitMask;
+  uint8_t currentByte;
+  const uint8_t *const pDataEnd = pData + length;
+
+  lcd_write_cmd(cmd);
+  /* write loop */
+#ifdef __AVR__
+  currentByte = pgm_read_byte(pData++);
+#else /* __AVR__ */
+  currentByte = *pData++;
+#endif /* __AVR__ */
+  for (bitMask = UINT8_C(0x01); ; ) {
+    const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
+    lcd_write_byte(currentData>>8);
+    lcd_write_byte(currentData);
+    bitMask = (bitMask << 1);
+    if (!bitMask) {
+      if (pData < pDataEnd) {
+        bitMask = UINT8_C(0x01);
+#ifdef __AVR__
+        currentByte = pgm_read_byte(pData++);
+#else /* __AVR__ */
+        currentByte = *pData++;
+#endif /* __AVR__ */
+      }
+      else {
+        break;
+      }
+    }
+  }
 }

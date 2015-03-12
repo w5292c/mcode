@@ -26,11 +26,6 @@
 
 #include <stdarg.h>
 
-#ifdef __AVR__
-/*#include <avr/io.h>*/
-#include <avr/pgmspace.h>
-#endif /* __AVR__ */
-
 void lcd_cls(uint16_t color)
 {
   const uint32_t width = lcd_get_width();
@@ -60,50 +55,4 @@ void lcd_write(int len, ...)
     lcd_write_byte(va_arg(vl, unsigned int));
   }
   va_end(vl);
-}
-
-void lcd_write_const_words(uint8_t cmd, uint16_t word, uint32_t count)
-{
-  uint32_t i;
-  const uint8_t byte1 = word>>8;
-  const uint8_t byte2 = word;
-  lcd_write_cmd(cmd);
-  for (i = 0; i < count; ++i) {
-    lcd_write_byte(byte1);
-    lcd_write_byte(byte2);
-  }
-}
-
-void lcd_write_bitmap(uint8_t cmd, uint16_t length, const uint8_t *pData, uint16_t offValue, uint16_t onValue)
-{
-  uint8_t bitMask;
-  uint8_t currentByte;
-  const uint8_t *const pDataEnd = pData + length;
-
-  lcd_write_cmd(cmd);
-  /* write loop */
-#ifdef __AVR__
-  currentByte = pgm_read_byte(pData++);
-#else /* __AVR__ */
-  currentByte = *pData++;
-#endif /* __AVR__ */
-  for (bitMask = UINT8_C(0x01); ; ) {
-    const uint16_t currentData = (currentByte & bitMask) ? onValue : offValue;
-    lcd_write_byte(currentData>>8);
-    lcd_write_byte(currentData);
-    bitMask = (bitMask << 1);
-    if (!bitMask) {
-      if (pData < pDataEnd) {
-        bitMask = UINT8_C(0x01);
-#ifdef __AVR__
-        currentByte = pgm_read_byte(pData++);
-#else /* __AVR__ */
-        currentByte = *pData++;
-#endif /* __AVR__ */
-      }
-      else {
-        break;
-      }
-    }
-  }
 }
