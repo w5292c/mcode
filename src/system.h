@@ -25,6 +25,9 @@
 #ifndef MCODE_SYSTEM_H
 #define MCODE_SYSTEM_H
 
+/*!
+ * Request the system reboot
+ */
 void reboot(void);
 
 #endif /* MCODE_SYSTEM_H */

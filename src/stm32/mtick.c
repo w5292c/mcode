@@ -92,14 +92,6 @@ void mtick_add(mcode_tick tick)
   }
 }
 
-void mtick_stop(void)
-{
-}
-
-void mtick_start(void)
-{
-}
-
 void mtick_sleep(uint32_t mticks)
 {
   const uint64_t target = TheMSecCounter + mticks + 1;

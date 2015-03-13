@@ -33,19 +33,31 @@
 extern "C" {
 #endif
 
-/**
- * This is a test scheduler, to be removed.
+/*!
+ * Initialize the milli-second scheduler
  */
-
 void mtick_init(void);
+/*!
+ * Deinitialize the milli-second scheduler
+ */
 void mtick_deinit(void);
+/*!
+ * Add a new loop to the scheduler
+ * @param[in] tick The callback to be called each milli-second
+ *
+ */
 void mtick_add(mcode_tick tick);
 
-void mtick_stop(void);
-void mtick_start(void);
-
+/*!
+ * Suspend the main thread for mticks milli-seconds
+ * @param[in] mticks The number of milli-seconds to sleep
+ */
 void mtick_sleep(uint32_t mticks);
 
+/*!
+ * Get the uptime in milliseconds
+ * @return The number of milli-seconds since the last power-on
+ */
 uint64_t mtick_count(void);
 
 #ifdef __cplusplus
