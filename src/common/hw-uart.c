@@ -22,48 +22,24 @@
  * SOFTWARE.
  */
 
-#include "mtick.h"
-#include "hw-lcd.h"
-#include "hw-leds.h"
 #include "hw-uart.h"
-#include "console.h"
-#include "scheduler.h"
-#include "cmd-engine.h"
-#include "line-editor-uart.h"
 
-#include <avr/io.h>
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
-
-int main (void)
+void hw_uart_write_uintd(uint32_t value, bool skipZeroes)
 {
-  /* first, init the scheduler */
-  mcode_scheduler_init();
-  mtick_init();
-  /* now, UART can be initialized */
-  hw_uart_init();
-  lcd_init(320, 480);
-  console_init();
-  /* init LEDs */
-  mcode_hw_leds_init();
-  /* init the line editor and the command engine */
-  line_editor_uart_init();
-  cmd_engine_init();
+  char buffer[2] = {0, 0};
+  uint32_t temp;
+  uint32_t factor = 1000000000U;
+  while (factor) {
+    temp = value/factor;
+    if (temp || !skipZeroes) {
+      buffer[0] = temp + '0';
+      hw_uart_write_string(buffer);
+    }
+    if (temp) {
+      skipZeroes = false;
+      value -= factor*temp;
+    }
 
-  /* now, enable the interrupts */
-  sei();
-
-  /* Write some 'hello' text */
-  hw_uart_write_string_P(PSTR("\r\nmain: ready\r\nTest value: ["));
-  hw_uart_write_uintd(12345067, true);
-  hw_uart_write_string_P(PSTR("]\r\n"));
-  cmd_engine_start();
-
-  /* start the scheduler, it never exits */
-  mcode_scheduler_start();
-
-  /* Clean-up */
-  lcd_deinit();
-  mtick_deinit();
-  return 0;
+    factor /= 10;
+  }
 }

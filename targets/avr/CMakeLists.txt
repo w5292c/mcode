@@ -17,6 +17,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/main.c
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/hw-lcd.c
+  ${MCODE_TOP}/src/common/hw-uart.c
   ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/scheduler.c
   ${MCODE_TOP}/src/common/cmd-engine.c

@@ -47,6 +47,7 @@ void hw_uart_write_uint32(uint32_t value, bool skipZeros);
 void hw_uart_write_uint64(uint64_t value, bool skipZeros);
 void hw_uart_write_string(const char *aString);
 void hw_uart_write_string_P(const char *aString);
+void hw_uart_write_uintd(uint32_t value, bool skipZeroes);
 
 #ifdef __cplusplus
 } /* extern "C" */
