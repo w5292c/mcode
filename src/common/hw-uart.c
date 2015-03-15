@@ -24,6 +24,18 @@
 
 #include "hw-uart.h"
 
+#include "utils.h"
+
+#include <string.h>
+
+void hw_uart_deinit(void)
+{
+}
+
+void hw_uart_start_read(void)
+{
+}
+
 void hw_uart_write_uintd(uint32_t value, bool skipZeroes)
 {
   char buffer[2] = {0, 0};
@@ -41,5 +53,61 @@ void hw_uart_write_uintd(uint32_t value, bool skipZeroes)
     }
 
     factor /= 10;
+  }
+}
+
+void hw_uart_write_uint(uint16_t value)
+{
+  hw_uart_write_uint16(value, false);
+}
+
+void hw_uart_write_uint64(uint64_t value, bool skipZeros)
+{
+  const uint32_t upper = (uint32_t)(value>>32);
+  if (!skipZeros || 0 != upper) {
+    /* skip upper part if it is empty */
+    hw_uart_write_uint32(upper, skipZeros);
+    /* if the upper part is not empty, we cannot skip zeroes any longer */
+    skipZeros = false;
+  }
+  hw_uart_write_uint32((uint32_t)value, skipZeros);
+}
+
+void hw_uart_write_uint32(uint32_t value, bool skipZeros)
+{
+  const uint16_t upper = (uint16_t)(value>>16);
+  if (!skipZeros || 0 != upper) {
+    /* skip upper part if it is empty */
+    hw_uart_write_uint16(upper, skipZeros);
+    /* if the upper part is not empty, we cannot skip zeroes any longer */
+    skipZeros = false;
+  }
+  hw_uart_write_uint16((uint16_t)value, skipZeros);
+}
+
+void hw_uart_write_uint16(uint16_t value, bool skipZeros)
+{
+  int i;
+  char buffer[5];
+  buffer[0] = nibble_to_char(0x0FU & (value >> 12));
+  buffer[1] = nibble_to_char(0x0FU & (value >>  8));
+  buffer[2] = nibble_to_char(0x0FU & (value >>  4));
+  buffer[3] = nibble_to_char(0x0FU & value);
+  buffer[4] = 0;
+  if (skipZeros) {
+    for (i = 0; i < 3; ++i) {
+      if ('0' == *buffer) {
+        memmove(buffer, buffer + 1, 4);
+      }
+    }
+  }
+  hw_uart_write_string(buffer);
+}
+
+void hw_uart_write_string(const char *aString)
+{
+  uint8_t ch;
+  while (0 != (ch = *aString++)) {
+    uart_write_char(ch);
   }
 }

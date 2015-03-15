@@ -24,7 +24,6 @@
 
 #include "hw-uart.h"
 
-#include "utils.h"
 #include "scheduler.h"
 #include "mcode-config.h"
 #include "line-editor-uart.h"
@@ -46,15 +45,15 @@ volatile static uint8_t TheCurrentReadIndex1 = 0;
 volatile static uint8_t TheReadBuffer0[HW_UART_READ_BUFFER_LENGTH];
 volatile static uint8_t TheReadBuffer1[HW_UART_READ_BUFFER_LENGTH];
 
-static void hw_uart_tick (void);
+static void hw_uart_tick(void);
 
-void hw_uart_init (void)
+void hw_uart_init(void)
 {
   TheCurrentBuffer = 0;
   TheCurrentReadIndex0 = 0;
   TheCurrentReadIndex1 = 0;
-  memset ((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
-  memset ((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
+  memset((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
+  memset((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
 
   /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
@@ -64,91 +63,29 @@ void hw_uart_init (void)
   /* Set frame format: 8data, 2stop bit */
   UCSRC = (1<<URSEL)|(3<<UCSZ0);
 
-  mcode_scheduler_add (hw_uart_tick);
+  mcode_scheduler_add(hw_uart_tick);
 }
 
-void hw_uart_deinit (void)
-{
-}
-
-void hw_uart_set_callback (hw_uart_char_event aCallback)
+void hw_uart_set_callback(hw_uart_char_event aCallback)
 {
   TheCallback = aCallback;
 }
 
-void hw_uart_start_read (void)
+void uart_write_char(char ch)
 {
+  while (!(UCSRA & (1<<UDRE)));
+  UDR = ch;
 }
 
-void hw_uart_write_uint(uint16_t value)
-{
-  hw_uart_write_uint16(value, false);
-}
-
-void hw_uart_write_uint64(uint64_t value, bool skipZeros)
-{
-  const uint32_t upper = (uint32_t)(value>>32);
-  if (!skipZeros || 0 != upper) {
-    /* skip upper part if it is empty */
-    hw_uart_write_uint32(upper, skipZeros);
-    /* if the upper part is not empty, we cannot skip zeroes any longer */
-    skipZeros = false;
-  }
-  hw_uart_write_uint32((uint32_t)value, skipZeros);
-}
-
-void hw_uart_write_uint32(uint32_t value, bool skipZeros)
-{
-  const uint16_t upper = (uint16_t)(value>>16);
-  if (!skipZeros || 0 != upper) {
-    /* skip upper part if it is empty */
-    hw_uart_write_uint16(upper, skipZeros);
-    /* if the upper part is not empty, we cannot skip zeroes any longer */
-    skipZeros = false;
-  }
-  hw_uart_write_uint16((uint16_t)value, skipZeros);
-}
-
-void hw_uart_write_uint16(uint16_t value, bool skipZeros)
-{
-  int i;
-  char buffer[5];
-  buffer[0] = nibble_to_char(0x0FU & (value >> 12));
-  buffer[1] = nibble_to_char(0x0FU & (value >>  8));
-  buffer[2] = nibble_to_char(0x0FU & (value >>  4));
-  buffer[3] = nibble_to_char(0x0FU & value);
-  buffer[4] = 0;
-  if (skipZeros) {
-    for (i = 0; i < 3; ++i) {
-      if ('0' == *buffer) {
-        memmove(buffer, buffer + 1, 4);
-      }
-    }
-  }
-  hw_uart_write_string(buffer);
-}
-
-void hw_uart_write_string (const char *aString)
+void hw_uart_write_string_P(const char *aString)
 {
   uint8_t ch;
-  while (0 != (ch = *aString++))
-  {
-    while ( !( UCSRA & (1<<UDRE)) ) ;
-    UDR = ch;
+  while (0 != (ch = pgm_read_byte(aString++))) {
+    uart_write_char(ch);
   }
 }
 
-void hw_uart_write_string_P (const char *aString)
-{
-  uint8_t ch;
-  while (0 != (ch = pgm_read_byte (aString++))) {
-    while ( !( UCSRA & (1<<UDRE)) );
-    UDR = ch;
-  }
-
-}
-
-static void hw_uart_tick (void)
+static void hw_uart_tick(void)
 {
   if (TheCurrentBuffer) {
     if (TheCurrentReadIndex1) {
@@ -156,7 +93,7 @@ static void hw_uart_tick (void)
       UCSRB &= ~(1<<RXCIE);
 
       /* toggle the current buffer */
-      TheCurrentBuffer = /*!TheCurrentBuffer*/0;
+      TheCurrentBuffer = 0;
 
       /* enable interrupt again */
       UCSRB |= (1<<RXCIE);
@@ -165,21 +102,20 @@ static void hw_uart_tick (void)
       if (TheCallback) {
         uint8_t i;
         for (i = 0; i < TheCurrentReadIndex1; ++i) {
-          (*TheCallback) (TheReadBuffer1[i]);
+          (*TheCallback)(TheReadBuffer1[i]);
         }
       }
 
       /* we passed the content of the buffer to the client, reset the index */
       TheCurrentReadIndex1 = 0;
     }
-  }
-  else {
+  } else {
     if (TheCurrentReadIndex0) {
       /* disable RXC interrupt */
       UCSRB &= ~(1<<RXCIE);
 
       /* toggle the current buffer */
-      TheCurrentBuffer = /*!TheCurrentBuffer*/1;
+      TheCurrentBuffer = 1;
 
       /* enable interrupt again */
       UCSRB |= (1<<RXCIE);
@@ -188,7 +124,7 @@ static void hw_uart_tick (void)
       if (TheCallback) {
         uint8_t i;
         for (i = 0; i < TheCurrentReadIndex0; ++i) {
-          (*TheCallback) (TheReadBuffer0[i]);
+          (*TheCallback)(TheReadBuffer0[i]);
         }
       }
 
@@ -204,19 +140,14 @@ ISR(USART_RXC_vect)
   /* read the received byte */
   const uint8_t data = UDR;
 
-  if (TheCurrentBuffer)
-  {
-    if (TheCurrentReadIndex1 < (HW_UART_READ_BUFFER_LENGTH - 1))
-    {
+  if (TheCurrentBuffer) {
+    if (TheCurrentReadIndex1 < (HW_UART_READ_BUFFER_LENGTH - 1)) {
       /* there is enough space in the read buffer to store the received byte */
       TheReadBuffer1[TheCurrentReadIndex1++] = data;
       /**@todo check if we need to handle the case when we ran out of the read buffer */
     }
-  }
-  else
-  {
-    if (TheCurrentReadIndex0 < (HW_UART_READ_BUFFER_LENGTH - 1))
-    {
+  } else {
+    if (TheCurrentReadIndex0 < (HW_UART_READ_BUFFER_LENGTH - 1)) {
       /* there is enough space in the read buffer to store the received byte */
       TheReadBuffer0[TheCurrentReadIndex0++] = data;
       /**@todo check if we need to handle the case when we ran out of the read buffer */

@@ -41,13 +41,19 @@ void hw_uart_set_callback(hw_uart_char_event aCallback);
 
 void hw_uart_start_read(void);
 
+void uart_write_char(char ch);
 void hw_uart_write_uint(uint16_t value);
 void hw_uart_write_uint16(uint16_t value, bool skipZeros);
 void hw_uart_write_uint32(uint32_t value, bool skipZeros);
 void hw_uart_write_uint64(uint64_t value, bool skipZeros);
 void hw_uart_write_string(const char *aString);
-void hw_uart_write_string_P(const char *aString);
 void hw_uart_write_uintd(uint32_t value, bool skipZeroes);
+
+#ifdef __AVR__
+void hw_uart_write_string_P(const char *aString);
+#else /* __AVR__ */
+#define hw_uart_write_string_P hw_uart_write_string
+#endif /* __AVR__ */
 
 #ifdef __cplusplus
 } /* extern "C" */

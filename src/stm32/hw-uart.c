@@ -154,15 +154,20 @@ void hw_uart_write_string (const char *aString)
 {
   uint8_t ch;
   while (0 != (ch = *aString++)) {
-    /* Wait until USART1 DR register is empty */
-    while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-    USART_SendData(USART1, ch);
+    uart_write_char(ch);
   }
 }
 
 void hw_uart_write_string_P(const char *aString)
 {
   hw_uart_write_string(aString);
+}
+
+void uart_write_char(char ch)
+{
+  /* Wait until USART1 DR register is empty */
+  while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+  USART_SendData(USART1, ch);
 }
 
 static void hw_uart_tick(void)
