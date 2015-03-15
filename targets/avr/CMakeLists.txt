@@ -33,7 +33,6 @@ set (SRC_LIST
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
-option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
 
 option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" ON )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )

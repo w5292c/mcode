@@ -46,13 +46,6 @@ volatile static uint8_t TheCurrentReadIndex1 = 0;
 volatile static uint8_t TheReadBuffer0[HW_UART_READ_BUFFER_LENGTH];
 volatile static uint8_t TheReadBuffer1[HW_UART_READ_BUFFER_LENGTH];
 
-#ifndef MCODE_HW_UART_SYNC_WRITE
-#define HW_UART_WRITE_BUFFER_LENGTH (128)
-volatile static unsigned int TheWriteBufferEnd = 0;
-volatile static unsigned int TheWriteBufferStart = 0;
-volatile static unsigned char TheWriteBuffer[HW_UART_WRITE_BUFFER_LENGTH];
-#endif /* MCODE_HW_UART_SYNC_WRITE */
-
 static void hw_uart_tick (void);
 
 void hw_uart_init (void)
@@ -60,13 +53,8 @@ void hw_uart_init (void)
   TheCurrentBuffer = 0;
   TheCurrentReadIndex0 = 0;
   TheCurrentReadIndex1 = 0;
-  memset ((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
-  memset ((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
-#ifndef MCODE_HW_UART_SYNC_WRITE
-  TheWriteBufferEnd = 0;
-  TheWriteBufferStart = 0;
-  memset (TheWriteBuffer, 0, HW_UART_WRITE_BUFFER_LENGTH);
-#endif /* MCODE_HW_UART_SYNC_WRITE */
+  memset((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
+  memset((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
 
 #ifdef STM32F10X_HD
   /* Init clocks */
@@ -164,38 +152,12 @@ void hw_uart_write_uint16(uint16_t value, bool skipZeros)
 
 void hw_uart_write_string (const char *aString)
 {
-#ifdef MCODE_HW_UART_SYNC_WRITE
-
-#ifdef STM32F10X_HD
   uint8_t ch;
   while (0 != (ch = *aString++)) {
     /* Wait until USART1 DR register is empty */
     while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
     USART_SendData(USART1, ch);
   }
-#endif /* STM32F10X_HD */
-
-#else /* MCODE_HW_UART_SYNC_WRITE */
-  if (TheWriteBufferStart)
-  {
-    memmove (&TheWriteBuffer[0], &TheWriteBuffer[TheWriteBufferStart], TheWriteBufferStart);
-
-    TheWriteBufferEnd -= TheWriteBufferStart;
-    TheWriteBufferStart = 0;
-  }
-
-  if (length)
-  {
-    const int freeBufferLength = HW_UART_WRITE_BUFFER_LENGTH - (TheWriteBufferEnd - TheWriteBufferStart);
-    if (length > freeBufferLength)
-    {
-      length = freeBufferLength;
-    }
-
-    memcpy (&TheWriteBuffer[TheWriteBufferEnd], aString, length);
-    TheWriteBufferEnd += length;
-  }
-#endif /* MCODE_HW_UART_SYNC_WRITE */
 }
 
 void hw_uart_write_string_P(const char *aString)

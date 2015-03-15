@@ -42,7 +42,6 @@ set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )
 
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
-option ( MCODE_HW_UART_SYNC_WRITE "Use synchronous UART write" ON )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )

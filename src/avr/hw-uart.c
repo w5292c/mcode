@@ -46,13 +46,6 @@ volatile static uint8_t TheCurrentReadIndex1 = 0;
 volatile static uint8_t TheReadBuffer0[HW_UART_READ_BUFFER_LENGTH];
 volatile static uint8_t TheReadBuffer1[HW_UART_READ_BUFFER_LENGTH];
 
-#ifndef MCODE_HW_UART_SYNC_WRITE
-#define HW_UART_WRITE_BUFFER_LENGTH (128)
-volatile static unsigned int TheWriteBufferEnd = 0;
-volatile static unsigned int TheWriteBufferStart = 0;
-volatile static unsigned char TheWriteBuffer[HW_UART_WRITE_BUFFER_LENGTH];
-#endif /* MCODE_HW_UART_SYNC_WRITE */
-
 static void hw_uart_tick (void);
 
 void hw_uart_init (void)
@@ -62,12 +55,6 @@ void hw_uart_init (void)
   TheCurrentReadIndex1 = 0;
   memset ((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
   memset ((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
-#ifndef MCODE_HW_UART_SYNC_WRITE
-#error Async write is not supported
-  TheWriteBufferEnd = 0;
-  TheWriteBufferStart = 0;
-  memset (TheWriteBuffer, 0, HW_UART_WRITE_BUFFER_LENGTH);
-#endif /* MCODE_HW_UART_SYNC_WRITE */
 
   /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
@@ -143,48 +130,22 @@ void hw_uart_write_uint16(uint16_t value, bool skipZeros)
 
 void hw_uart_write_string (const char *aString)
 {
-#ifdef MCODE_HW_UART_SYNC_WRITE
   uint8_t ch;
   while (0 != (ch = *aString++))
   {
     while ( !( UCSRA & (1<<UDRE)) ) ;
     UDR = ch;
   }
-
-#else /* MCODE_HW_UART_SYNC_WRITE */
-#error "Async UART write has not been implemented"
-  if (TheWriteBufferStart) {
-    memmove (&TheWriteBuffer[0], &TheWriteBuffer[TheWriteBufferStart], TheWriteBufferStart);
-
-    TheWriteBufferEnd -= TheWriteBufferStart;
-    TheWriteBufferStart = 0;
-  }
-
-  if (length) {
-    const int freeBufferLength = HW_UART_WRITE_BUFFER_LENGTH - (TheWriteBufferEnd - TheWriteBufferStart);
-    if (length > freeBufferLength) {
-      length = freeBufferLength;
-    }
-
-    memcpy (&TheWriteBuffer[TheWriteBufferEnd], aString, length);
-    TheWriteBufferEnd += length;
-  }
-#endif /* MCODE_HW_UART_SYNC_WRITE */
 }
 
 void hw_uart_write_string_P (const char *aString)
 {
-#ifdef MCODE_HW_UART_SYNC_WRITE
   uint8_t ch;
   while (0 != (ch = pgm_read_byte (aString++))) {
     while ( !( UCSRA & (1<<UDRE)) );
     UDR = ch;
   }
 
-#else /* MCODE_HW_UART_SYNC_WRITE */
-#error Async is not supported
-  /**@todo implement async version */
-#endif /* MCODE_HW_UART_SYNC_WRITE*/
 }
 
 static void hw_uart_tick (void)

@@ -22,9 +22,6 @@
  * SOFTWARE.
  */
 
-/* This setting enables synchronous UART write */
-#cmakedefine MCODE_HW_UART_SYNC_WRITE
-
 /* This setting is defined if console is enabled in the system */
 #cmakedefine MCODE_CONSOLE_ENABLED
 
