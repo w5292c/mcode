@@ -38,14 +38,12 @@ void hw_uart_start_read(void)
 
 void hw_uart_write_uintd(uint32_t value, bool skipZeroes)
 {
-  char buffer[2] = {0, 0};
   uint32_t temp;
   uint32_t factor = 1000000000U;
   while (factor) {
     temp = value/factor;
     if (temp || !skipZeroes) {
-      buffer[0] = temp + '0';
-      hw_uart_write_string(buffer);
+      uart_write_char((char)temp + '0');
     }
     if (temp) {
       skipZeroes = false;
