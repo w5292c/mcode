@@ -8,3 +8,45 @@ Frequency: 7.3728MHz
 Flashing target
 ===============
 sudo avarice --erase --program --file console-test --part atmega32 --jtag /dev/ttyUSB1 --verify --reset-srst
+
+GPIO pins allocation
+====================
+-----------------------------------------
+| PORT | BUSY | FUNC.  I80 | FUNC. SPI  |
+-----------------------------------------
+|  PA0 |    + | I80:   D00 |            |
+|  PA1 |    + | I80:   D01 |            |
+|  PA2 |    + | I80:   D02 |            |
+|  PA3 |    + | I80:   D03 |            |
+|  PA4 |    + | I80:   D04 |            |
+|  PA5 |    + | I80:   D05 |            |
+|  PA6 |    + | I80:   D06 |            |
+|  PA7 |    + | I80:   D07 |            |
+-----------------------------------------
+|  PB0 |    + | I80:   D08 |            |
+|  PB1 |    + | I80:   D09 |            |
+|  PB2 |    + | I80:   D10 |            |
+|  PB3 |    + | I80:   D11 |            |
+|  PB4 |    + | I80:   D12 | SPI:    CS |
+|  PB5 |    + | I80:   D13 | SPI:  MOSI |
+|  PB6 |    + | I80:   D14 | SPI:  MISO |
+|  PB7 |    + | I80:   D15 | SPI:   SCK |
+-----------------------------------------
+|  PC0 |    + | I80:    CS |            |
+|  PC1 |    + | I80:    WR |            |
+|  PC2 |    + | JTAG:  TCK | JTAG:  TCK |
+|  PC3 |    + | JTAG:  TMS | JTAG:  TMS |
+|  PC4 |    + | JTAG:  TDO | JTAG:  TDO |
+|  PC5 |    + | JTAG:  TDI | JTAG:  TDI |
+|  PC6 |    + | I80:    RD |            |
+|  PC7 |    + | I80:    A0 | LCD:    A0 |
+-----------------------------------------
+|  PD0 |    + | UART:  RXD | UART:  RXD |
+|  PD1 |    + | UART:  TXD | UART:  TXD |
+|  PD2 |      |            |            |
+|  PD3 |      |            |            |
+|  PD4 |    + | GPIO: LED0 | GPIO: LED0 |
+|  PD5 |    + | GPIO: LED1 | GPIO: LED1 |
+|  PD6 |      |            |            |
+|  PD7 |    + | I80: RESET | LCD: RESET |
+-----------------------------------------
