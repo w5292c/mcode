@@ -50,3 +50,8 @@ GPIO pins allocation
 |  PD6 |      |            |            |
 |  PD7 |    + | I80: RESET | LCD: RESET |
 -----------------------------------------
+
+TODO List
+=========
+1) Move LCD/I80 RESET pin from PD7 to PD6;
+2) Allocate PD7 to a new LED (LED2);

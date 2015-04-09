@@ -44,18 +44,18 @@ void mtick_init(void)
   mcode_scheduler_add(mcode_mtick_scheduler_tick);
 
   /* Reset the Timer2 counter */
-  TCNT2 = 0x00U;
+  TCNT0 = 0x00U;
   /* Timer2 compare register: 1001.73913Hz */
-  OCR2 = 114;
+  OCR0 = 114;
   /* Clear OCF2 / clear pending interrupts */
-  TIFR  = (1<<OCF2);
+  TIFR  = (1<<OCF0);
   /* Enable Timer2 Compare Interrupt */
-  TIMSK = (1<<OCIE2);
+  TIMSK = (1<<OCIE0);
   /* Set the control register */
-  TCCR2 =
-    (1<<WGM21)|(0<<WGM20)| /*< Mode: CTC */
-    (0<<COM21)|(0<<COM21)| /*< No port output */
-    (1<<CS22)|(0<<CS21)|(0<<CS20); /* Prescaler: 64 */
+  TCCR0 =
+    (1<<WGM01)|(0<<WGM00)| /*< Mode: CTC */
+    (0<<COM01)|(0<<COM01)| /*< No port output */
+    (0<<CS02)|(1<<CS01)|(1<<CS00); /* Prescaler: 64 */
 }
 
 void mtick_deinit(void)
@@ -103,7 +103,7 @@ void mcode_mtick_scheduler_tick(void)
 }
 
 /* This is a 1 KHz timer2 handler */
-ISR(TIMER2_COMP_vect)
+ISR(TIMER0_COMP_vect)
 {
   ++TheMSecCounter;
   /* set the flag */
