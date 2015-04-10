@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,38 @@
  * SOFTWARE.
  */
 
-/* This setting is defined if console is enabled in the system */
-#cmakedefine MCODE_CONSOLE_ENABLED
+#include "pwm.h"
 
-/* I80 interface enabled */
-#cmakedefine MCODE_HW_I80_ENABLED
+#include <avr/io.h>
 
-/* Enable debug LEDs blinking */
-#cmakedefine MCODE_DEBUG_BLINKING
+void pwm_init(void)
+{
+  /* Configure Timer1 in PWM Fast mode */
+  TCCR1B =
+    (0<<WGM13)|(1<<WGM12)|         /*< Mode: Fast PWM, 8 bit */
+    (0<<CS12)|(1<<CS11)|(1<<CS10)| /* Prescaler: 64 */
+    (0<< ICNC1)|(0<< ICES1);       /*< No extra flags */
+  TCCR1A =
+    (0<<WGM11)|(1<<WGM10)|         /*< Mode: Fast PWM, 8 bit */
+    (1<<COM1A1)|(0<<COM1A0)|       /*< Compare output mode OC1A: non-inverting */
+    (1<<COM1B1)|(0<<COM1B0)|       /*< Compare output mode OC1B: non-inverting */
+    (0<<FOC1A)|(0<<FOC1B);         /*< No forced output */
+  OCR1A = UINT16_C(0);
+  OCR1B = UINT16_C(0);
+  TCNT1 = UINT16_C(0);
+  DDRD |= ((1U << DDD4)|(1U << DDD5));
+}
 
-/* Enable LEDs support */
-#cmakedefine MCODE_LEDS
-
-/* Enable PWM support */
-#cmakedefine MCODE_PWM
+void pwm_set(uint8_t id, uint8_t value)
+{
+  switch (id) {
+  case PWD_ID_OC1A:
+    OCR1AL = value;
+    break;
+  case PWD_ID_OC1B:
+    OCR1BL = value;
+    break;
+  default:
+    break;
+  }
+}

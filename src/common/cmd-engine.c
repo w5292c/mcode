@@ -24,6 +24,7 @@
 
 #include "cmd-engine.h"
 
+#include "pwm.h"
 #include "main.h"
 #include "mtick.h"
 #include "utils.h"
@@ -44,7 +45,12 @@
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
 #endif /* MCODE_HW_I80_ENABLED */
-static void cmd_engine_set_led (const char *cmd);
+#ifdef MCODE_PWM
+static void cmd_engine_pwm(const char *cmd);
+#endif /* MCODE_PWM */
+#ifdef MCODE_LEDS
+static void cmd_engine_set_led(const char *cmd);
+#endif /* MCODE_LEDS */
 static void cmd_engine_on_cmd_ready (const char *aString);
 #ifdef MCODE_CONSOLE_ENABLED
 static void cmd_engine_set_bg (const char *aParams);
@@ -143,7 +149,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> color xxxx - set text color\r\n"));
     hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
     hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
-#endif
+#endif /* MCODE_CONSOLE_ENABLED */
     hw_uart_write_string_P(PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P(PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P(PSTR("> off - Turn LCD module OFF\r\n"));
@@ -160,7 +166,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> esc-color - Show colored strings\r\n"));
     hw_uart_write_string_P(PSTR("> tlimg - Load large test image\r\n"));
 #endif /* MCODE_CONSOLE_ENABLED */
+#ifdef MCODE_PWM
+    hw_uart_write_string_P(PSTR("> pwm <ind> <value> - Set PWM value\r\n"));
+#endif /* MCODE_PWM */
+#ifdef MCODE_LEDS
     hw_uart_write_string_P(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
+#endif /* MCODE_LEDS */
 #ifdef MCODE_HW_I80_ENABLED
     hw_uart_write_string_P(PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P(PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
@@ -190,9 +201,17 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_read(&aString[2]);
   }
 #endif /* MCODE_HW_I80_ENABLED */
+#ifdef MCODE_PWM
+  else if (!strncmp_P(aString, PSTR("pwm "), 4)) {
+    cmd_engine_pwm(&aString[4]);
+  }
+#endif /* MCODE_PWM */
+#ifdef MCODE_LEDS
   else if (!strncmp_P(aString, PSTR("led "), 4)) {
     cmd_engine_set_led(&aString[4]);
-  } else if (!strcmp_P(aString, PSTR("reset"))) {
+  }
+#endif /* MCODE_LEDS */
+  else if (!strcmp_P(aString, PSTR("reset"))) {
     lcd_reset();
   } else if (!strcmp_P(aString, PSTR("on"))) {
     lcd_turn(true);
@@ -344,6 +363,27 @@ void cmd_engine_write(const char *aCommand)
 }
 #endif /* MCODE_HW_I80_ENABLED */
 
+#ifdef MCODE_PWM
+void cmd_engine_pwm(const char *cmd)
+{
+  int index = -1;
+  int value = -1;
+  const char *const secondNumber = string_skip_whitespace(string_next_number(string_skip_whitespace(cmd), &index));
+  if (secondNumber) {
+    string_next_number(secondNumber, &value);
+  }
+
+  if (index < 0 || index > 2 || value < 0 || value > 255) {
+    hw_uart_write_string_P(PSTR("Wrong args, format: pwm <index> <value>\r\n"));
+    hw_uart_write_string_P(PSTR("Possible indexes: [0..2], values: [0..255]\r\n"));
+    return;
+  }
+
+  pwm_set(index, value);
+}
+#endif /* MCODE_PWM */
+
+#ifdef MCODE_LEDS
 /**
  * Set-LED command handler
  * @param[in] aCommand - The command parameters
@@ -373,6 +413,7 @@ void cmd_engine_set_led(const char *cmd)
     hw_uart_write_string_P (PSTR("Wrong args, format: L I 0/1\r\n> I - the LED index [0..1]\r\n> 0/1 - turm OFF/ON\r\n"));
   }
 }
+#endif /* MCODE_LEDS */
 
 #ifdef MCODE_CONSOLE_ENABLED
 void cmd_engine_set_bg (const char *aParams)

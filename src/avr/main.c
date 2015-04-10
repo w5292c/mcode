@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "pwm.h"
 #include "mtick.h"
 #include "hw-lcd.h"
 #include "hw-leds.h"
@@ -29,6 +30,7 @@
 #include "console.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
+#include "mcode-config.h"
 #include "line-editor-uart.h"
 
 #include <avr/io.h>
@@ -44,8 +46,16 @@ int main (void)
   hw_uart_init();
   lcd_init(320, 480);
   console_init();
+#ifdef MCODE_LEDS
   /* init LEDs */
   mcode_hw_leds_init();
+#endif /* MCODE_LEDS */
+#ifdef MCODE_PWM
+  pwm_init();
+  pwm_set(PWD_ID_OC1A, 0);
+  pwm_set(PWD_ID_OC1B, 0);
+  pwm_set(PWD_ID_OC2, 0);
+#endif /* MCODE_PWM */
   /* init the line editor and the command engine */
   line_editor_uart_init();
   cmd_engine_init();

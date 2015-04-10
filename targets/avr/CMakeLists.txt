@@ -26,10 +26,11 @@ set (SRC_LIST
   ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/avr/mtick.c
   ${MCODE_TOP}/src/avr/system.c
-  ${MCODE_TOP}/src/avr/hw-leds.c
   ${MCODE_TOP}/src/avr/hw-uart.c
 )
 
+option ( MCODE_PWM "Enable PWM support" ON )
+option ( MCODE_LEDS "Enable LEDs support" OFF )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
@@ -62,6 +63,18 @@ if ( MCODE_AVR_FUSES )
     ${MCODE_TOP}/src/avr/fuses.c
   )
 endif ( MCODE_AVR_FUSES )
+
+if ( MCODE_LEDS )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-leds.c
+  )
+endif ( MCODE_LEDS )
+
+if ( MCODE_PWM )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/pwm.c
+  )
+endif ( MCODE_PWM )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

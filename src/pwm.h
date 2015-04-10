@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,30 @@
  * SOFTWARE.
  */
 
-/* This setting is defined if console is enabled in the system */
-#cmakedefine MCODE_CONSOLE_ENABLED
+#ifndef MCODE_PWM_H
+#define MCODE_PWM_H
 
-/* I80 interface enabled */
-#cmakedefine MCODE_HW_I80_ENABLED
+#include <stdint.h>
 
-/* Enable debug LEDs blinking */
-#cmakedefine MCODE_DEBUG_BLINKING
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* Enable LEDs support */
-#cmakedefine MCODE_LEDS
+#define PWD_ID_OC1A UINT8_C(0)
+#define PWD_ID_OC1B UINT8_C(1)
+#define PWD_ID_OC2  UINT8_C(2)
 
-/* Enable PWM support */
-#cmakedefine MCODE_PWM
+void pwm_init(void);
+
+/**
+ * Sets the PWM phase value.
+ * @param[in] id The ID of the PWM. 0 corresponds to OC1A, 1 - OC1B, 2 - OC2
+ * @param[in] value The PWM value to be set, may be from 0 to 255
+ */
+void pwm_set(uint8_t id, uint8_t value);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* MCODE_PWM_H */
