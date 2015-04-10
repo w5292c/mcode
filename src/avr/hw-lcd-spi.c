@@ -39,7 +39,7 @@ SPI LCD HW configuration
 |    1 |    +3.3V |    --- |
 |    2 |      GND |    --- |
 |    3 |       CS |    PB4 |
-|    4 |    RESET |    PD7 |
+|    4 |    RESET |    PD6 |
 |    5 |      D/C |    PC7 |
 |    6 |     MOSI |    PB5 |
 |    7 |      SCK |    PB7 |
@@ -56,10 +56,10 @@ void lcd_init(uint16_t width, uint16_t height)
   /* Configure D/C (address) line (PC7) as output */
   DDRC |= (1U << DDC7);
   lcd_set_address(true);
-  /* Configure RESET line (PD7) as output */
-  DDRD |= (1U << DDD7);
+  /* Configure RESET line (PD6) as output */
+  DDRD |= (1U << DDD6);
   /* Turn RESET line OFF */
-  PORTD |= (1U << PD7);
+  PORTD |= (1U << PD6);
 
   /* Disable for now, as 'mtick_sleep' does not
      work at this point for some reason */
@@ -84,9 +84,9 @@ void lcd_set_address(bool a0)
 void lcd_reset(void)
 {
   /* HW reset */
-  PORTD &= ~(1U << PD7);
+  PORTD &= ~(1U << PD6);
   mtick_sleep(10);
-  PORTD |= (1U << PD7);
+  PORTD |= (1U << PD6);
   mtick_sleep(10);
 
   /* wait for LCD ready */

@@ -57,7 +57,7 @@
 | 18 |      WR |    PC1 | TBC; Prev pin: PB1                                |
 | 19 |      RD |    PC6 | TBC; Prev pin: PB2                                |
 | 20 |   A0/RS |    PC7 | TBC; Prev pin: PB3                                |
-| 21 |   RESET |    PD7 | TBC; Prev pin: PB4                                |
+| 21 |   RESET |    PD6 | TBC; Prev pin: PB4                                |
 |---------------------------------------------------------------------------|
 */
 /* Available pins: PC0, PC1, PC6, PC7, PD7 */
@@ -92,8 +92,8 @@ inline static void hw_i80_deactivate_rd_wr (void) { PORTC |= ((1 << PC1)|(1 << P
 inline static void hw_i80_activate_cmd (void) { PORTC &= ~(1 << PC7); } /* 0 */
 inline static void hw_i80_activate_data (void) { PORTC |= (1 << PC7); } /* 1 */
 
-inline static void hw_i80_activate_reset (void) { PORTD &= ~(1 << PD7); }
-inline static void hw_i80_deactivate_reset (void) { PORTD |= (1 << PD7); }
+inline static void hw_i80_activate_reset (void) { PORTD &= ~(1 << PD6); }
+inline static void hw_i80_deactivate_reset (void) { PORTD |= (1 << PD6); }
 
 inline static void hw_i80_set_data_port_in (void) { DDRA = UINT8_C(0x00); PORTA = UINT8_C(0xFF); }
 inline static void hw_i80_set_data_port_out (void) { PORTA = UINT8_C(0xFF); DDRA = UINT8_C(0xFF); }
@@ -110,9 +110,9 @@ inline static void hw_i80_read_write_delay (void) { _NOP (); }
 
 static void hw_i80_setup_ports (void) {
   /* Configure C and D-ports, outputs: CS, WR, RD, RS, RESET */
-  DDRD |= (1U << DDD7); DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
+  DDRD |= (1U << DDD6); DDRC = ((1U << DDC0)|(1U << DDC1)|(1U << DDC6)|(1U << DDC7));
   /* Reset all C and D-port outputs to inactive state (1) */
-  PORTD = (1U << PD7); PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7)); _NOP ();
+  PORTD = (1U << PD6); PORTC = ((1U << PC0)|(1U << PC1)|(1U << PC6)|(1U << PC7)); _NOP ();
 }
 
 void hw_i80_init (void)
