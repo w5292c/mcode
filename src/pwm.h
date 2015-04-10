@@ -31,9 +31,9 @@
 extern "C" {
 #endif
 
-#define PWD_ID_OC1A UINT8_C(0)
-#define PWD_ID_OC1B UINT8_C(1)
-#define PWD_ID_OC2  UINT8_C(2)
+#define PWM_ID_OC1A UINT8_C(0)
+#define PWM_ID_OC1B UINT8_C(1)
+#define PWM_ID_OC2  UINT8_C(2)
 
 void pwm_init(void);
 

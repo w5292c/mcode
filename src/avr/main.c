@@ -52,9 +52,9 @@ int main (void)
 #endif /* MCODE_LEDS */
 #ifdef MCODE_PWM
   pwm_init();
-  pwm_set(PWD_ID_OC1A, 0);
-  pwm_set(PWD_ID_OC1B, 0);
-  pwm_set(PWD_ID_OC2, 0);
+  pwm_set(PWM_ID_OC1A, 0);
+  pwm_set(PWM_ID_OC1B, 0);
+  pwm_set(PWM_ID_OC2, 0);
 #endif /* MCODE_PWM */
   /* init the line editor and the command engine */
   line_editor_uart_init();

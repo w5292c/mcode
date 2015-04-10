@@ -41,18 +41,24 @@ void pwm_init(void)
   OCR1A = UINT16_C(0);
   OCR1B = UINT16_C(0);
   TCNT1 = UINT16_C(0);
-  DDRD |= ((1U << DDD4)|(1U << DDD5));
+  DDRD |= ((1U << DDD4)|(1U << DDD5)|(1U << DDD7));
 }
 
 void pwm_set(uint8_t id, uint8_t value)
 {
   switch (id) {
-  case PWD_ID_OC1A:
+  case PWM_ID_OC1A:
     OCR1AL = value;
     break;
-  case PWD_ID_OC1B:
+  case PWM_ID_OC1B:
     OCR1BL = value;
     break;
+  case PWM_ID_OC2:
+    if (value < 0x80) {
+      PORTD &= ~(1U << PD7);
+    } else {
+      PORTD |= (1U << PD7);
+    }
   default:
     break;
   }
