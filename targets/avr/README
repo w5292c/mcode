@@ -48,9 +48,8 @@ GPIO pins allocation
 |  PD4 |    + | GPIO: LED0 | GPIO: LED0 |
 |  PD5 |    + | GPIO: LED1 | GPIO: LED1 |
 |  PD6 |    + | I80: RESET | LCD: RESET |
-|  PD7 |      |            |            |
+|  PD7 |    + | LED2       | LED2       |
 -----------------------------------------
 
 TODO List
 =========
-1) Allocate PD7 to a new LED (LED2);
