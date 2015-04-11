@@ -42,6 +42,17 @@ void pwm_init(void)
   OCR1B = UINT16_C(0);
   TCNT1 = UINT16_C(0);
   DDRD |= ((1U << DDD4)|(1U << DDD5)|(1U << DDD7));
+
+  /* Configure Timer2 in PWM fast mode */
+  /* Reset the Timer2 counter */
+  TCNT2 = UINT8_C(0);
+  /* Timer2 compare register: 1001.73913Hz */
+  OCR2 = UINT8_C(0);
+  /* Set the control register */
+  TCCR2 =
+    (1<<WGM21)|(1<<WGM20)| /*< Mode: Fast PWM */
+    (1<<COM21)|(0<<COM21)| /*< Compare output mode OC2: non-inverting */
+    (1<<CS22)|(0<<CS21)|(0<<CS20); /* Prescaler: 64 */
 }
 
 void pwm_set(uint8_t id, uint8_t value)
@@ -54,11 +65,8 @@ void pwm_set(uint8_t id, uint8_t value)
     OCR1BL = value;
     break;
   case PWM_ID_OC2:
-    if (value < 0x80) {
-      PORTD &= ~(1U << PD7);
-    } else {
-      PORTD |= (1U << PD7);
-    }
+    OCR2 = value;
+    break;
   default:
     break;
   }
