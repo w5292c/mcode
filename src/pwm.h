@@ -39,7 +39,7 @@ void pwm_init(void);
 
 /**
  * Sets the PWM phase value.
- * @param[in] id The ID of the PWM. 0 corresponds to OC1A, 1 - OC1B, 2 - OC2
+ * @param[in] id The ID of the PWM
  * @param[in] value The PWM value to be set, may be from 0 to 255
  */
 void pwm_set(uint8_t id, uint8_t value);

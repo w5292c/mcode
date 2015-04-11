@@ -45,10 +45,10 @@ GPIO pins allocation
 |  PD1 |    + | UART:  TXD | UART:  TXD |
 |  PD2 |      |            |            |
 |  PD3 |      |            |            |
-|  PD4 |    + | GPIO: LED0 | GPIO: LED0 |
-|  PD5 |    + | GPIO: LED1 | GPIO: LED1 |
+|  PD4 |    + | PWM:  LED0 | PWM:  LED0 |
+|  PD5 |    + | PWM:  LED1 | PWM:  LED1 |
 |  PD6 |    + | I80: RESET | LCD: RESET |
-|  PD7 |    + | LED2       | LED2       |
+|  PD7 |    + | PWM:  LED2 | PWM:  LED2 |
 -----------------------------------------
 
 TODO List
