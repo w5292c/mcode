@@ -30,9 +30,11 @@ set (SRC_LIST
 )
 
 option ( MCODE_PWM "Enable PWM support" ON )
+option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
+option ( MCODE_CONSOLE "Enable console support" ON )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
-option ( MCODE_TEST_IMAGES "Enable hard-coded test images" OFF )
+option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 
