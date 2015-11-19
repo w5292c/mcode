@@ -150,10 +150,12 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
     hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
 #endif /* MCODE_CONSOLE_ENABLED */
+#ifdef MCODE_LCD
     hw_uart_write_string_P(PSTR("> reset - Reset LCD module\r\n"));
     hw_uart_write_string_P(PSTR("> on - Turn LCD module ON\r\n"));
     hw_uart_write_string_P(PSTR("> off - Turn LCD module OFF\r\n"));
     hw_uart_write_string_P(PSTR("> lcd-id Read the LCD ID\r\n"));
+#endif /* MCODE_LCD */
 #ifdef MCODE_CONSOLE_ENABLED
     hw_uart_write_string_P(PSTR("> bs - Print <back-space> character\r\n"));
     hw_uart_write_string_P(PSTR("> tab - Print <tab> character\r\n"));
