@@ -45,6 +45,7 @@ set ( HEADERS_LIST_QT
 
 QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 
+option ( MCODE_TEST_IMAGES "Enable hard-coded test images" OFF )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )

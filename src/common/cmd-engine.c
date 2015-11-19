@@ -211,6 +211,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_set_led(&aString[4]);
   }
 #endif /* MCODE_LEDS */
+#ifdef MCODE_LCD
   else if (!strcmp_P(aString, PSTR("reset"))) {
     lcd_reset();
   } else if (!strcmp_P(aString, PSTR("on"))) {
@@ -224,11 +225,15 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string("LCD ID: 0x");
     hw_uart_write_uint32(id, false);
     hw_uart_write_string("\r\n");
-  } else if (!strcmp_P(aString, PSTR("timg"))) {
+  }
+#endif /* MCODE_LCD */
+#ifdef MCODE_TEST_IMAGES
+  else if (!strcmp_P(aString, PSTR("timg"))) {
     cmd_test_image();
   } else if (!strcmp_P(aString, PSTR("tlimg"))) {
     cmd_test_image_large();
   }
+#endif /* MCODE_TEST_IMAGES */
 #ifdef MCODE_CONSOLE_ENABLED
   else if (!strcmp_P(aString, PSTR("cls"))) {
     console_clear_screen();

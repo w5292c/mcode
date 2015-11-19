@@ -16,28 +16,45 @@ project (console-test C)
 set (SRC_LIST
   ${MCODE_TOP}/src/avr/main.c
   ${MCODE_TOP}/src/common/utils.c
-  ${MCODE_TOP}/src/common/hw-lcd.c
   ${MCODE_TOP}/src/common/hw-uart.c
-  ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/scheduler.c
   ${MCODE_TOP}/src/common/cmd-engine.c
-  ${MCODE_TOP}/src/common/cmd-test-image.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
-  ${MCODE_TOP}/src/fonts.c
   ${MCODE_TOP}/src/avr/mtick.c
   ${MCODE_TOP}/src/avr/system.c
   ${MCODE_TOP}/src/avr/hw-uart.c
 )
 
-option ( MCODE_PWM "Enable PWM support" ON )
+option ( MCODE_PWM "Enable PWM support" OFF )
+option ( MCODE_LCD "Enable LCD support" OFF )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
+option ( MCODE_CONSOLE "Enable console support" OFF )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
-option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
+option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" OFF )
 
-option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" ON )
+option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" OFF )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )
+
+if ( MCODE_LCD )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/fonts.c
+    ${MCODE_TOP}/src/common/hw-lcd.c
+  )
+endif ( MCODE_LCD )
+
+if ( MCODE_CONSOLE )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/console.c
+  )
+endif ( MCODE_CONSOLE )
+
+if ( MCODE_TEST_IMAGES )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-test-image.c
+  )
+endif ( MCODE_TEST_IMAGES )
 
 if ( MCODE_LCD_ILI9341 )
   set ( SRC_LIST ${SRC_LIST}

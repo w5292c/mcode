@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include "mcode-config.h"
+
 #include "pwm.h"
 #include "mtick.h"
 #include "hw-lcd.h"
@@ -30,7 +32,6 @@
 #include "console.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
-#include "mcode-config.h"
 #include "line-editor-uart.h"
 
 #include <avr/io.h>
@@ -44,8 +45,12 @@ int main (void)
   mtick_init();
   /* now, UART can be initialized */
   hw_uart_init();
+#ifdef MCODE_LCD
   lcd_init(320, 480);
+#endif /* MCODE_LCD */
+#ifdef MCODE_CONSOLE
   console_init();
+#endif /* MCODE_CONSOLE */
 #ifdef MCODE_LEDS
   /* init LEDs */
   mcode_hw_leds_init();
@@ -70,7 +75,9 @@ int main (void)
   mcode_scheduler_start();
 
   /* Clean-up */
+#ifdef MCODE_LCD
   lcd_deinit();
+#endif /* MCODE_LCD */
   mtick_deinit();
   return 0;
 }

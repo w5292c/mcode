@@ -135,11 +135,6 @@ void hw_uart_write_uint32(uint32_t value, bool skipZeros)
   hw_uart_write_uint16((uint16_t)value, skipZeros);
 }
 
-void hw_uart_write_string_P(const char *aString)
-{
-  hw_uart_write_string (aString);
-}
-
 void hw_uart_write_string(const char *aString)
 {
   fprintf (stdout, "%s", aString);

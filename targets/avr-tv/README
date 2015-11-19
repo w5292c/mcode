@@ -1,0 +1,55 @@
+AVR HW configuration
+====================
+
+Cristal
+=======
+Frequency: 7.3728MHz
+
+Flashing target
+===============
+sudo avarice --erase --program --file console-test --part atmega32 --jtag /dev/ttyUSB1 --verify --reset-srst
+
+GPIO pins allocation
+====================
+-----------------------------------------
+| PORT | BUSY | FUNC.    1 | FUNC.    2 |
+-----------------------------------------
+|  PA0 |      |            |            |
+|  PA1 |      |            |            |
+|  PA2 |      |            |            |
+|  PA3 |      |            |            |
+|  PA4 |      |            |            |
+|  PA5 |      |            |            |
+|  PA6 |      |            |            |
+|  PA7 |      |            |            |
+-----------------------------------------
+|  PB0 |      |            |            |
+|  PB1 |      |            |            |
+|  PB2 |      |            |            |
+|  PB3 |      |            |            |
+|  PB4 |      |            |            |
+|  PB5 |      |            |            |
+|  PB6 |      |            |            |
+|  PB7 |      |            |            |
+-----------------------------------------
+|  PC0 |      |            |            |
+|  PC1 |      |            |            |
+|  PC2 |    + | JTAG:  TCK | JTAG:  TCK |
+|  PC3 |    + | JTAG:  TMS | JTAG:  TMS |
+|  PC4 |    + | JTAG:  TDO | JTAG:  TDO |
+|  PC5 |    + | JTAG:  TDI | JTAG:  TDI |
+|  PC6 |      |            |            |
+|  PC7 |      |            |            |
+-----------------------------------------
+|  PD0 |    + | UART:  RXD | UART:  RXD |
+|  PD1 |    + | UART:  TXD | UART:  TXD |
+|  PD2 |      |            |            |
+|  PD3 |      |            |            |
+|  PD4 |      |            |            |
+|  PD5 |      |            |            |
+|  PD6 |      |            |            |
+|  PD7 |      |            |            |
+-----------------------------------------
+
+TODO List
+=========

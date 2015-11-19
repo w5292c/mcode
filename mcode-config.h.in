@@ -36,3 +36,12 @@
 
 /* Enable PWM support */
 #cmakedefine MCODE_PWM
+
+/* Enable hard-coded test images" */
+#cmakedefine MCODE_TEST_IMAGES
+
+/* Enable console support */
+#cmakedefine MCODE_CONSOLE
+
+/* Enable LCD support */
+#cmakedefine MCODE_LCD
