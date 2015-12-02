@@ -24,6 +24,7 @@
 
 #include "cmd-engine.h"
 
+#include "sha.h"
 #include "pwm.h"
 #include "main.h"
 #include "mtick.h"
@@ -57,6 +58,9 @@ static void cmd_engine_set_bg (const char *aParams);
 static void cmd_engine_set_color (const char *aParams);
 static void cmd_engine_set_scroll_start (const char *aParams);
 #endif /* MCODE_CONSOLE_ENABLED */
+#ifdef MCODE_SECURITY
+static void cmd_engine_sha256(const char *aParams);
+#endif /* MCODE_SECURITY */
 
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
@@ -178,6 +182,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P(PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
 #endif /* MCODE_HW_I80_ENABLED */
+#ifdef MCODE_SECURITY
+    hw_uart_write_string_P(PSTR("> sha256 <DATA> - calculate SHA256 hash\r\n"));
+#endif /* MCODE_SECURITY */
   }
 #ifdef __linux__
   else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
@@ -270,6 +277,11 @@ void cmd_engine_on_cmd_ready (const char *aString)
     console_write_string_P(PSTR("\r\n"));
   }
 #endif /* MCODE_CONSOLE_ENABLED */
+#ifdef MCODE_SECURITY
+  else if (!strncmp_P(aString, PSTR("sha256 "), 7)) {
+    cmd_engine_sha256(&aString[7]);
+  }
+#endif /* MCODE_SECURITY */
   else if (*aString) {
     /* got unrecognized non-empty command */
     hw_uart_write_string_P(PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));
@@ -452,3 +464,28 @@ void cmd_engine_set_scroll_start (const char *aParams)
   }
 }
 #endif /* MCODE_CONSOLE_ENABLED */
+
+#ifdef MCODE_SECURITY
+void cmd_engine_sha256(const char *aParams)
+{
+  const uint16_t n = strlen(aParams);
+  hw_uart_write_string_P(PSTR("Calculating sha256 hash, string: '"));
+  hw_uart_write_string(aParams);
+  hw_uart_write_string_P(PSTR("', length: 0x"));
+  hw_uart_write_uint(n);
+  hw_uart_write_string_P(PSTR("\r\n"));
+
+  SHA256_CTX c;
+  uint8_t byteResultHash[SHA256_DIGEST_LENGTH];
+
+  SHA256(aParams, n, byteResultHash);
+
+  uint8_t i;
+  uint8_t *ptr = byteResultHash;
+  for (i = 0; i < SHA256_DIGEST_LENGTH; i += 2, ptr += 2) {
+    uint16_t data = ((*ptr) << 8) | (*(ptr + 1) << 0);
+    hw_uart_write_uint16(data, false);
+  }
+  hw_uart_write_string_P(PSTR("\r\n"));
+}
+#endif /* MCODE_SECURITY */
