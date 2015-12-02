@@ -91,6 +91,20 @@ void hw_i80_write(uint8_t cmd, uint8_t length, const uint8_t *data)
   }
 }
 
+void lcd_device_init(void)
+{
+}
+
+void lcd_write_cmd(uint8_t cmd)
+{
+  emu_hw_lcd_s95513_handle_cmd(cmd);
+}
+
+void lcd_write_byte(uint8_t data)
+{
+  emu_hw_lcd_s95513_handle_data_byte(data);
+}
+
 void emu_hw_lcd_s95513_write_words(uint8_t cmd, uint8_t length, const uint16_t *data)
 {
   uint8_t i;
