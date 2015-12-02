@@ -24,7 +24,6 @@
 
 #include "cmd-engine.h"
 
-#include "sha.h"
 #include "pwm.h"
 #include "main.h"
 #include "mtick.h"
@@ -59,6 +58,8 @@ static void cmd_engine_set_color (const char *aParams);
 static void cmd_engine_set_scroll_start (const char *aParams);
 #endif /* MCODE_CONSOLE_ENABLED */
 #ifdef MCODE_SECURITY
+#include "sha.h"
+
 static void cmd_engine_sha256(const char *aParams);
 #endif /* MCODE_SECURITY */
 
