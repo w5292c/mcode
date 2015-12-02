@@ -125,7 +125,7 @@ static
 #endif
 void sha256_block_data_order(SHA256_CTX *ctx, const void *in, size_t num);
 
-#include "internal/md32_common.h"
+#include "md32_common.h"
 
 #ifndef SHA256_ASM
 static const SHA_LONG K256[64] = {
