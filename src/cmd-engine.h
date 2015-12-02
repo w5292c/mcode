@@ -25,14 +25,29 @@
 #ifndef MCODE_CMD_ENGINE_H
 #define MCODE_CMD_ENGINE_H
 
+#include "mcode-config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifdef MCODE_COMMAND_MODES
+typedef enum {
+  CmdModeNormal,
+  CmdModeRoot,
+  CmdModeUser
+} CmdMode;
+#endif /* MCODE_COMMAND_MODES */
 
 void cmd_engine_init (void);
 void cmd_engine_deinit (void);
 
 void cmd_engine_start (void);
+
+#ifdef MCODE_COMMAND_MODES
+void cmd_engine_set_mode(CmdMode mode, const char *passwd);
+CmdMode cmd_engine_get_mode(void);
+#endif /* MCODE_COMMAND_MODES */
 
 #ifdef __cplusplus
 } /* extern "C" */

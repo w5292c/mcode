@@ -26,12 +26,15 @@
 
 #include "mglobal.h"
 #include "hw-uart.h"
+#include "cmd-engine.h"
+#include "mcode-config.h"
 
 #include <ctype.h>
 #include <string.h>
 
 #define LINE_EDITOR_UART_BUFFER_LENGTH (64)
 static char line_editor_buffer[LINE_EDITOR_UART_BUFFER_LENGTH] = {0};
+static bool TheEchoEnabled;
 static int line_editor_cursor = 0;
 static int line_editor_initialized = 0;
 static line_editor_uart_ready TheCallback = 0;
@@ -41,6 +44,7 @@ static void line_editor_uart_callback(char aChar);
 void line_editor_uart_init (void)
 {
   if (!line_editor_initialized) {
+    TheEchoEnabled = true;
     memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
     hw_uart_set_callback (line_editor_uart_callback);
     line_editor_initialized = 1;
@@ -63,7 +67,23 @@ void line_editor_uart_set_callback (line_editor_uart_ready aCallback)
 
 void line_editor_uart_start (void)
 {
-  hw_uart_write_string_P (PSTR("# "));
+#ifdef MCODE_COMMAND_MODES
+  const char *prompt = PSTR("$ ");
+  switch (cmd_engine_get_mode()) {
+  case CmdModeRoot:
+    prompt = PSTR("# ");
+    break;
+  case CmdModeUser:
+    prompt = PSTR("> ");
+    break;
+  case CmdModeNormal:
+  default:
+    break;
+  }
+  hw_uart_write_string_P(prompt);
+#else /* MCODE_COMMAND_MODES */
+  hw_uart_write_string_P(PSTR("# "));
+#endif /* MCODE_COMMAND_MODES */
 }
 
 void line_editor_uart_callback(char aChar)
@@ -76,7 +96,9 @@ void line_editor_uart_callback(char aChar)
         /* we have a alpha-numeric character, append it to the buffer */
         if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1) {
           line_editor_buffer[line_editor_cursor] = (char)aChar;
-          hw_uart_write_string (&line_editor_buffer[line_editor_cursor]);
+          if (TheEchoEnabled) {
+            hw_uart_write_string (&line_editor_buffer[line_editor_cursor]);
+          }
           ++line_editor_cursor;
         }
         else {
@@ -110,4 +132,9 @@ void line_editor_uart_callback(char aChar)
       memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
     }
   }
+}
+
+void line_editor_set_echo(bool enabled)
+{
+  TheEchoEnabled = enabled;
 }

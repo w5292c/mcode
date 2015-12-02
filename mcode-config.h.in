@@ -48,3 +48,6 @@
 
 /* Enable security support */
 #cmakedefine MCODE_SECURITY
+
+/* Enable command engine modes */
+#cmakedefine MCODE_COMMAND_MODES

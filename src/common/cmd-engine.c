@@ -41,6 +41,10 @@
 
 #include <string.h>
 
+#ifdef __AVR__
+#include <avr/eeprom.h>
+#endif /* __AVR__ */
+
 #ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_read (const char *aCommand);
 static void cmd_engine_write (const char *aCommand);
@@ -62,6 +66,28 @@ static void cmd_engine_set_scroll_start (const char *aParams);
 
 static void cmd_engine_sha256(const char *aParams);
 #endif /* MCODE_SECURITY */
+#ifdef MCODE_COMMAND_MODES
+typedef enum {
+  CommandEngineStateCmd,
+  CommandEngineStateArgs,
+  CommandEngineStatePass,
+} CommandEngineState;
+
+static uint8_t TheMode = CmdModeNormal;
+static uint8_t TheCommandEngineState = CommandEngineStateCmd;
+static uint8_t TheCommandEngineStateRequest;
+static void cmd_engine_set_cmd_mode(const char *params);
+static void cmd_engine_handle_args(const char *args);
+static void cmd_engine_handle_pass(const char *pass);
+
+/* hash for the initial passwd: 'pass' */
+uint8_t EEMEM TheHash[32] = {
+  0xd7u, 0x4fu, 0xf0u, 0xeeu, 0x8du, 0xa3u, 0xb9u, 0x80u,
+  0x6bu, 0x18u, 0xc8u, 0x77u, 0xdbu, 0xf2u, 0x9bu, 0xbdu,
+  0xe5u, 0x0bu, 0x5bu, 0xd8u, 0xe4u, 0xdau, 0xd7u, 0xa3u,
+  0xa7u, 0x25u, 0x00u, 0x0fu, 0xebu, 0x82u, 0xe8u, 0xf1u,
+};
+#endif /* MCODE_COMMAND_MODES */
 
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
@@ -139,6 +165,24 @@ void cmd_engine_start (void)
 
 void cmd_engine_on_cmd_ready (const char *aString)
 {
+#ifdef MCODE_COMMAND_MODES
+  switch (TheCommandEngineState) {
+  case CommandEngineStateCmd:
+    break;
+  case CommandEngineStateArgs:
+    cmd_engine_handle_args(aString);
+    return;
+  case CommandEngineStatePass:
+    cmd_engine_handle_pass(aString);
+    return;
+  default:
+    hw_uart_write_string_P(PSTR("Error: wrong engine state: "));
+    hw_uart_write_uint(TheCommandEngineState);
+    hw_uart_write_string_P(PSTR("\r\n"));
+    return;
+  }
+#endif /* MCODE_COMMAND_MODES */
+
   int start_uart_editor = 1;
 
   if (!strcmp_P (aString, PSTR("help")))
@@ -186,6 +230,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_SECURITY
     hw_uart_write_string_P(PSTR("> sha256 <DATA> - calculate SHA256 hash\r\n"));
 #endif /* MCODE_SECURITY */
+#ifdef MCODE_COMMAND_MODES
+    hw_uart_write_string_P(PSTR("> su [MODE(1|2|3)] - Set the command engine mode\r\n"));
+#endif /* MCODE_COMMAND_MODES */
   }
 #ifdef __linux__
   else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
@@ -283,14 +330,25 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_sha256(&aString[7]);
   }
 #endif /* MCODE_SECURITY */
+#ifdef MCODE_COMMAND_MODES
+  else if (!strncmp_P(aString, PSTR("su "), 3)) {
+    cmd_engine_set_cmd_mode(&aString[3]);
+  }
+#endif /* MCODE_COMMAND_MODES */
   else if (*aString) {
     /* got unrecognized non-empty command */
     hw_uart_write_string_P(PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));
   }
 
+#ifdef MCODE_COMMAND_MODES
+  if (TheCommandEngineState == CommandEngineStateCmd && start_uart_editor) {
+    line_editor_uart_start();
+  }
+#else /* MCODE_COMMAND_MODES */
   if (start_uart_editor) {
     line_editor_uart_start();
   }
+#endif /* MCODE_COMMAND_MODES */
 }
 
 #ifdef MCODE_HW_I80_ENABLED
@@ -488,3 +546,79 @@ void cmd_engine_sha256(const char *aParams)
   hw_uart_write_string_P(PSTR("\r\n"));
 }
 #endif /* MCODE_SECURITY */
+
+#ifdef MCODE_COMMAND_MODES
+typedef enum {
+  ModesStateIdle,
+  ModesStateEnterPass
+} ModesState;
+
+static uint8_t TheModesState;
+
+void cmd_engine_set_mode(CmdMode mode, const char *passwd)
+{
+  switch (mode) {
+  case CmdModeNormal:
+  case CmdModeRoot:
+  case CmdModeUser:
+    TheMode = mode;
+    break;
+  default:
+    hw_uart_write_string_P(PSTR("Error: 'cmd_engine_set_mode' - wrong mode: 0x"));
+    hw_uart_write_uint(mode);
+    hw_uart_write_string_P(PSTR("\r\n"));
+    break;
+  }
+}
+
+CmdMode cmd_engine_get_mode(void)
+{
+  return (CmdMode)TheMode;
+}
+
+void cmd_engine_set_cmd_mode(const char *params)
+{
+  int value = 0;
+  const char *next = string_next_number(string_skip_whitespace(params), &value);
+  if (next && !*next && value > 0 && value < 4) {
+    TheCommandEngineStateRequest = (CmdMode)(value - 1);
+    hw_uart_write_string_P(PSTR("Enter password: "));
+    TheCommandEngineState = CommandEngineStatePass;
+    TheModesState = ModesStateEnterPass;
+    line_editor_set_echo(false);
+  } else {
+    hw_uart_write_string_P(PSTR("Error: wrong arguments for 'su'.\r\nFormat: $ su [1/2/3]\r\n"));
+  }
+}
+
+void cmd_engine_handle_args(const char *args)
+{
+  hw_uart_write_string_P(PSTR("Got args: '"));
+  hw_uart_write_string(args);
+  hw_uart_write_string_P(PSTR("'\r\n"));
+  TheCommandEngineState = CommandEngineStateCmd;
+  line_editor_uart_start();
+}
+
+void cmd_engine_handle_pass(const char *pass)
+{
+  if (ModesStateEnterPass == TheModesState) {
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+    uint8_t passHash[SHA256_DIGEST_LENGTH];
+    eeprom_read_block(hash, TheHash, SHA256_DIGEST_LENGTH);
+
+    const uint16_t n = strlen(pass);
+    SHA256((const uint8_t *)pass, n, passHash);
+    if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
+      cmd_engine_set_mode((CmdMode)TheCommandEngineStateRequest, NULL);
+    } else {
+      hw_uart_write_string_P(PSTR("Error: something wrong\r\n"));
+    }
+
+    line_editor_set_echo(true);
+    TheModesState = ModesStateIdle;
+    TheCommandEngineState = CommandEngineStateCmd;
+    line_editor_uart_start();
+  }
+}
+#endif /* MCODE_COMMAND_MODES */

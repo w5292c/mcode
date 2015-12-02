@@ -25,6 +25,8 @@
 #ifndef MCODE_LINE_EDITOR_UART_H
 #define MCODE_LINE_EDITOR_UART_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,6 +38,7 @@ void line_editor_uart_deinit (void);
 
 void line_editor_uart_set_callback (line_editor_uart_ready aCallback);
 
+void line_editor_set_echo(bool enabled);
 
 void line_editor_uart_start (void);
 #if 0
