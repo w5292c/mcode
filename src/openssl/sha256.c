@@ -11,6 +11,8 @@
 
 #include <sha.h>
 
+void OPENSSL_cleanse(void *ptr, size_t len);
+
 int SHA224_Init(SHA256_CTX *c)
 {
     memset(c, 0, sizeof(*c));

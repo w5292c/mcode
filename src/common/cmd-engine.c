@@ -475,10 +475,8 @@ void cmd_engine_sha256(const char *aParams)
   hw_uart_write_uint(n);
   hw_uart_write_string_P(PSTR("\r\n"));
 
-  SHA256_CTX c;
   uint8_t byteResultHash[SHA256_DIGEST_LENGTH];
-
-  SHA256(aParams, n, byteResultHash);
+  SHA256((const unsigned char *)aParams, n, byteResultHash);
 
   uint8_t i;
   uint8_t *ptr = byteResultHash;

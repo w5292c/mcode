@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 
-add_definitions( -mmcu=atmega32 -g -Os -Wall -Wstrict-prototypes )
+add_definitions ( -mmcu=atmega32 -g -Os -Wall -Wstrict-prototypes )
+add_definitions ( -DMD32_REG_T=long )
+add_definitions ( -DOPENSSL_SMALL_FOOTPRINT )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 set ( MCODE_SSL ${MCODE_TOP}/src/openssl/ )

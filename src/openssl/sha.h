@@ -71,7 +71,7 @@ extern "C" {
  * ! SHA_LONG has to be at least 32 bits wide.                    !
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
-# define SHA_LONG unsigned int
+# define SHA_LONG uint32_t
 
 # define SHA_LBLOCK      16
 # define SHA_CBLOCK      (SHA_LBLOCK*4)/* SHA treats input data as a

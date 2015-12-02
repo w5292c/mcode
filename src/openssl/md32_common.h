@@ -303,8 +303,8 @@ int HASH_UPDATE(HASH_CTX *c, const void *data_, size_t len)
      */
     if (l < c->Nl)              /* overflow */
         c->Nh++;
-    c->Nh += (HASH_LONG) (len >> 29); /* might cause compiler warning on
-                                       * 16-bit */
+    c->Nh += (HASH_LONG) (((HASH_LONG)len) >> 29); /* might cause compiler warning on
+                                                    * 16-bit */
     c->Nl = l;
 
     n = c->num;
