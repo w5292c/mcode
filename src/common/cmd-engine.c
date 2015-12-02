@@ -76,6 +76,7 @@ typedef enum {
 static uint8_t TheMode = CmdModeNormal;
 static uint8_t TheCommandEngineState = CommandEngineStateCmd;
 static uint8_t TheCommandEngineStateRequest;
+static void cmd_engine_passwd(void);
 static void cmd_engine_set_cmd_mode(const char *params);
 static void cmd_engine_handle_args(const char *args);
 static void cmd_engine_handle_pass(const char *pass);
@@ -87,6 +88,7 @@ uint8_t EEMEM TheHash[32] = {
   0xe5u, 0x0bu, 0x5bu, 0xd8u, 0xe4u, 0xdau, 0xd7u, 0xa3u,
   0xa7u, 0x25u, 0x00u, 0x0fu, 0xebu, 0x82u, 0xe8u, 0xf1u,
 };
+uint8_t EEMEM TheNewHash[32];
 #endif /* MCODE_COMMAND_MODES */
 
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
@@ -232,6 +234,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #endif /* MCODE_SECURITY */
 #ifdef MCODE_COMMAND_MODES
     hw_uart_write_string_P(PSTR("> su [MODE(1|2|3)] - Set the command engine mode\r\n"));
+    hw_uart_write_string_P(PSTR("> passwd - change the device password\r\n"));
 #endif /* MCODE_COMMAND_MODES */
   }
 #ifdef __linux__
@@ -333,6 +336,8 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_COMMAND_MODES
   else if (!strncmp_P(aString, PSTR("su "), 3)) {
     cmd_engine_set_cmd_mode(&aString[3]);
+  } else if (!strcmp_P(aString, PSTR("passwd"))) {
+    cmd_engine_passwd();
   }
 #endif /* MCODE_COMMAND_MODES */
   else if (*aString) {
@@ -550,7 +555,10 @@ void cmd_engine_sha256(const char *aParams)
 #ifdef MCODE_COMMAND_MODES
 typedef enum {
   ModesStateIdle,
-  ModesStateEnterPass
+  ModesStateEnterPass,
+  ModesStateChangePassEnterCurrent,
+  ModesStateChangePassEnterNew,
+  ModesStateChangePassConfirmNew
 } ModesState;
 
 static uint8_t TheModesState;
@@ -602,17 +610,45 @@ void cmd_engine_handle_args(const char *args)
 
 void cmd_engine_handle_pass(const char *pass)
 {
-  if (ModesStateEnterPass == TheModesState) {
-    uint8_t hash[SHA256_DIGEST_LENGTH];
-    uint8_t passHash[SHA256_DIGEST_LENGTH];
+  const uint16_t n = strlen(pass);
+  uint8_t hash[SHA256_DIGEST_LENGTH];
+  uint8_t passHash[SHA256_DIGEST_LENGTH];
+  SHA256((const uint8_t *)pass, n, passHash);
+  if (ModesStateEnterPass == TheModesState ||
+      ModesStateChangePassEnterCurrent == TheModesState) {
     eeprom_read_block(hash, TheHash, SHA256_DIGEST_LENGTH);
 
-    const uint16_t n = strlen(pass);
-    SHA256((const uint8_t *)pass, n, passHash);
     if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
       cmd_engine_set_mode((CmdMode)TheCommandEngineStateRequest, NULL);
     } else {
       hw_uart_write_string_P(PSTR("Error: something wrong\r\n"));
+
+      line_editor_set_echo(true);
+      TheModesState = ModesStateIdle;
+      TheCommandEngineState = CommandEngineStateCmd;
+      line_editor_uart_start();
+    }
+
+    if (ModesStateEnterPass == TheModesState) {
+      line_editor_set_echo(true);
+      TheModesState = ModesStateIdle;
+      TheCommandEngineState = CommandEngineStateCmd;
+      line_editor_uart_start();
+    } else if (ModesStateChangePassEnterCurrent == TheModesState) {
+      hw_uart_write_string_P(PSTR("Enter new password: "));
+      TheModesState = ModesStateChangePassEnterNew;
+    }
+  } else if (ModesStateChangePassEnterNew == TheModesState) {
+    eeprom_write_block(passHash, TheNewHash, SHA256_DIGEST_LENGTH);
+    hw_uart_write_string_P(PSTR("Confirm new password: "));
+    TheModesState = ModesStateChangePassConfirmNew;
+  } else if (ModesStateChangePassConfirmNew == TheModesState) {
+    eeprom_read_block(hash, TheNewHash, SHA256_DIGEST_LENGTH);
+
+    if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
+      eeprom_write_block(passHash, TheHash, SHA256_DIGEST_LENGTH);
+    } else {
+      hw_uart_write_string_P(PSTR("Error: password missmatch\r\n"));
     }
 
     line_editor_set_echo(true);
@@ -621,4 +657,13 @@ void cmd_engine_handle_pass(const char *pass)
     line_editor_uart_start();
   }
 }
+
+void cmd_engine_passwd(void)
+{
+  hw_uart_write_string_P(PSTR("Enter current password: "));
+  TheCommandEngineState = CommandEngineStatePass;
+  TheModesState = ModesStateChangePassEnterCurrent;
+  line_editor_set_echo(false);
+}
+
 #endif /* MCODE_COMMAND_MODES */
