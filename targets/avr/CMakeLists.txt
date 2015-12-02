@@ -3,7 +3,9 @@ cmake_minimum_required (VERSION 2.6)
 add_definitions( -mmcu=atmega32 -g -Os -Wall -Wstrict-prototypes )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
-include_directories( ${MCODE_TOP}/src/ )
+set ( MCODE_SSL ${MCODE_TOP}/src/openssl/ )
+
+include_directories( ${MCODE_TOP}/src/ ${MCODE_SSL} )
 
 set ( CMAKE_SYSTEM_NAME "Generic" )
 set ( CMAKE_C_COMPILER "avr-gcc" )
@@ -33,6 +35,7 @@ option ( MCODE_PWM "Enable PWM support" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
 option ( MCODE_CONSOLE "Enable console support" ON )
+option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
@@ -78,6 +81,13 @@ if ( MCODE_PWM )
     ${MCODE_TOP}/src/avr/pwm.c
   )
 endif ( MCODE_PWM )
+
+if ( MCODE_SECURITY )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_SSL}/sha256.c
+    ${MCODE_SSL}/mem_clr.c
+  )
+endif ( MCODE_SECURITY )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

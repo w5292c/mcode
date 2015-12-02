@@ -58,7 +58,6 @@
  */
 
 #include <string.h>
-#include <openssl/crypto.h>
 
 unsigned char cleanse_ctr = 0;
 

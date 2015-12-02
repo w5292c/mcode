@@ -4,14 +4,12 @@
  * according to the OpenSSL license [found in ../../LICENSE].
  * ====================================================================
  */
-#include <openssl/opensslconf.h>
+#include <opensslconf.h>
 
 #include <stdlib.h>
 #include <string.h>
 
-#include <openssl/crypto.h>
-#include <openssl/sha.h>
-#include <openssl/opensslv.h>
+#include <sha.h>
 
 int SHA224_Init(SHA256_CTX *c)
 {
