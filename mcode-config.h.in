@@ -45,3 +45,6 @@
 
 /* Enable LCD support */
 #cmakedefine MCODE_LCD
+
+/* Enable security support */
+#cmakedefine MCODE_SECURITY

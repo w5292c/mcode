@@ -10,8 +10,9 @@ pkg_check_modules ( GLIB2_0       glib-2.0        REQUIRED )
 link_directories ( ${GLIB2_0_LIBRARY_DIRS} )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
+set ( MCODE_SSL ${MCODE_TOP}/src/openssl/ )
 
-include_directories ( ${GLIB2_0_INCLUDE_DIRS} ${MCODE_TOP}/src/ )
+include_directories ( ${GLIB2_0_INCLUDE_DIRS} ${MCODE_TOP}/src/ ${MCODE_SSL} )
 
 INCLUDE ( ${QT_USE_FILE} )
 ADD_DEFINITIONS ( ${QT_DEFINITIONS} )
@@ -46,10 +47,18 @@ set ( HEADERS_LIST_QT
 QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 
 option ( MCODE_LCD "Enable LCD support" ON )
+option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
+
+if ( MCODE_SECURITY )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_SSL}/sha256.c
+    ${MCODE_SSL}/mem_clr.c
+  )
+endif ( MCODE_SECURITY )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
