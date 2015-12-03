@@ -86,3 +86,11 @@ target_link_libraries ( console-test ${CMAKE_THREAD_LIBS_INIT} )
 target_link_libraries ( console-test  ${QT_LIBRARIES} )
 
 include_directories ( "${PROJECT_BINARY_DIR}/include/" )
+
+add_custom_command (
+  TARGET console-test
+  POST_BUILD
+  COMMAND ../data/copy.sh
+  WORKING_DIRECTORY ${MCODE_TOP}/data
+  COMMENT "Making sure the store.db exists in the home directory"
+)
