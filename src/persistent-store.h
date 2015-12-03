@@ -41,7 +41,7 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length);
 void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length);
 
 #ifdef __cplusplus
-} // extern "C" {
+} /* extern "C" { */
 #endif /* __cplusplus */
 
 #endif /* MCODE_PERSISTENT_STORE_H */
