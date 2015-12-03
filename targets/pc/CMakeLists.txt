@@ -48,7 +48,9 @@ QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
+option ( MCODE_PERSIST_STORE "Enable persistent store" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
+option ( MCODE_COMMAND_MODES "Enable command engine modes" ON )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" ON )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
@@ -59,6 +61,12 @@ if ( MCODE_SECURITY )
     ${MCODE_SSL}/mem_clr.c
   )
 endif ( MCODE_SECURITY )
+
+if ( MCODE_PERSIST_STORE )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/emu/persistent-store.c
+  )
+endif ( MCODE_PERSIST_STORE )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
