@@ -37,6 +37,7 @@ option ( MCODE_LEDS "Enable LEDs support" OFF )
 option ( MCODE_CONSOLE "Enable console support" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
+option ( MCODE_PERSIST_STORE "Enable persistent store" ON )
 option ( MCODE_COMMAND_MODES "Enable command engine modes" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
@@ -92,6 +93,12 @@ if ( MCODE_SECURITY )
     ${MCODE_SSL}/mem_clr.c
   )
 endif ( MCODE_SECURITY )
+
+if ( MCODE_PERSIST_STORE )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/persistent-store.c
+  )
+endif ( MCODE_PERSIST_STORE )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

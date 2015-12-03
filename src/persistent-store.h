@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,26 @@
  * SOFTWARE.
  */
 
-/* This setting is defined if console is enabled in the system */
-#cmakedefine MCODE_CONSOLE_ENABLED
+#ifndef MCODE_PERSISTENT_STORE_H
+#define MCODE_PERSISTENT_STORE_H
 
-/* I80 interface enabled */
-#cmakedefine MCODE_HW_I80_ENABLED
+#include <stdint.h>
 
-/* Enable debug LEDs blinking */
-#cmakedefine MCODE_DEBUG_BLINKING
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-/* Enable LEDs support */
-#cmakedefine MCODE_LEDS
+typedef enum {
+  PersistStoreIdNone,
+  PersistStoreIdHash,
+  PersistStoreIdNewHash
+} PersistStoreId;
 
-/* Enable PWM support */
-#cmakedefine MCODE_PWM
+void persist_store_load(uint8_t id, uint8_t *data, uint8_t length);
+void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length);
 
-/* Enable hard-coded test images" */
-#cmakedefine MCODE_TEST_IMAGES
+#ifdef __cplusplus
+} // extern "C" {
+#endif /* __cplusplus */
 
-/* Enable console support */
-#cmakedefine MCODE_CONSOLE
-
-/* Enable LCD support */
-#cmakedefine MCODE_LCD
-
-/* Enable security support */
-#cmakedefine MCODE_SECURITY
-
-/* Enable command engine modes */
-#cmakedefine MCODE_COMMAND_MODES
-
-/* Enable persistent store */
-#cmakedefine MCODE_PERSIST_STORE
+#endif /* MCODE_PERSISTENT_STORE_H */

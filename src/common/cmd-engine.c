@@ -38,12 +38,9 @@
 #include "mcode-config.h"
 #include "cmd-test-image.h"
 #include "line-editor-uart.h"
+#include "persistent-store.h"
 
 #include <string.h>
-
-#ifdef __AVR__
-#include <avr/eeprom.h>
-#endif /* __AVR__ */
 
 #ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_read (const char *aCommand);
@@ -80,15 +77,6 @@ static void cmd_engine_passwd(void);
 static void cmd_engine_set_cmd_mode(const char *params);
 static void cmd_engine_handle_args(const char *args);
 static void cmd_engine_handle_pass(const char *pass);
-
-/* hash for the initial passwd: 'pass' */
-uint8_t EEMEM TheHash[32] = {
-  0xd7u, 0x4fu, 0xf0u, 0xeeu, 0x8du, 0xa3u, 0xb9u, 0x80u,
-  0x6bu, 0x18u, 0xc8u, 0x77u, 0xdbu, 0xf2u, 0x9bu, 0xbdu,
-  0xe5u, 0x0bu, 0x5bu, 0xd8u, 0xe4u, 0xdau, 0xd7u, 0xa3u,
-  0xa7u, 0x25u, 0x00u, 0x0fu, 0xebu, 0x82u, 0xe8u, 0xf1u,
-};
-uint8_t EEMEM TheNewHash[32];
 #endif /* MCODE_COMMAND_MODES */
 
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
@@ -616,7 +604,7 @@ void cmd_engine_handle_pass(const char *pass)
   SHA256((const uint8_t *)pass, n, passHash);
   if (ModesStateEnterPass == TheModesState ||
       ModesStateChangePassEnterCurrent == TheModesState) {
-    eeprom_read_block(hash, TheHash, SHA256_DIGEST_LENGTH);
+    persist_store_load(PersistStoreIdHash, hash, SHA256_DIGEST_LENGTH);
 
     if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
       cmd_engine_set_mode((CmdMode)TheCommandEngineStateRequest, NULL);
@@ -639,14 +627,14 @@ void cmd_engine_handle_pass(const char *pass)
       TheModesState = ModesStateChangePassEnterNew;
     }
   } else if (ModesStateChangePassEnterNew == TheModesState) {
-    eeprom_write_block(passHash, TheNewHash, SHA256_DIGEST_LENGTH);
+    persist_store_save(PersistStoreIdNewHash, passHash, SHA256_DIGEST_LENGTH);
     hw_uart_write_string_P(PSTR("Confirm new password: "));
     TheModesState = ModesStateChangePassConfirmNew;
   } else if (ModesStateChangePassConfirmNew == TheModesState) {
-    eeprom_read_block(hash, TheNewHash, SHA256_DIGEST_LENGTH);
+    persist_store_load(PersistStoreIdNewHash, hash, SHA256_DIGEST_LENGTH);
 
     if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
-      eeprom_write_block(passHash, TheHash, SHA256_DIGEST_LENGTH);
+      persist_store_save(PersistStoreIdHash, passHash, SHA256_DIGEST_LENGTH);
     } else {
       hw_uart_write_string_P(PSTR("Error: password missmatch\r\n"));
     }
