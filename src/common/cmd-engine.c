@@ -70,9 +70,11 @@ typedef enum {
   CommandEngineStatePass,
 } CommandEngineState;
 
-static uint8_t TheMode = CmdModeNormal;
+static uint8_t TheMode;
+static uint32_t TheSuperUserTimeout;
 static uint8_t TheCommandEngineState = CommandEngineStateCmd;
 static uint8_t TheCommandEngineStateRequest;
+static void cmd_engine_mtick(void);
 static void cmd_engine_passwd(void);
 static void cmd_engine_set_cmd_mode(const char *params);
 static void cmd_engine_handle_args(const char *args);
@@ -141,6 +143,11 @@ void cmd_engine_init (void)
 {
   line_editor_uart_init();
   line_editor_uart_set_callback(cmd_engine_on_cmd_ready);
+#ifdef MCODE_COMMAND_MODES
+  TheMode = CmdModeNormal;
+  TheSuperUserTimeout = 0;
+  mtick_add(cmd_engine_mtick);
+#endif /* MCODE_COMMAND_MODES */
 }
 
 void cmd_engine_deinit (void)
@@ -554,8 +561,11 @@ static uint8_t TheModesState;
 void cmd_engine_set_mode(CmdMode mode, const char *passwd)
 {
   switch (mode) {
-  case CmdModeNormal:
   case CmdModeRoot:
+    /* super-user mode timeout: 5mins */
+    TheSuperUserTimeout = 300000UL;
+    /* fall through */
+  case CmdModeNormal:
   case CmdModeUser:
     TheMode = mode;
     break;
@@ -643,6 +653,15 @@ void cmd_engine_handle_pass(const char *pass)
     TheModesState = ModesStateIdle;
     TheCommandEngineState = CommandEngineStateCmd;
     line_editor_uart_start();
+  }
+}
+
+void cmd_engine_mtick(void)
+{
+  if (TheSuperUserTimeout && !(--TheSuperUserTimeout)) {
+    if (CmdModeRoot == TheMode) {
+      cmd_engine_set_mode(CmdModeNormal, NULL);
+    }
   }
 }
 
