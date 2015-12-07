@@ -558,7 +558,7 @@ typedef enum {
 
 static uint8_t TheModesState;
 
-void cmd_engine_set_mode(CmdMode mode, const char *passwd)
+void cmd_engine_set_mode(CmdMode mode)
 {
   switch (mode) {
   case CmdModeRoot:
@@ -617,7 +617,7 @@ void cmd_engine_handle_pass(const char *pass)
     persist_store_load(PersistStoreIdHash, hash, SHA256_DIGEST_LENGTH);
 
     if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
-      cmd_engine_set_mode((CmdMode)TheCommandEngineStateRequest, NULL);
+      cmd_engine_set_mode((CmdMode)TheCommandEngineStateRequest);
     } else {
       hw_uart_write_string_P(PSTR("Error: something wrong\r\n"));
 
@@ -660,7 +660,7 @@ void cmd_engine_mtick(void)
 {
   if (TheSuperUserTimeout && !(--TheSuperUserTimeout)) {
     if (CmdModeRoot == TheMode) {
-      cmd_engine_set_mode(CmdModeNormal, NULL);
+      cmd_engine_set_mode(CmdModeNormal);
     }
   }
 }
