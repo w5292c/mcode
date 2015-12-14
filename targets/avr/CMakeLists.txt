@@ -33,6 +33,7 @@ set (SRC_LIST
 
 option ( MCODE_PWM "Enable PWM support" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
+option ( MCODE_I2C "Enable I2C support" OFF )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
 option ( MCODE_CONSOLE "Enable console support" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
@@ -65,6 +66,12 @@ if ( MCODE_LCD_ILI9481 )
     ${MCODE_TOP}/src/common/hw-lcd-ili9481.c
   )
 endif ( MCODE_LCD_ILI9481 )
+
+if ( MCODE_I2C )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-i2c.c
+  )
+endif ( MCODE_I2C )
 
 if ( MCODE_AVR_FUSES )
   set ( SRC_LIST ${SRC_LIST}

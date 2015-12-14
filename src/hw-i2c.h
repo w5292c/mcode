@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014,2015 Alexander Chumakov
+ * Copyright (c) 2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,38 +22,27 @@
  * SOFTWARE.
  */
 
-/* This setting is defined if console is enabled in the system */
-#cmakedefine MCODE_CONSOLE_ENABLED
+#ifndef MCODE_HW_I2C_H
+#define MCODE_HW_I2C_H
 
-/* I80 interface enabled */
-#cmakedefine MCODE_HW_I80_ENABLED
+#include "mglobal.h"
+#include <stdint.h>
 
-/* Enable debug LEDs blinking */
-#cmakedefine MCODE_DEBUG_BLINKING
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* Enable LEDs support */
-#cmakedefine MCODE_LEDS
+void i2c_init(void);
+void i2c_deinit(void);
 
-/* Enable PWM support */
-#cmakedefine MCODE_PWM
+void i2c_set_callback(mcode_result callback);
 
-/* Enable hard-coded test images" */
-#cmakedefine MCODE_TEST_IMAGES
+void i2c_send(uint8_t addr, uint8_t length, const uint8_t *data);
+void i2c_send_P(uint8_t addr, uint8_t length, const uint8_t *data);
+void i2c_recv(uint8_t addr, uint8_t length, uint8_t *data);
 
-/* Enable console support */
-#cmakedefine MCODE_CONSOLE
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-/* Enable LCD support */
-#cmakedefine MCODE_LCD
-
-/* Enable security support */
-#cmakedefine MCODE_SECURITY
-
-/* Enable command engine modes */
-#cmakedefine MCODE_COMMAND_MODES
-
-/* Enable persistent store */
-#cmakedefine MCODE_PERSIST_STORE
-
-/* Enable I2C support */
-#cmakedefine MCODE_I2C
+#endif /* MCODE_HW_I2C_H */

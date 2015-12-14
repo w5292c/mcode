@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014,2015 Alexander Chumakov
+ * Copyright (c) 2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,38 +22,4 @@
  * SOFTWARE.
  */
 
-/* This setting is defined if console is enabled in the system */
-#cmakedefine MCODE_CONSOLE_ENABLED
-
-/* I80 interface enabled */
-#cmakedefine MCODE_HW_I80_ENABLED
-
-/* Enable debug LEDs blinking */
-#cmakedefine MCODE_DEBUG_BLINKING
-
-/* Enable LEDs support */
-#cmakedefine MCODE_LEDS
-
-/* Enable PWM support */
-#cmakedefine MCODE_PWM
-
-/* Enable hard-coded test images" */
-#cmakedefine MCODE_TEST_IMAGES
-
-/* Enable console support */
-#cmakedefine MCODE_CONSOLE
-
-/* Enable LCD support */
-#cmakedefine MCODE_LCD
-
-/* Enable security support */
-#cmakedefine MCODE_SECURITY
-
-/* Enable command engine modes */
-#cmakedefine MCODE_COMMAND_MODES
-
-/* Enable persistent store */
-#cmakedefine MCODE_PERSIST_STORE
-
-/* Enable I2C support */
-#cmakedefine MCODE_I2C
+#include "hw-i2c.h"

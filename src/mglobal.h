@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014,2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 
 #define __need_NULL
 #include <stddef.h>
+#include <stdbool.h>
 
 #ifdef __AVR__
 #include <avr/pgmspace.h>
@@ -48,6 +49,11 @@ extern "C" {
  * Generic function template without any parameters
  */
 typedef void (*mcode_tick)(void);
+
+/**
+ * Generic function for reporting success/failure of an operation
+ */
+typedef void (*mcode_result)(bool success);
 
 #ifdef __cplusplus
 } /* extern "C" */

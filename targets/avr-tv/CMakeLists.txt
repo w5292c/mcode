@@ -27,6 +27,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/hw-uart.c
 )
 
+option ( MCODE_I2C "Enable I2C support" ON )
 option ( MCODE_PWM "Enable PWM support" OFF )
 option ( MCODE_LCD "Enable LCD support" OFF )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
@@ -48,6 +49,12 @@ if ( MCODE_LCD )
     ${MCODE_TOP}/src/common/hw-lcd.c
   )
 endif ( MCODE_LCD )
+
+if ( MCODE_I2C )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-i2c.c
+  )
+endif ( MCODE_I2C )
 
 if ( MCODE_CONSOLE )
   set ( SRC_LIST ${SRC_LIST}
