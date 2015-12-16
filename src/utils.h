@@ -48,6 +48,9 @@ const char *string_next_token(const char *str, int *length);
 const char *string_next_hex_number(const char *str, int *value);
 const char *string_next_decimal_number(const char *str, int *value);
 
+const char *string_to_buffer(const char *str,
+                             uint8_t bufferLength, uint8_t *buffer, uint8_t *bufferFilled);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

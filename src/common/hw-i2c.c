@@ -7,15 +7,18 @@
 
 static void i2c_callback(bool result);
 
+#define BUFFER_LENGTH (20)
+static uint8_t TheBuffer[BUFFER_LENGTH];
+
 void cmd_engine_i2c_help(void)
 {
-  hw_uart_write_string_P(PSTR("> i2c-rd <xxxx> - I2C commands\r\n"));
-  hw_uart_write_string_P(PSTR("> i2c-wr <xxxx> - I2C commands\r\n"));
+  hw_uart_write_string_P(PSTR("> twi-rd <addr> <length> - Read <length> bytes from TWI device at <addr>\r\n"));
+  hw_uart_write_string_P(PSTR("> twi-wr <addr> <hex-data> - Write <hex-data> to TWI device at <addr>\r\n"));
 }
 
 bool cmd_engine_i2c_read(const char *args)
 {
-  if (strncmp_P(args, PSTR("i2c-rd "), 7)) {
+  if (strncmp_P(args, PSTR("twi-rd "), 7)) {
     return false;
   }
 
@@ -38,7 +41,7 @@ bool cmd_engine_i2c_read(const char *args)
   int i2c_length = 0;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &i2c_length);
-  if (!args || *args || i2c_length <= 0 || i2c_length > 16) {
+  if (!args || *args || i2c_length <= 0 || i2c_length > 20) {
     hw_uart_write_string_P(PSTR("Error: wrong length: 0x"));
     hw_uart_write_uint(i2c_length);
     hw_uart_write_string_P(PSTR("\r\n"));
@@ -58,15 +61,35 @@ bool cmd_engine_i2c_read(const char *args)
 
 bool cmd_engine_i2c_write(const char *args)
 {
-  if (strncmp_P(args, PSTR("i2c-wr "), 7)) {
+  if (strncmp_P(args, PSTR("twi-wr "), 7)) {
     return false;
   }
 
   args += 7;
-  hw_uart_write_string_P(PSTR("Arguments: \""));
-  hw_uart_write_string(args);
-  hw_uart_write_string_P(PSTR("\"\r\n"));
+  /* Parse the I2C address */
+  int i2c_addr = 0;
+  args = string_next_number(args, &i2c_addr);
+  if (!args || !*args) {
+    return false;
+  }
 
+  uint8_t bufferFilled = 0;
+  args = string_skip_whitespace(args);
+  const char *end = string_to_buffer(args, BUFFER_LENGTH, TheBuffer, &bufferFilled);
+  if (!end || *end || !bufferFilled) {
+    hw_uart_write_string_P(PSTR("Wrong hex data: \""));
+    hw_uart_write_string(args);
+    hw_uart_write_string_P(PSTR("\"\r\n"));
+    return false;
+  }
+
+  hw_uart_write_string_P(PSTR("TWI write, address: 0x"));
+  hw_uart_write_uint(i2c_addr);
+  hw_uart_write_string_P(PSTR(", write data:\r\n"));
+  hw_uart_dump_buffer(bufferFilled, TheBuffer, true);
+
+  i2c_set_callback(i2c_callback);
+  i2c_send(i2c_addr, bufferFilled, TheBuffer);
   return true;
 }
 
@@ -74,7 +97,7 @@ void i2c_callback(bool result)
 {
   if (result) {
     hw_uart_write_string_P(PSTR("Success.\r\n"));
-    hw_uart_dump_buffer(32, i2c_get_read_buffer(), true);
+    hw_uart_dump_buffer(18, i2c_get_read_buffer(), true);
   } else {
     hw_uart_write_string_P(PSTR("Failed.\r\n"));
   }

@@ -24,6 +24,7 @@
 
 #include "hw-i2c.h"
 
+#include "hw-uart.h"
 #include "scheduler.h"
 
 #include <util/twi.h>
@@ -34,20 +35,20 @@ typedef enum {
     EI2CStateNull = 0,
     EI2CStateIdle,
     EI2CStateCancelling,
-    /* RTC reading states */
+    /* TWI reading states */
     EI2CStateRdSendStart,
     EI2CStateRdSendSlvAddr,
     EI2CStateRdReadingBytes,
     EI2CStateRdReadingBytesLast,
     EI2CStateRdDone,
     EI2CStateRdDoneError,
-    /* RTC writing states */
+    /* TWI writing states */
     EI2CStateWrSendStart,
     EI2CStateWrSendSlvAddr,
     EI2CStateWrWritingData,
     EI2CStateWrDone,
     EI2CStateWrDoneError
-} TI2CState;
+} TwiCState;
 
 typedef struct {
     uint8_t mAddress;
@@ -62,7 +63,7 @@ typedef struct {
     } mData;
 } TClientRequest;
 
-#define READ_BUFFER_LENGTH (16)
+#define READ_BUFFER_LENGTH (20)
 
 /**
  * The data represinting the current request
@@ -128,33 +129,22 @@ void i2c_recv(uint8_t addr, uint8_t length)
   }
 }
 
-#if 0
-void i2c_write(uint8_t aAddr, const uint8_t *aBuff, uint8_t aSize, mcode_result aCallback)
+void i2c_send(uint8_t addr, uint8_t length, const uint8_t *data)
 {
-    m_return_if_fail (aCallback);
+  if (EI2CStateIdle == TheI2CState) {
+    TheRequest.mAddress = (addr & 0xFEU);
+    TheRequest.mRequestLenght = length;
+    TheRequest.mData.mWrite.mBuffer = data;
 
-    if (EI2CStateIdle == TheI2CState) {
-        TheRequest.mAddress = (aAddr & 0xFEU);
-        TheRequest.mRequestLenght = aSize;
-        TheRequest.mData.mWrite.mBuffer = aBuff;
-
-        TheI2CState = EI2CStateWrSendStart;
-        hw_i2c_send_start ();
-    }
-    else {
-        (*aCallback) (FALSE, 0);
-    }
+    TheI2CState = EI2CStateWrSendStart;
+    hw_i2c_send_start();
+  } else {
+    (*TheCallback)(false);
+  }
 }
-#endif
 
 static void hw_i2c_sched_tick(void)
 {
-//  if (TheI2CState != EI2CStateIdle) {
-//    hw_uart_write_string_P(PSTR("Tick: 0x"));
-//    hw_uart_write_uint(TheI2CState);
-//    hw_uart_write_string_P(PSTR("\r\n"));
-//  }
-
   switch (TheI2CState)
   {
   case EI2CStateWrDone:
@@ -266,7 +256,7 @@ static inline void hw_i2c_handle_data_received_ack(void)
   switch (TheI2CState) {
   case EI2CStateRdReadingBytes:
     data = TWDR;
-    TheRequest.mData.mRead.mBuffer[TheI2CIndex] = data;
+    TheReadBuffer[TheI2CIndex] = data;
     if ((TheRequest.mRequestLenght - 1) == ++TheI2CIndex) {
       /* request reading the last byte */
       /* TWI Interface enabled */
@@ -291,7 +281,7 @@ static inline void hw_i2c_handle_data_received_nack(void)
   switch (TheI2CState) {
   case EI2CStateRdReadingBytesLast:
     data = TWDR;
-    TheRequest.mData.mRead.mBuffer[TheI2CIndex] = data;
+    TheReadBuffer[TheI2CIndex] = data;
     /* TWI Interface enabled;
        Disable TWI Interrupt and clear the flag;
        Initiate a STOP condition. */

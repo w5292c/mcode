@@ -187,3 +187,55 @@ const char *string_next_token(const char *str, int *length)
 
   return str;
 }
+
+const char *string_to_buffer(const char *str,
+                             uint8_t bufferLength, uint8_t *buffer, uint8_t *bufferFilled)
+{
+  if (!str) {
+    return str;
+  }
+  if (!(*str)) {
+    return str;
+  }
+
+  uint8_t filled = 0;
+  bool intial = true;
+  uint8_t data = 0;
+  do {
+    /* first, check if we have enough space in the output buffer */
+    if (filled + 1 > bufferLength) {
+      /* no more space in the output buffer, stop parsing */
+      break;
+    }
+
+    const uint8_t ch = *str;
+    if (!ch) {
+      /* no more chars, exit */
+      break;
+    }
+    if (!char_is_hex(ch)) {
+      /* stop parsing, as the current char is not a hex digit */
+      break;
+    }
+
+    data = (data << 4);
+    data |= glob_ch_to_val(ch);
+    if (intial) {
+      intial = false;
+    } else {
+      /* 'data' has been prepared, put it to the output buffer */
+      buffer[filled] = data;
+      ++filled;
+      data = 0;
+      intial = true;
+    }
+
+    ++str;
+  } while (true);
+
+  if (bufferFilled) {
+    *bufferFilled = filled;
+  }
+
+  return str;
+}
