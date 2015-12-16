@@ -25,6 +25,7 @@
 #include "hw-uart.h"
 
 #include "utils.h"
+#include "mglobal.h"
 
 #include <string.h>
 
@@ -102,10 +103,55 @@ void hw_uart_write_uint16(uint16_t value, bool skipZeros)
   hw_uart_write_string(buffer);
 }
 
+void hw_uart_write_uint8(uint8_t value, bool skipZeros)
+{
+  char buffer[3];
+  buffer[0] = nibble_to_char(0x0FU & (value >>  4));
+  buffer[1] = nibble_to_char(0x0FU & value);
+  buffer[2] = 0;
+
+  if (skipZeros && '0' == *buffer) {
+    memmove(buffer, buffer + 1, 2);
+  }
+  hw_uart_write_string(buffer);
+}
+
 void hw_uart_write_string(const char *aString)
 {
   uint8_t ch;
   while (0 != (ch = *aString++)) {
     uart_write_char(ch);
+  }
+}
+
+void hw_uart_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress)
+{
+  uint8_t i;
+  bool newLineReported = true;
+  for (i = 0; i < length; ++i) {
+    /* Handle the new line */
+    if (newLineReported) {
+      if (showAddress) {
+        hw_uart_write_uint32(i, false);
+        hw_uart_write_string_P(PSTR("  "));
+      }
+      newLineReported = false;
+    }
+
+    /* Write hex data */
+    hw_uart_write_uint8(*data, false);
+    ++data;
+    hw_uart_write_string_P(PSTR(" "));
+
+    if ((i & 0x0fu) == 0x0fu) {
+      hw_uart_write_string_P(PSTR("\r\n"));
+      newLineReported = true;
+    }
+  }
+
+  /* Move to the next line,
+     if we have some text at the current line */
+  if (!newLineReported) {
+    hw_uart_write_string_P(PSTR("\r\n"));
   }
 }

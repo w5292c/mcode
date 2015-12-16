@@ -43,11 +43,14 @@ void hw_uart_start_read(void);
 
 void uart_write_char(char ch);
 void hw_uart_write_uint(uint16_t value);
+void hw_uart_write_uint8(uint8_t value, bool skipZeros);
 void hw_uart_write_uint16(uint16_t value, bool skipZeros);
 void hw_uart_write_uint32(uint32_t value, bool skipZeros);
 void hw_uart_write_uint64(uint64_t value, bool skipZeros);
 void hw_uart_write_string(const char *aString);
 void hw_uart_write_uintd(uint32_t value, bool skipZeroes);
+
+void hw_uart_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress);
 
 #ifdef __AVR__
 void hw_uart_write_string_P(const char *aString);
