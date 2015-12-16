@@ -36,11 +36,14 @@ extern "C" {
 
 #ifdef MCODE_TWI
 
+typedef void (*twi_write_ready)(bool success);
+typedef void (*twi_read_ready)(bool success, uint8_t length, const uint8_t *data);
+
 void twi_init(void);
 void twi_deinit(void);
 
-const uint8_t *twi_get_read_buffer(void);
-void twi_set_callback(mcode_result callback);
+void twi_set_read_callback(twi_read_ready callback);
+void twi_set_write_callback(twi_write_ready callback);
 
 void twi_send(uint8_t addr, uint8_t length, const uint8_t *data);
 void twi_send_P(uint8_t addr, uint8_t length, const uint8_t *data);

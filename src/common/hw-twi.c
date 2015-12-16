@@ -29,7 +29,8 @@
 #include "hw-uart.h"
 #include "mglobal.h"
 
-static void twi_callback(bool result);
+static void twi_write_callback(bool result);
+static void twi_read_callback(bool result, uint8_t length, const uint8_t *data);
 
 #define BUFFER_LENGTH (20)
 static uint8_t TheBuffer[BUFFER_LENGTH];
@@ -78,7 +79,7 @@ bool cmd_engine_twi_read(const char *args)
   hw_uart_write_uint(twi_length);
   hw_uart_write_string_P(PSTR("\"\r\n"));
 
-  twi_set_callback(twi_callback);
+  twi_set_read_callback(twi_read_callback);
   twi_recv(twi_addr, twi_length);
   return true;
 }
@@ -112,18 +113,27 @@ bool cmd_engine_twi_write(const char *args)
   hw_uart_write_string_P(PSTR(", write data:\r\n"));
   hw_uart_dump_buffer(bufferFilled, TheBuffer, true);
 
-  twi_set_callback(twi_callback);
+  twi_set_write_callback(twi_write_callback);
   twi_send(twi_addr, bufferFilled, TheBuffer);
   return true;
 }
 
-void twi_callback(bool result)
+void twi_read_callback(bool result, uint8_t length, const uint8_t *data)
 {
   if (result) {
-    hw_uart_write_string_P(PSTR("Success.\r\n"));
-    hw_uart_dump_buffer(18, twi_get_read_buffer(), true);
+    hw_uart_write_string_P(PSTR("TWI read data:\r\n"));
+    hw_uart_dump_buffer(length, data, true);
   } else {
-    hw_uart_write_string_P(PSTR("Failed.\r\n"));
+    hw_uart_write_string_P(PSTR("TWI read failed.\r\n"));
+  }
+
+  cmd_engine_start();
+}
+
+void twi_write_callback(bool result)
+{
+  if (!result) {
+    hw_uart_write_string_P(PSTR("TWI write failed.\r\n"));
   }
 
   cmd_engine_start();

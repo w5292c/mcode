@@ -50,11 +50,6 @@ extern "C" {
  */
 typedef void (*mcode_tick)(void);
 
-/**
- * Generic function for reporting success/failure of an operation
- */
-typedef void (*mcode_result)(bool success);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

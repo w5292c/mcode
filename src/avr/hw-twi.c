@@ -70,7 +70,9 @@ typedef struct {
  */
 static TClientRequest TheRequest;
 
-static mcode_result TheCallback;
+static twi_read_ready TheReadCallback;
+static twi_write_ready TheWriteCallback;
+
 static uint8_t volatile TheTwiIndex = 0;
 static uint8_t volatile TheTwiState = ETwiStateNull;
 static uint8_t volatile TheReadBuffer[READ_BUFFER_LENGTH];
@@ -100,14 +102,14 @@ void twi_deinit(void)
 {
 }
 
-const uint8_t *twi_get_read_buffer(void)
+void twi_set_read_callback(twi_read_ready callback)
 {
-  return (const uint8_t *)TheReadBuffer;
+  TheReadCallback = callback;
 }
 
-void twi_set_callback(mcode_result callback)
+void twi_set_write_callback(twi_write_ready callback)
 {
-  TheCallback = callback;
+  TheWriteCallback = callback;
 }
 
 void twi_recv(uint8_t addr, uint8_t length)
@@ -120,11 +122,11 @@ void twi_recv(uint8_t addr, uint8_t length)
     hw_twi_send_start();
   }
   else {
-    if (TheCallback) {
+    if (TheReadCallback) {
       hw_uart_write_string_P(PSTR("Error: wrong state: 0x"));
       hw_uart_write_uint(TheTwiState);
       hw_uart_write_string_P(PSTR("\r\n"));
-      (*TheCallback)(false);
+      (*TheReadCallback)(false, 0, NULL);
     }
   }
 }
@@ -139,7 +141,7 @@ void twi_send(uint8_t addr, uint8_t length, const uint8_t *data)
     TheTwiState = ETwiStateWrSendStart;
     hw_twi_send_start();
   } else {
-    (*TheCallback)(false);
+    (*TheWriteCallback)(false);
   }
 }
 
@@ -150,21 +152,21 @@ static void hw_twi_sched_tick(void)
   case ETwiStateWrDone:
     TheTwiState = ETwiStateIdle;
     hw_uart_write_string_P(PSTR("Write done.\r\n"));
-    (*TheCallback)(true);
+    (*TheWriteCallback)(true);
     break;
   case ETwiStateWrDoneError:
     hw_uart_write_string_P(PSTR("Write error.\r\n"));
     TheTwiState = ETwiStateIdle;
-    (*TheCallback)(false);
+    (*TheWriteCallback)(false);
     break;
   case ETwiStateRdDone:
     hw_uart_write_string_P(PSTR("Read done.\r\n"));
     TheTwiState = ETwiStateIdle;
-    (*TheCallback)(true);
+    (*TheReadCallback)(true, TheRequest.mRequestLenght, (const uint8_t *)TheReadBuffer);
     break;
   case ETwiStateRdDoneError:
     hw_uart_write_string_P(PSTR("Read error.\r\n"));
-    (*TheCallback)(false);
+    (*TheReadCallback)(false, 0, NULL);
     break;
   default:
     break;
