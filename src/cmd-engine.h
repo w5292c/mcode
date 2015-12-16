@@ -27,6 +27,8 @@
 
 #include "mcode-config.h"
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,6 +50,12 @@ void cmd_engine_start (void);
 void cmd_engine_set_mode(CmdMode mode);
 CmdMode cmd_engine_get_mode(void);
 #endif /* MCODE_COMMAND_MODES */
+
+#ifdef MCODE_I2C
+void cmd_engine_i2c_help(void);
+bool cmd_engine_i2c_read(const char *args);
+bool cmd_engine_i2c_write(const char *args);
+#endif /* MCODE_I2C */
 
 #ifdef __cplusplus
 } /* extern "C" */

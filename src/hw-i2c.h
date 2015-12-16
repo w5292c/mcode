@@ -25,6 +25,8 @@
 #ifndef MCODE_HW_I2C_H
 #define MCODE_HW_I2C_H
 
+#include "mcode-config.h"
+
 #include "mglobal.h"
 #include <stdint.h>
 
@@ -32,14 +34,19 @@
 extern "C" {
 #endif
 
+#ifdef MCODE_I2C
+
 void i2c_init(void);
 void i2c_deinit(void);
 
+const uint8_t *i2c_get_read_buffer(void);
 void i2c_set_callback(mcode_result callback);
 
 void i2c_send(uint8_t addr, uint8_t length, const uint8_t *data);
 void i2c_send_P(uint8_t addr, uint8_t length, const uint8_t *data);
-void i2c_recv(uint8_t addr, uint8_t length, uint8_t *data);
+void i2c_recv(uint8_t addr, uint8_t length);
+
+#endif /* MCODE_I2C */
 
 #ifdef __cplusplus
 } /* extern "C" */

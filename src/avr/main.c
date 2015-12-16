@@ -27,6 +27,7 @@
 #include "pwm.h"
 #include "mtick.h"
 #include "hw-lcd.h"
+#include "hw-i2c.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "console.h"
@@ -43,6 +44,9 @@ int main (void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mtick_init();
+#ifdef MCODE_I2C
+  i2c_init();
+#endif /* MCODE_I2C */
   /* now, UART can be initialized */
   hw_uart_init();
 #ifdef MCODE_LCD
@@ -78,6 +82,11 @@ int main (void)
 #ifdef MCODE_LCD
   lcd_deinit();
 #endif /* MCODE_LCD */
+
+#ifdef MCODE_I2C
+  i2c_deinit();
+#endif /* MCODE_I2C */
+
   mtick_deinit();
   return 0;
 }

@@ -53,6 +53,7 @@ endif ( MCODE_LCD )
 if ( MCODE_I2C )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/avr/hw-i2c.c
+    ${MCODE_TOP}/src/common/hw-i2c.c
   )
 endif ( MCODE_I2C )
 
