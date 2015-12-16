@@ -44,9 +44,9 @@ int main (void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mtick_init();
-#ifdef MCODE_I2C
-  i2c_init();
-#endif /* MCODE_I2C */
+#ifdef MCODE_TWI
+  twi_init();
+#endif /* MCODE_TWI */
   /* now, UART can be initialized */
   hw_uart_init();
 #ifdef MCODE_LCD
@@ -83,9 +83,9 @@ int main (void)
   lcd_deinit();
 #endif /* MCODE_LCD */
 
-#ifdef MCODE_I2C
-  i2c_deinit();
-#endif /* MCODE_I2C */
+#ifdef MCODE_TWI
+  twi_deinit();
+#endif /* MCODE_TWI */
 
   mtick_deinit();
   return 0;

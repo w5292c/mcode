@@ -231,9 +231,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> su [MODE(1|2|3)] - Set the command engine mode\r\n"));
     hw_uart_write_string_P(PSTR("> passwd - change the device password\r\n"));
 #endif /* MCODE_COMMAND_MODES */
-#ifdef MCODE_I2C
-  cmd_engine_i2c_help();
-#endif /* MCODE_I2C */
+#ifdef MCODE_TWI
+  cmd_engine_twi_help();
+#endif /* MCODE_TWI */
   }
 #ifdef __linux__
   else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
@@ -338,13 +338,13 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_passwd();
   }
 #endif /* MCODE_COMMAND_MODES */
-#ifdef MCODE_I2C
-  else if (cmd_engine_i2c_read(aString)) {
+#ifdef MCODE_TWI
+  else if (cmd_engine_twi_read(aString)) {
     start_uart_editor = false;
-  } else if (cmd_engine_i2c_write(aString)) {
+  } else if (cmd_engine_twi_write(aString)) {
     start_uart_editor = false;
   }
-#endif /* MCODE_I2C */
+#endif /* MCODE_TWI */
   else if (*aString) {
     /* got unrecognized non-empty command */
     hw_uart_write_string_P(PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));

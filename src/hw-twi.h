@@ -36,15 +36,15 @@ extern "C" {
 
 #ifdef MCODE_TWI
 
-void i2c_init(void);
-void i2c_deinit(void);
+void twi_init(void);
+void twi_deinit(void);
 
-const uint8_t *i2c_get_read_buffer(void);
-void i2c_set_callback(mcode_result callback);
+const uint8_t *twi_get_read_buffer(void);
+void twi_set_callback(mcode_result callback);
 
-void i2c_send(uint8_t addr, uint8_t length, const uint8_t *data);
-void i2c_send_P(uint8_t addr, uint8_t length, const uint8_t *data);
-void i2c_recv(uint8_t addr, uint8_t length);
+void twi_send(uint8_t addr, uint8_t length, const uint8_t *data);
+void twi_send_P(uint8_t addr, uint8_t length, const uint8_t *data);
+void twi_recv(uint8_t addr, uint8_t length);
 
 #endif /* MCODE_TWI */
 

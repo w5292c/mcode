@@ -38,8 +38,8 @@ GPIO pins allocation
 |  PB6 |      |            |            |
 |  PB7 |      |            |            |
 -----------------------------------------
-|  PC0 |    + | I2C:   SCL |            |
-|  PC1 |    + | I2C:   SDA |            |
+|  PC0 |    + | TWI:   SCL |            |
+|  PC1 |    + | TWI:   SDA |            |
 |  PC2 |    + | JTAG:  TCK | JTAG:  TCK |
 |  PC3 |    + | JTAG:  TMS | JTAG:  TMS |
 |  PC4 |    + | JTAG:  TDO | JTAG:  TDO |

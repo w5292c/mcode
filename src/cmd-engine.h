@@ -51,11 +51,11 @@ void cmd_engine_set_mode(CmdMode mode);
 CmdMode cmd_engine_get_mode(void);
 #endif /* MCODE_COMMAND_MODES */
 
-#ifdef MCODE_I2C
-void cmd_engine_i2c_help(void);
-bool cmd_engine_i2c_read(const char *args);
-bool cmd_engine_i2c_write(const char *args);
-#endif /* MCODE_I2C */
+#ifdef MCODE_TWI
+void cmd_engine_twi_help(void);
+bool cmd_engine_twi_read(const char *args);
+bool cmd_engine_twi_write(const char *args);
+#endif /* MCODE_TWI */
 
 #ifdef __cplusplus
 } /* extern "C" */
