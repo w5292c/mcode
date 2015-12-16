@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "hw-i2c.h"
+#include "hw-twi.h"
 
 #include "hw-uart.h"
 #include "scheduler.h"

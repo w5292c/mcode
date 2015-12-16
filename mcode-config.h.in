@@ -55,5 +55,5 @@
 /* Enable persistent store */
 #cmakedefine MCODE_PERSIST_STORE
 
-/* Enable I2C support */
-#cmakedefine MCODE_I2C
+/* Enable TWI support */
+#cmakedefine MCODE_TWI

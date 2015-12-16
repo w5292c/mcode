@@ -1,7 +1,7 @@
 #include "cmd-engine.h"
 
 #include "utils.h"
-#include "hw-i2c.h"
+#include "hw-twi.h"
 #include "hw-uart.h"
 #include "mglobal.h"
 

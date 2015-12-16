@@ -27,7 +27,7 @@
 #include "pwm.h"
 #include "mtick.h"
 #include "hw-lcd.h"
-#include "hw-i2c.h"
+#include "hw-twi.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "console.h"

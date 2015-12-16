@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_HW_I2C_H
-#define MCODE_HW_I2C_H
+#ifndef MCODE_HW_TWI_H
+#define MCODE_HW_TWI_H
 
 #include "mcode-config.h"
 
@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#ifdef MCODE_I2C
+#ifdef MCODE_TWI
 
 void i2c_init(void);
 void i2c_deinit(void);
@@ -46,10 +46,10 @@ void i2c_send(uint8_t addr, uint8_t length, const uint8_t *data);
 void i2c_send_P(uint8_t addr, uint8_t length, const uint8_t *data);
 void i2c_recv(uint8_t addr, uint8_t length);
 
-#endif /* MCODE_I2C */
+#endif /* MCODE_TWI */
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* MCODE_HW_I2C_H */
+#endif /* MCODE_HW_TWI_H */
