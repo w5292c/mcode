@@ -43,7 +43,7 @@ void hw_uart_write_uintd(uint32_t value, bool skipZeroes)
   uint32_t factor = 1000000000U;
   while (factor) {
     temp = value/factor;
-    if (temp || !skipZeroes) {
+    if (temp || !skipZeroes || 1 == factor) {
       uart_write_char((char)temp + '0');
     }
     if (temp) {
