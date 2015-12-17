@@ -58,6 +58,7 @@ void mtime_deinit(void);
 void mtime_get_time(mtime_time_ready callback);
 void mtime_get_date(mtime_date_ready callback);
 
+const char *mtime_get_month_name(uint8_t month);
 const char *mtime_get_day_of_week_name(uint8_t dayOfWeek);
 
 #endif /* MCODE_RTC */

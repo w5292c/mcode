@@ -47,3 +47,35 @@ const char *mtime_get_day_of_week_name(uint8_t dayOfWeek)
     return PSTR("UNKWN");
   }
 }
+
+const char *mtime_get_month_name(uint8_t month)
+{
+  switch (month) {
+  case 1:
+    return PSTR("Jan");
+  case 2:
+    return PSTR("Feb");
+  case 3:
+    return PSTR("Mar");
+  case 4:
+    return PSTR("Apr");
+  case 5:
+    return PSTR("May");
+  case 6:
+    return PSTR("Jun");
+  case 7:
+    return PSTR("Jul");
+  case 8:
+    return PSTR("Aug");
+  case 9:
+    return PSTR("Sep");
+  case 10:
+    return PSTR("Oct");
+  case 11:
+    return PSTR("Nov");
+  case 12:
+    return PSTR("Dec");
+  default:
+    return PSTR("MONTH");
+  }
+}

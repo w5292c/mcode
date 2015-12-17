@@ -84,7 +84,7 @@ void cmd_engine_date_ready(bool success, const MDate *date)
   hw_uart_write_string_P(PSTR("Date: "));
   hw_uart_write_uintd(date->year, true);
   hw_uart_write_string_P(PSTR("-"));
-  hw_uart_write_uintd(date->month, true);
+  hw_uart_write_string_P(mtime_get_month_name(date->month));
   hw_uart_write_string_P(PSTR("-"));
   hw_uart_write_uintd(date->day, true);
   hw_uart_write_string_P(PSTR(" ("));
