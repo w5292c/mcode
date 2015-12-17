@@ -57,6 +57,12 @@ bool cmd_engine_twi_read(const char *args);
 bool cmd_engine_twi_write(const char *args);
 #endif /* MCODE_TWI */
 
+#ifdef MCODE_RTC
+void cmd_engine_rtc_help(void);
+bool cmd_engine_rtc_read(const char *args);
+bool cmd_engine_rtc_write(const char *args);
+#endif /* MCODE_RTC */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

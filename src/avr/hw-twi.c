@@ -141,21 +141,17 @@ static void hw_twi_sched_tick(void)
   {
   case ETwiStateWrDone:
     TheTwiState = ETwiStateIdle;
-    hw_uart_write_string_P(PSTR("Write done.\r\n"));
     (*TheWriteCallback)(true);
     break;
   case ETwiStateWrDoneError:
-    hw_uart_write_string_P(PSTR("Write error.\r\n"));
     TheTwiState = ETwiStateIdle;
     (*TheWriteCallback)(false);
     break;
   case ETwiStateRdDone:
-    hw_uart_write_string_P(PSTR("Read done.\r\n"));
     TheTwiState = ETwiStateIdle;
     (*TheReadCallback)(true, TheRequestLength, (const uint8_t *)TheReadBuffer);
     break;
   case ETwiStateRdDoneError:
-    hw_uart_write_string_P(PSTR("Read error.\r\n"));
     (*TheReadCallback)(false, 0, NULL);
     break;
   default:

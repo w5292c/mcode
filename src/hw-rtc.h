@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014,2015 Alexander Chumakov
+ * Copyright (c) 2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,41 +22,46 @@
  * SOFTWARE.
  */
 
-/* This setting is defined if console is enabled in the system */
-#cmakedefine MCODE_CONSOLE_ENABLED
+#ifndef MCODE_RTC_H
+#define MCODE_RTC_H
 
-/* I80 interface enabled */
-#cmakedefine MCODE_HW_I80_ENABLED
+#include "mcode-config.h"
 
-/* Enable debug LEDs blinking */
-#cmakedefine MCODE_DEBUG_BLINKING
+#include <stdint.h>
+#include <stdbool.h>
 
-/* Enable LEDs support */
-#cmakedefine MCODE_LEDS
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* Enable PWM support */
-#cmakedefine MCODE_PWM
+#ifdef MCODE_RTC
 
-/* Enable hard-coded test images" */
-#cmakedefine MCODE_TEST_IMAGES
+typedef struct {
+  uint8_t seconds;
+  uint8_t minutes;
+  uint8_t hours;
+} MTime;
 
-/* Enable console support */
-#cmakedefine MCODE_CONSOLE
+typedef struct {
+  uint8_t dayOfWeek;
+  uint8_t day;
+  uint8_t month;
+  int16_t year;
+} MDate;
 
-/* Enable LCD support */
-#cmakedefine MCODE_LCD
+typedef void (*mtime_time_ready)(bool success, const MTime *time);
+typedef void (*mtime_date_ready)(bool success, const MDate *time);
 
-/* Enable security support */
-#cmakedefine MCODE_SECURITY
+void mtime_init(void);
+void mtime_deinit(void);
 
-/* Enable command engine modes */
-#cmakedefine MCODE_COMMAND_MODES
+void mtime_get_time(mtime_time_ready callback);
+void mtime_get_date(mtime_date_ready callback);
 
-/* Enable persistent store */
-#cmakedefine MCODE_PERSIST_STORE
+#endif /* MCODE_RTC */
 
-/* Enable TWI support */
-#cmakedefine MCODE_TWI
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-/* Enable RTC support */
-#cmakedefine MCODE_RTC
+#endif /* MCODE_RTC_H */

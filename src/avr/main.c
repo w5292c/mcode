@@ -28,6 +28,7 @@
 #include "mtick.h"
 #include "hw-lcd.h"
 #include "hw-twi.h"
+#include "hw-rtc.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "console.h"
@@ -44,9 +45,15 @@ int main (void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mtick_init();
+
 #ifdef MCODE_TWI
   twi_init();
 #endif /* MCODE_TWI */
+
+#ifdef MCODE_RTC
+  mtime_init();
+#endif /* MCODE_RTC */
+
   /* now, UART can be initialized */
   hw_uart_init();
 #ifdef MCODE_LCD
@@ -82,6 +89,10 @@ int main (void)
 #ifdef MCODE_LCD
   lcd_deinit();
 #endif /* MCODE_LCD */
+
+#ifdef MCODE_RTC
+  mtime_deinit();
+#endif /* MCODE_RTC */
 
 #ifdef MCODE_TWI
   twi_deinit();

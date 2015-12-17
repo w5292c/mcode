@@ -28,6 +28,7 @@ set (SRC_LIST
 )
 
 option ( MCODE_TWI "Enable TWI support" ON )
+option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_PWM "Enable PWM support" OFF )
 option ( MCODE_LCD "Enable LCD support" OFF )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
@@ -39,6 +40,8 @@ option ( MCODE_COMMAND_MODES "Enable command engine modes" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" OFF )
+
+option ( MCODE_RTC_DS3231 "Enable DS3231 RTC" ON )
 
 option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" OFF )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )
@@ -122,6 +125,18 @@ if ( MCODE_PERSIST_STORE )
     ${MCODE_TOP}/src/avr/persistent-store.c
   )
 endif ( MCODE_PERSIST_STORE )
+
+if ( MCODE_RTC )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-rtc.c
+  )
+endif ( MCODE_RTC )
+
+if ( MCODE_RTC_DS3231 )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/hw-rtc-ds3231.c
+  )
+endif ( MCODE_RTC_DS3231 )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
