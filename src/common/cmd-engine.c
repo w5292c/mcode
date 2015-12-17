@@ -180,7 +180,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_COMMAND_MODES */
 
-  int start_uart_editor = 1;
+  bool start_uart_editor = true;
 
   if (!strcmp_P (aString, PSTR("help")))
   {
@@ -242,7 +242,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
     /* EXIT command */
     main_request_exit();
-    start_uart_editor = 0;
+    start_uart_editor = false;
   }
 #endif /* __X86__ */
   else if (!strcmp_P(aString, PSTR("ut"))) {
@@ -349,10 +349,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_TWI */
 #ifdef MCODE_RTC
-  else if (cmd_engine_rtc_read(aString)) {
-    start_uart_editor = false;
-  } else if (cmd_engine_rtc_write(aString)) {
-    start_uart_editor = false;
+  else if (cmd_engine_rtc_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_RTC */
   else if (*aString) {

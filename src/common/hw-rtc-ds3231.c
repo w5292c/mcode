@@ -52,14 +52,17 @@ typedef enum {
   RtcStateReadTime,
   RtcStateReadDate,
   RtcStateSetAddressForTime,
+  RtcStateSetAddressForDate,
 } RtcState;
 
 static uint8_t TheState;
 static uint8_t TheBuffer[4];
 static mtime_time_ready TheTimeCallback;
+static mtime_date_ready TheDateCallback;
 
 static void mtime_write_ready(bool success);
 static void mtime_parse_time(const uint8_t *data);
+static void mtime_parse_date(const uint8_t *data);
 static void mtime_read_ready(bool success, uint8_t length, const uint8_t *data);
 
 void mtime_init(void)
@@ -88,6 +91,15 @@ void mtime_get_time(mtime_time_ready callback)
 
 void mtime_get_date(mtime_date_ready callback)
 {
+  if (RtcStateIdle == TheState) {
+    TheBuffer[0] = 3;
+    TheDateCallback = callback;
+    TheState = RtcStateSetAddressForDate;
+    twi_send(0xd0u, 1, TheBuffer);
+  } else {
+    /* Already in progress */
+    (*callback)(false, NULL);
+  }
 }
 
 void mtime_write_ready(bool success)
@@ -101,6 +113,10 @@ void mtime_write_ready(bool success)
   case RtcStateSetAddressForTime:
     TheState = RtcStateReadTime;
     twi_recv(0xd0u, 3);
+    break;
+  case RtcStateSetAddressForDate:
+    TheState = RtcStateReadDate;
+    twi_recv(0xd0u, 4);
     break;
   default:
     hw_uart_write_string_P(PSTR("RTC: error: wrong state\r\n"));
@@ -123,6 +139,13 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
       hw_uart_write_string_P(PSTR("RTC: error: wrong data length\r\n"));
     }
     break;
+  case RtcStateReadDate:
+    if (4 == length) {
+      mtime_parse_date(data);
+    } else {
+      hw_uart_write_string_P(PSTR("RTC: error: wrong data length\r\n"));
+    }
+    break;
   default:
     hw_uart_write_string_P(PSTR("RTC: error: wrong state\r\n"));
     break;
@@ -141,8 +164,34 @@ void mtime_parse_time(const uint8_t *data)
   time.seconds = 10*((seconds>>4)&0x07u) + (0x0fu&seconds);
   const uint8_t minutes = *data++;
   time.minutes = 10*((minutes>>4)&0x07u) + (0x0fu&minutes);
-  const uint8_t hours = *data++;
+  const uint8_t hours = *data;
   time.hours = 10*((hours>>4)&0x03u) + (0x0fu&hours);
   (*TheTimeCallback)(true, &time);
+  TheState = RtcStateIdle;
+}
+
+void mtime_parse_date(const uint8_t *data)
+{
+  if (!TheDateCallback) {
+    hw_uart_write_string_P(PSTR("RTC: error: no callback\r\n"));
+    return;
+  }
+
+  MDate date;
+  const uint8_t dayOfWeek = *data++;
+  date.dayOfWeek = dayOfWeek;
+  const uint8_t day = *data++;
+  date.day = 10*((day>>4)&0x03u) + (0x0fu&day);
+  const uint8_t month = *data++;
+  date.month = 10*((month>>4)&0x01u) + (0x0fu&month);
+  const uint8_t year = *data;
+  date.year = 10*((year>>4)&0x0fu) + (0x0fu&year);
+  if (0x80u & month) {
+    date.year += 1900;
+  } else {
+    date.year += 2000;
+  }
+
+  (*TheDateCallback)(true, &date);
   TheState = RtcStateIdle;
 }
