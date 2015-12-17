@@ -28,24 +28,6 @@
 #include "hw-uart.h"
 #include "mglobal.h"
 
-/*typedef struct {
-  uint8_t seconds;
-  uint8_t minutes;
-  uint8_t hours;
-} MTime;
-
-typedef struct {
-  uint8_t dayOfWeek;
-  uint8_t day;
-  uint8_t month;
-  int16_t year;
-} MDate;
-
-typedef void (*mtime_time_ready)(bool success, const MTime *time);
-typedef void (*mtime_date_ready)(bool success, const MDate *time);*/
-
-/*#define MCODE_DS3231_BUFFER_LENGTH (4)*/
-
 typedef enum {
   RtcStateNull = 0,
   RtcStateIdle,
@@ -53,10 +35,12 @@ typedef enum {
   RtcStateReadDate,
   RtcStateSetAddressForTime,
   RtcStateSetAddressForDate,
+  RtcStateSetTime,
 } RtcState;
 
 static uint8_t TheState;
-static uint8_t TheBuffer[4];
+static uint8_t TheBuffer[5];
+static mcode_done TheWriteCallback;
 static mtime_time_ready TheTimeCallback;
 static mtime_date_ready TheDateCallback;
 
@@ -89,6 +73,40 @@ void mtime_get_time(mtime_time_ready callback)
   }
 }
 
+void mtime_set_time(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback)
+{
+  if (RtcStateIdle == TheState) {
+    if (hours > 23) {
+      hw_uart_write_string_P(PSTR("Error: set time: wrong hour parameter"));
+      (*callback)(false);
+      return;
+    }
+    if (minutes > 59) {
+      hw_uart_write_string_P(PSTR("Error: set time: wrong minutes parameter"));
+      (*callback)(false);
+      return;
+    }
+    if (seconds > 59) {
+      hw_uart_write_string_P(PSTR("Error: set time: wrong seconds parameter"));
+      (*callback)(false);
+      return;
+    }
+    /* Set address: 0x00 */
+    TheBuffer[0] = 0;
+    /* Set seconds */
+    TheBuffer[1] = (seconds % 10) | ((seconds/10)*0x10);
+    /* Set minutes */
+    TheBuffer[2] = (minutes % 10) | ((minutes/10)*0x10);
+    /* Set hours */
+    TheBuffer[3] = (hours % 10) | ((hours/10)*0x10);
+    TheState = RtcStateSetTime;
+    TheWriteCallback = callback;
+    twi_send(0xd0u, 4, TheBuffer);
+  } else {
+    (*callback)(false);
+  }
+}
+
 void mtime_get_date(mtime_date_ready callback)
 {
   if (RtcStateIdle == TheState) {
@@ -99,6 +117,46 @@ void mtime_get_date(mtime_date_ready callback)
   } else {
     /* Already in progress */
     (*callback)(false, NULL);
+  }
+}
+
+void mtime_set_date(uint8_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek, mcode_done callback)
+{
+  if (RtcStateIdle == TheState) {
+    if (year < 1900 || year > 2099) {
+      hw_uart_write_string_P(PSTR("Error: set date: wrong year parameter"));
+      (*callback)(false);
+      return;
+    }
+    if (month < 1 || month > 31) {
+      hw_uart_write_string_P(PSTR("Error: set date: wrong month parameter"));
+      (*callback)(false);
+      return;
+    }
+    if (day < 1 || day > 31) {
+      hw_uart_write_string_P(PSTR("Error: set date: wrong day parameter"));
+      (*callback)(false);
+      return;
+    }
+    if (dayOfWeek < 1 || dayOfWeek > 7) {
+      hw_uart_write_string_P(PSTR("Error: set date: wrong day-of-week parameter"));
+      (*callback)(false);
+      return;
+    }
+    /* Set address: 0x03 */
+    TheBuffer[0] = 3;
+    /* Set day-of-week */
+    TheBuffer[1] = dayOfWeek;
+    /* Set day */
+    TheBuffer[2] = (day % 10) | ((day/10)*0x10);
+    /* Set month/century */
+    TheBuffer[3] = (month % 10) | ((month/10)*0x10) | ((year < 2000) ? 0x80u : 0x00u);
+    TheBuffer[4] = (year % 10) | (((year/10) % 10)*0x10);
+    TheState = RtcStateSetTime;
+    TheWriteCallback = callback;
+    twi_send(0xd0u, 5, TheBuffer);
+  } else {
+    (*callback)(false);
   }
 }
 
@@ -117,6 +175,10 @@ void mtime_write_ready(bool success)
   case RtcStateSetAddressForDate:
     TheState = RtcStateReadDate;
     twi_recv(0xd0u, 4);
+    break;
+  case RtcStateSetTime:
+    (*TheWriteCallback)(true);
+    TheState = RtcStateIdle;
     break;
   default:
     hw_uart_write_string_P(PSTR("RTC: error: wrong state\r\n"));

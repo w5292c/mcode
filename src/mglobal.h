@@ -50,6 +50,11 @@ extern "C" {
  */
 typedef void (*mcode_tick)(void);
 
+/**
+ * Generic function to report result of an async process
+ */
+typedef void (*mcode_done)(bool success);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

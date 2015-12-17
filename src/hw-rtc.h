@@ -27,6 +27,8 @@
 
 #include "mcode-config.h"
 
+#include "mglobal.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -56,7 +58,10 @@ void mtime_init(void);
 void mtime_deinit(void);
 
 void mtime_get_time(mtime_time_ready callback);
+void mtime_set_time(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback);
+
 void mtime_get_date(mtime_date_ready callback);
+void mtime_set_date(uint8_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek, mcode_done callback);
 
 const char *mtime_get_month_name(uint8_t month);
 const char *mtime_get_day_of_week_name(uint8_t dayOfWeek);
