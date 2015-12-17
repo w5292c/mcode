@@ -200,11 +200,11 @@ void cmd_engine_rtc_time_ready(bool success, const MTime *time)
   }
 
   hw_uart_write_string_P(PSTR("Time: "));
-  hw_uart_write_uintd(time->hours, true);
+  hw_uart_write_uintd(time->hours, 2);
   hw_uart_write_string_P(PSTR(":"));
-  hw_uart_write_uintd(time->minutes, true);
+  hw_uart_write_uintd(time->minutes, 2);
   hw_uart_write_string_P(PSTR(":"));
-  hw_uart_write_uintd(time->seconds, true);
+  hw_uart_write_uintd(time->seconds, 2);
   hw_uart_write_string_P(PSTR("\r\n"));
 
   cmd_engine_start();
@@ -219,11 +219,11 @@ void cmd_engine_date_ready(bool success, const MDate *date)
   }
 
   hw_uart_write_string_P(PSTR("Date: "));
-  hw_uart_write_uintd(date->year, true);
+  hw_uart_write_uintd(date->year, 4);
   hw_uart_write_string_P(PSTR("-"));
   hw_uart_write_string_P(mtime_get_month_name(date->month));
   hw_uart_write_string_P(PSTR("-"));
-  hw_uart_write_uintd(date->day, true);
+  hw_uart_write_uintd(date->day, 2);
   hw_uart_write_string_P(PSTR(" ("));
   hw_uart_write_string_P(mtime_get_day_of_week_name(date->dayOfWeek));
   hw_uart_write_string_P(PSTR(")\r\n"));

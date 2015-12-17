@@ -78,7 +78,7 @@ int main (void)
 
   /* Write some 'hello' text */
   hw_uart_write_string_P(PSTR("\r\nmain: ready\r\nTest value: ["));
-  hw_uart_write_uintd(12345067, true);
+  hw_uart_write_uintd(1234007, 0);
   hw_uart_write_string_P(PSTR("]\r\n"));
   cmd_engine_start();
 

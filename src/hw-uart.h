@@ -48,7 +48,7 @@ void hw_uart_write_uint16(uint16_t value, bool skipZeros);
 void hw_uart_write_uint32(uint32_t value, bool skipZeros);
 void hw_uart_write_uint64(uint64_t value, bool skipZeros);
 void hw_uart_write_string(const char *aString);
-void hw_uart_write_uintd(uint32_t value, bool skipZeroes);
+void hw_uart_write_uintd(uint32_t value, uint8_t minDigits);
 
 void hw_uart_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress);
 

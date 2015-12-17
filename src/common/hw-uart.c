@@ -37,21 +37,30 @@ void hw_uart_start_read(void)
 {
 }
 
-void hw_uart_write_uintd(uint32_t value, bool skipZeroes)
+void hw_uart_write_uintd(uint32_t value, uint8_t minDigits)
 {
-  uint32_t temp;
+  if (!minDigits) {
+    minDigits = 1;
+  }
+  uint8_t temp;
+  for (temp = 10; temp < minDigits; ++temp) {
+    uart_write_char('0');
+  }
+  uint8_t digits = 10;
+  bool keepZeroes = false;
   uint32_t factor = 1000000000U;
   while (factor) {
     temp = value/factor;
-    if (temp || !skipZeroes || 1 == factor) {
+    if (temp || keepZeroes || digits <= minDigits) {
       uart_write_char((char)temp + '0');
     }
     if (temp) {
-      skipZeroes = false;
+      keepZeroes = true;
       value -= factor*temp;
     }
 
     factor /= 10;
+    --digits;
   }
 }
 
