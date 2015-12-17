@@ -120,7 +120,7 @@ void mtime_get_date(mtime_date_ready callback)
   }
 }
 
-void mtime_set_date(uint8_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek, mcode_done callback)
+void mtime_set_date(int16_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek, mcode_done callback)
 {
   if (RtcStateIdle == TheState) {
     if (year < 1900 || year > 2099) {
