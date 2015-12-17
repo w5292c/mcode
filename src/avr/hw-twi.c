@@ -50,32 +50,22 @@ typedef enum {
     ETwiStateWrDoneError
 } TwiCState;
 
-typedef struct {
-    uint8_t mAddress;
-    uint8_t mRequestLenght;
-    union {
-        struct {
-            uint8_t *mBuffer;
-        } mRead;
-        struct {
-            const uint8_t *mBuffer;
-        } mWrite;
-    } mData;
-} TClientRequest;
-
+#ifndef READ_BUFFER_LENGTH
 #define READ_BUFFER_LENGTH (20)
-
-/**
- * The data represinting the current request
- */
-static TClientRequest TheRequest;
+#else /* READ_BUFFER_LENGTH */
+#warning "READ_BUFFER_LENGTH already defined"
+#endif /* READ_BUFFER_LENGTH */
 
 static twi_read_ready TheReadCallback;
 static twi_write_ready TheWriteCallback;
 
 static uint8_t volatile TheTwiIndex = 0;
 static uint8_t volatile TheTwiState = ETwiStateNull;
+/* The cached client request */
+static const uint8_t volatile *TheWriteBuffer;
 static uint8_t volatile TheReadBuffer[READ_BUFFER_LENGTH];
+static uint8_t volatile TheRequestAddress;
+static uint8_t volatile TheRequestLength;
 
 /**
  * The scheduler tick
@@ -115,8 +105,8 @@ void twi_set_write_callback(twi_write_ready callback)
 void twi_recv(uint8_t addr, uint8_t length)
 {
   if (ETwiStateIdle == TheTwiState) {
-    TheRequest.mAddress = (addr & 0xFEU);
-    TheRequest.mRequestLenght = length;
+    TheRequestAddress = (addr & 0xFEU);
+    TheRequestLength = length;
 
     TheTwiState = ETwiStateRdSendStart;
     hw_twi_send_start();
@@ -134,9 +124,9 @@ void twi_recv(uint8_t addr, uint8_t length)
 void twi_send(uint8_t addr, uint8_t length, const uint8_t *data)
 {
   if (ETwiStateIdle == TheTwiState) {
-    TheRequest.mAddress = (addr & 0xFEU);
-    TheRequest.mRequestLenght = length;
-    TheRequest.mData.mWrite.mBuffer = data;
+    TheRequestAddress = (addr & 0xFEU);
+    TheRequestLength = length;
+    TheWriteBuffer = data;
 
     TheTwiState = ETwiStateWrSendStart;
     hw_twi_send_start();
@@ -162,7 +152,7 @@ static void hw_twi_sched_tick(void)
   case ETwiStateRdDone:
     hw_uart_write_string_P(PSTR("Read done.\r\n"));
     TheTwiState = ETwiStateIdle;
-    (*TheReadCallback)(true, TheRequest.mRequestLenght, (const uint8_t *)TheReadBuffer);
+    (*TheReadCallback)(true, TheRequestLength, (const uint8_t *)TheReadBuffer);
     break;
   case ETwiStateRdDoneError:
     hw_uart_write_string_P(PSTR("Read error.\r\n"));
@@ -190,11 +180,11 @@ static inline void hw_twi_handle_start_transmitted(void)
     if (ETwiStateWrSendStart == TheTwiState) {
       TheTwiState = ETwiStateWrSendSlvAddr;
       /* send address (write) request */
-      TWDR = (TheRequest.mAddress | TW_WRITE);
+      TWDR = (TheRequestAddress | TW_WRITE);
     } else /* if (ETwiStateRdSendStart == TheTwiState) */ {
       TheTwiState = ETwiStateRdSendSlvAddr;
       /* send address (read) request */
-      TWDR = (TheRequest.mAddress | TW_READ);
+      TWDR = (TheRequestAddress | TW_READ);
     }
     /* TWI Interface enabled, Enable TWI Interupt and clear the flag to send byte */
     TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
@@ -209,7 +199,7 @@ static inline void hw_twi_handle_slave_address_transmitted(void)
   switch (TheTwiState) {
   case ETwiStateRdSendSlvAddr:
     TheTwiIndex = 0;
-    if (1 != TheRequest.mRequestLenght) {
+    if (1 != TheRequestLength) {
       /* more than 1 byte to receive, send ACK */
       TheTwiState = ETwiStateRdReadingBytes;
       TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
@@ -222,7 +212,7 @@ static inline void hw_twi_handle_slave_address_transmitted(void)
   case ETwiStateWrSendSlvAddr:
     TheTwiIndex = 0;
     TheTwiState = ETwiStateWrWritingData;
-    TWDR = TheRequest.mData.mWrite.mBuffer[0];
+    TWDR = *TheWriteBuffer;
     TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
     break;
   default:
@@ -235,10 +225,10 @@ static inline void hw_twi_handle_data_transmitted(void)
 {
   switch (TheTwiState) {
   case ETwiStateWrWritingData:
-    if (TheRequest.mRequestLenght != (TheTwiIndex + 1)) {
+    if (TheRequestLength != (TheTwiIndex + 1)) {
       /* not all the data transmitted, send the next byte */
       ++TheTwiIndex;
-      TWDR = TheRequest.mData.mWrite.mBuffer[TheTwiIndex];
+      TWDR = TheWriteBuffer[TheTwiIndex];
       TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
     } else {
       /* all the requested data sent, send the stop condition */
@@ -259,7 +249,7 @@ static inline void hw_twi_handle_data_received_ack(void)
   case ETwiStateRdReadingBytes:
     data = TWDR;
     TheReadBuffer[TheTwiIndex] = data;
-    if ((TheRequest.mRequestLenght - 1) == ++TheTwiIndex) {
+    if ((TheRequestLength - 1) == ++TheTwiIndex) {
       /* request reading the last byte */
       /* TWI Interface enabled */
       TheTwiState = ETwiStateRdReadingBytesLast;
