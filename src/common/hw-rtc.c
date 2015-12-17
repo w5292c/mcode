@@ -22,48 +22,28 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_RTC_H
-#define MCODE_RTC_H
+#include "hw-rtc.h"
 
-#include "mcode-config.h"
+#include "mglobal.h"
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifdef MCODE_RTC
-
-typedef struct {
-  uint8_t seconds;
-  uint8_t minutes;
-  uint8_t hours;
-} MTime;
-
-typedef struct {
-  uint8_t dayOfWeek;
-  uint8_t day;
-  uint8_t month;
-  int16_t year;
-} MDate;
-
-typedef void (*mtime_time_ready)(bool success, const MTime *time);
-typedef void (*mtime_date_ready)(bool success, const MDate *time);
-
-void mtime_init(void);
-void mtime_deinit(void);
-
-void mtime_get_time(mtime_time_ready callback);
-void mtime_get_date(mtime_date_ready callback);
-
-const char *mtime_get_day_of_week_name(uint8_t dayOfWeek);
-
-#endif /* MCODE_RTC */
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* MCODE_RTC_H */
+const char *mtime_get_day_of_week_name(uint8_t dayOfWeek)
+{
+  switch (dayOfWeek) {
+  case 1:
+    return PSTR("MON");
+  case 2:
+    return PSTR("TUE");
+  case 3:
+    return PSTR("WED");
+  case 4:
+    return PSTR("THU");
+  case 5:
+    return PSTR("FRI");
+  case 6:
+    return PSTR("SAT");
+  case 7:
+    return PSTR("SUN");
+  default:
+    return PSTR("UNKWN");
+  }
+}

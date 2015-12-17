@@ -128,6 +128,7 @@ endif ( MCODE_PERSIST_STORE )
 
 if ( MCODE_RTC )
   set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/hw-rtc.c
     ${MCODE_TOP}/src/common/cmd-rtc.c
   )
 endif ( MCODE_RTC )
