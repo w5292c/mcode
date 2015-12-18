@@ -68,6 +68,7 @@ bool cmd_engine_rtc_command(const char *args, bool *startCmd);
 #ifdef MCODE_TV
 void cmd_engine_tv_init(void);
 void cmd_engine_tv_help(void);
+void cmd_engine_tv_new_day(void);
 bool cmd_engine_tv_command(const char *args, bool *startCmd);
 #endif /* MCODE_TV */
 

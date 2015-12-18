@@ -44,6 +44,7 @@ static void cmd_engine_turn_tv_off(void);
 static void cmd_engine_tv_update_value(void);
 static void cmd_engine_tv_set_state(uint8_t state);
 static bool cmd_engine_set_value(const char *args, bool *startCmd);
+static bool cmd_engine_set_ititial_value(const char *args, bool *startCmd);
 
 static uint8_t TheState;
 static uint64_t TheNextUpdateTime;
@@ -60,6 +61,8 @@ void cmd_engine_tv_help(void)
   hw_uart_write_string_P(PSTR("> tv-off - Turn the TV off\r\n"));
   hw_uart_write_string_P(PSTR("> value - Show persistent value\r\n"));
   hw_uart_write_string_P(PSTR("> value-set <number> - Update persistent value to <number>\r\n"));
+  hw_uart_write_string_P(PSTR("> value-init - Show the current initial value\r\n"));
+  hw_uart_write_string_P(PSTR("> value-init-set <value> - Set the initial value to <value> \r\n"));
 }
 
 bool cmd_engine_tv_command(const char *args, bool *startCmd)
@@ -77,6 +80,13 @@ bool cmd_engine_tv_command(const char *args, bool *startCmd)
   } else if (!strcmp_P(args, PSTR("tv-off"))) {
     cmd_engine_tv_set_state(CmdEngineTvStateOff);
     return true;
+  } else if (!strcmp_P(args, PSTR("value-init"))) {
+    hw_uart_write_string_P(PSTR("Initial value: "));
+    hw_uart_write_uintd(persist_store_get_initial_value(), 0);
+    hw_uart_write_string_P(PSTR("\r\n"));
+    return true;
+  } else if (!strncmp_P(args, PSTR("value-init-set "), 15)) {
+    return cmd_engine_set_ititial_value(args + 15, startCmd);
   }
 
   return false;
@@ -110,6 +120,10 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
   return true;
 }
 
+void cmd_engine_tv_new_day(void)
+{
+}
+
 void cmd_engine_tv_tick(void)
 {
   if (CmdEngineTvStateOn == TheState) {
@@ -120,6 +134,34 @@ void cmd_engine_tv_tick(void)
       cmd_engine_tv_update_value();
     }
   }
+}
+
+bool cmd_engine_set_ititial_value(const char *args, bool *startCmd)
+{
+  args = string_skip_whitespace(args);
+  if (!args || !*args) {
+    /* Too few arguments */
+    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    return true;
+  }
+  /* Get the 'value' argument */
+  int value = -1;
+  args = string_next_number(args, &value);
+  if (!args || *args || value < 0) {
+    /* Wrong 'number' argument */
+    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    return true;
+  }
+
+#ifdef MCODE_COMMAND_MODES
+  if (CmdModeRoot != cmd_engine_get_mode()) {
+    hw_uart_write_string_P(PSTR("Error: only root can do this\r\n"));
+    return true;
+  }
+#endif /* MCODE_COMMAND_MODES */
+
+  persist_store_set_initial_value(value);
+  return true;
 }
 
 void cmd_engine_tv_update_value(void)

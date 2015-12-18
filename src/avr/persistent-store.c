@@ -41,6 +41,7 @@ uint8_t EEMEM TheNewHash[32];
 
 #define CYCLIC_STORAGE_LENGTH (32)
 uint16_t EEMEM TheCyclicStorage[CYCLIC_STORAGE_LENGTH];
+uint16_t EEMEM TheInitailValue;
 
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
 {
@@ -114,6 +115,16 @@ void persist_store_set_value(uint16_t value)
       eeprom_write_word(&TheCyclicStorage[i], (0 == i) ? value : 0xffffu);
     }
   }
+}
+
+uint16_t persist_store_get_initial_value(void)
+{
+  return eeprom_read_word(&TheInitailValue);
+}
+
+void persist_store_set_initial_value(uint16_t value)
+{
+  eeprom_write_word(&TheInitailValue, value);
 }
 
 #if 0 /* Test code: begin */
