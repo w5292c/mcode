@@ -28,6 +28,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/hw-uart.c
 )
 
+option ( MCODE_TV "Enable TV control" ON )
 option ( MCODE_TWI "Enable TWI support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_PWM "Enable PWM support" OFF )
@@ -140,6 +141,12 @@ if ( MCODE_RTC_DS3231 )
     ${MCODE_TOP}/src/common/hw-rtc-ds3231.c
   )
 endif ( MCODE_RTC_DS3231 )
+
+if ( MCODE_TV )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-tv.c
+  )
+endif ( MCODE_TV )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

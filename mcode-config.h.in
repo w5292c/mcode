@@ -60,3 +60,6 @@
 
 /* Enable RTC support */
 #cmakedefine MCODE_RTC
+
+/* Enable TV control */
+#cmakedefine MCODE_TV

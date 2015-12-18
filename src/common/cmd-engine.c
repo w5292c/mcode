@@ -238,6 +238,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
   cmd_engine_rtc_help();
 #endif /* MCODE_RTC */
   cmd_engine_system_help();
+#ifdef MCODE_RTC
+  cmd_engine_tv_help();
+#endif /* MCODE_RTC */
   }
 #ifdef __linux__
   else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
@@ -353,6 +356,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (cmd_engine_rtc_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_RTC */
+#ifdef MCODE_TV
+  else if (cmd_engine_tv_command(aString, &start_uart_editor)) {
+  }
+#endif /* MCODE_TV */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
   }
   else if (*aString) {
