@@ -24,6 +24,10 @@
 
 #include "persistent-store.h"
 
+#include "mglobal.h"
+#include "hw-uart.h"
+
+#include <stdbool.h>
 #include <avr/eeprom.h>
 
 /* hash for the initial passwd: 'pass' */
@@ -34,6 +38,9 @@ uint8_t EEMEM TheHash[32] = {
   0xa7u, 0x25u, 0x00u, 0x0fu, 0xebu, 0x82u, 0xe8u, 0xf1u,
 };
 uint8_t EEMEM TheNewHash[32];
+
+#define CYCLIC_STORAGE_LENGTH (32)
+uint16_t EEMEM TheCyclicStorage[CYCLIC_STORAGE_LENGTH];
 
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
 {
@@ -68,3 +75,75 @@ void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
 
   eeprom_write_block(data, pointer, length);
 }
+
+uint16_t persist_store_get_value(void)
+{
+  uint8_t i;
+  uint16_t result = 0;
+  for (i = 31; i >= 0; --i) {
+    const uint16_t word = eeprom_read_word(&TheCyclicStorage[i]);
+    if (word != 0xffffu) {
+      result = word;
+      break;
+    }
+  }
+  return result;
+}
+
+void persist_store_set_value(uint16_t value)
+{
+  if (persist_store_get_value() == value) {
+    /* Already valid value */
+    return;
+  }
+
+  uint8_t i;
+  bool written = false;
+  for (i = 0; i < CYCLIC_STORAGE_LENGTH; ++i) {
+    const uint16_t word = eeprom_read_word(&TheCyclicStorage[i]);
+    if (word == 0xffffu) {
+      written = true;
+      eeprom_write_word(&TheCyclicStorage[i], value);
+      break;
+    }
+  }
+
+  /* No free space left, clean the buffer */
+  if (!written) {
+    for (i = 0; i < CYCLIC_STORAGE_LENGTH; ++i) {
+      eeprom_write_word(&TheCyclicStorage[i], (0 == i) ? value : 0xffffu);
+    }
+  }
+}
+
+#if 0 /* Test code: begin */
+void persist_store_test(void)
+{
+  uint8_t i;
+  bool newLineReported = true;
+  for (i = 0; i < CYCLIC_STORAGE_LENGTH; ++i) {
+    /* Handle the new line */
+    if (newLineReported) {
+      hw_uart_write_uint32(i, false);
+      hw_uart_write_string_P(PSTR("  "));
+      newLineReported = false;
+    }
+
+    /* Write hex data */
+    const uint16_t data = eeprom_read_word(&TheCyclicStorage[i]);
+    hw_uart_write_uint16(data, false);
+    hw_uart_write_string_P(PSTR(" "));
+
+    if ((i & 0x0fu) == 0x0fu) {
+      hw_uart_write_string_P(PSTR("\r\n"));
+      newLineReported = true;
+    }
+  }
+
+  /* Move to the next line,
+     if we have some text at the current line */
+  if (!newLineReported) {
+    hw_uart_write_string_P(PSTR("\r\n"));
+  }
+}
+#endif /* Test code: end */

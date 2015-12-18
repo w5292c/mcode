@@ -40,6 +40,9 @@ typedef enum {
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length);
 void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length);
 
+uint16_t persist_store_get_value(void);
+void persist_store_set_value(uint16_t value);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif /* __cplusplus */
