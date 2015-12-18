@@ -52,8 +52,6 @@ static void mtime_read_ready(bool success, uint8_t length, const uint8_t *data);
 void mtime_init(void)
 {
   TheState = RtcStateIdle;
-  twi_set_read_callback(mtime_read_ready);
-  twi_set_write_callback(mtime_write_ready);
 }
 
 void mtime_deinit(void)
@@ -66,6 +64,7 @@ void mtime_get_time(mtime_time_ready callback)
     TheBuffer[0] = 0;
     TheTimeCallback = callback;
     TheState = RtcStateSetAddressForTime;
+    twi_set_write_callback(mtime_write_ready);
     twi_send(0xd0u, 1, TheBuffer);
   } else {
     /* Already in progress */
@@ -101,6 +100,7 @@ void mtime_set_time(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done 
     TheBuffer[3] = (hours % 10) | ((hours/10)*0x10);
     TheState = RtcStateSetTime;
     TheWriteCallback = callback;
+    twi_set_write_callback(mtime_write_ready);
     twi_send(0xd0u, 4, TheBuffer);
   } else {
     (*callback)(false);
@@ -113,6 +113,7 @@ void mtime_get_date(mtime_date_ready callback)
     TheBuffer[0] = 3;
     TheDateCallback = callback;
     TheState = RtcStateSetAddressForDate;
+    twi_set_write_callback(mtime_write_ready);
     twi_send(0xd0u, 1, TheBuffer);
   } else {
     /* Already in progress */
@@ -154,6 +155,7 @@ void mtime_set_date(int16_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek,
     TheBuffer[4] = (year % 10) | (((year/10) % 10)*0x10);
     TheState = RtcStateSetTime;
     TheWriteCallback = callback;
+    twi_set_write_callback(mtime_write_ready);
     twi_send(0xd0u, 5, TheBuffer);
   } else {
     (*callback)(false);
@@ -170,10 +172,12 @@ void mtime_write_ready(bool success)
   switch (TheState) {
   case RtcStateSetAddressForTime:
     TheState = RtcStateReadTime;
+    twi_set_read_callback(mtime_read_ready);
     twi_recv(0xd0u, 3);
     break;
   case RtcStateSetAddressForDate:
     TheState = RtcStateReadDate;
+    twi_set_read_callback(mtime_read_ready);
     twi_recv(0xd0u, 4);
     break;
   case RtcStateSetTime:
