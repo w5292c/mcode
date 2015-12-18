@@ -38,6 +38,7 @@ typedef enum {
   RtcStateSetTime,
   RtcStateSetDate,
   RtcStateSetAlarm,
+  RtcStateSetNewDayAlarm,
 } RtcState;
 
 static uint8_t TheState;
@@ -201,6 +202,36 @@ void mtime_set_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done
   }
 }
 
+void mtime_set_new_day_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback)
+{
+  if (RtcStateIdle == TheState) {
+    if (hours > 23) {
+      hw_uart_write_string_P(PSTR("Error: set alarm: wrong hour parameter\r\n"));
+      (*callback)(false);
+      return;
+    }
+    if (minutes > 59) {
+      hw_uart_write_string_P(PSTR("Error: set alarm: wrong minutes parameter\r\n"));
+      (*callback)(false);
+      return;
+    }
+    /* Set address: 0x07 (Alarm1) */
+    TheBuffer[0] = 0x0b;
+    /* Set minutes */
+    TheBuffer[1] = (minutes % 10) | ((minutes/10)*0x10);
+    /* Set hours */
+    TheBuffer[2] = (hours % 10) | ((hours/10)*0x10);
+    /* No day/date match */
+    TheBuffer[3] = 0x80;
+    TheState = RtcStateSetNewDayAlarm;
+    TheWriteCallback = callback;
+    twi_set_write_callback(mtime_write_ready);
+    twi_send(0xd0u, 4, TheBuffer);
+  } else {
+    (*callback)(false);
+  }
+}
+
 void mtime_write_ready(bool success)
 {
   if (!success) {
@@ -224,8 +255,9 @@ void mtime_write_ready(bool success)
   case RtcStateSetTime:
   case RtcStateSetDate:
   case RtcStateSetAlarm:
-    (*TheWriteCallback)(true);
+  case RtcStateSetNewDayAlarm:
     TheState = RtcStateIdle;
+    (*TheWriteCallback)(true);
     break;
   default:
     hw_uart_write_string_P(PSTR("RTC: error: wrong state\r\n"));

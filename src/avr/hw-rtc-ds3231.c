@@ -132,8 +132,9 @@ void rtc_alarm_check_status(uint8_t status)
     cmd_engine_start();
   }
   /* Now, check the alarm-2 (new-day alarm) */
-  if (status & 0x20u) {
+  if (status & 0x02u) {
 #ifdef MCODE_TV
+    hw_uart_write_string_P(PSTR("Alarm2: triggered.\r\n"));
     cmd_engine_tv_new_day();
 #endif /* MCODE_TV */
   }

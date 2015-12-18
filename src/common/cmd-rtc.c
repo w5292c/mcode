@@ -30,6 +30,12 @@
 #include "mglobal.h"
 
 typedef enum {
+  CmdEngineRtcSetTimeTargetTime,
+  CmdEngineRtcSetTimeTargetAlarm,
+  CmdEngineRtcSetTimeTargetNewDayAlarm,
+} CmdEngineRtcSetTimeTarget;
+
+typedef enum {
   CmdEngineRtcErrorArgs,
   CmdEngineRtcErrorHw,
 } CmdEngineRtcError;
@@ -39,7 +45,7 @@ static const char *cmd_engine_rtc_error_string(uint8_t error);
 static bool cmd_engine_set_date(const char *args, bool *startCmd);
 static void cmd_engine_date_ready(bool success, const MDate *date);
 static void cmd_engine_rtc_time_ready(bool success, const MTime *time);
-static bool cmd_engine_set_time(const char *args, bool *startCmd, bool alarm);
+static bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target);
 
 void cmd_engine_rtc_help(void)
 {
@@ -48,6 +54,7 @@ void cmd_engine_rtc_help(void)
   hw_uart_write_string_P(PSTR("> date - Read the current date\r\n"));
   hw_uart_write_string_P(PSTR("> date-set <year> <month> <day> <weekday> - Update the current date\r\n"));
   hw_uart_write_string_P(PSTR("> alarm-set <hour> <min> <sec> - Update the current alarm\r\n"));
+  hw_uart_write_string_P(PSTR("> new-day-set <hour> <min> <sec> - Update the new-day alarm\r\n"));
 }
 
 bool cmd_engine_rtc_command(const char *args, bool *startCmd)
@@ -61,17 +68,19 @@ bool cmd_engine_rtc_command(const char *args, bool *startCmd)
     mtime_get_date(cmd_engine_date_ready);
     return true;
   } else if (!strncmp_P(args, PSTR("time-set"), 8)) {
-    return cmd_engine_set_time(args + 8, startCmd, false);
+    return cmd_engine_set_time(args + 8, startCmd, CmdEngineRtcSetTimeTargetTime);
   } else if (!strncmp_P(args, PSTR("date-set"), 8)) {
     return cmd_engine_set_date(args + 8, startCmd);
   } else if (!strncmp_P(args, PSTR("alarm-set"), 9)) {
-    return cmd_engine_set_time(args + 9, startCmd, true);
+    return cmd_engine_set_time(args + 9, startCmd, CmdEngineRtcSetTimeTargetAlarm);
+  } else if (!strncmp_P(args, PSTR("new-day-set "), 12)) {
+    return cmd_engine_set_time(args + 12, startCmd, CmdEngineRtcSetTimeTargetNewDayAlarm);
   }
 
   return false;
 }
 
-bool cmd_engine_set_time(const char *args, bool *startCmd, bool alarm)
+bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target)
 {
   args = string_skip_whitespace(args);
   if (!args || !*args) {
@@ -117,11 +126,21 @@ bool cmd_engine_set_time(const char *args, bool *startCmd, bool alarm)
   }
 
   *startCmd = false;
-  if (alarm) {
-    mtime_set_alarm(hour, mins, secs, cmd_engine_update_ready);
-  } else {
+
+  switch (target) {
+  case CmdEngineRtcSetTimeTargetTime:
     mtime_set_time(hour, mins, secs, cmd_engine_update_ready);
+    break;
+  case CmdEngineRtcSetTimeTargetAlarm:
+    mtime_set_alarm(hour, mins, secs, cmd_engine_update_ready);
+    break;
+  case CmdEngineRtcSetTimeTargetNewDayAlarm:
+    mtime_set_new_day_alarm(hour, mins, secs, cmd_engine_update_ready);
+    break;
+  default:
+    return false;
   }
+
   return true;
 }
 

@@ -66,6 +66,7 @@ void mtime_get_date(mtime_date_ready callback);
 void mtime_set_date(int16_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek, mcode_done callback);
 
 void mtime_set_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback);
+void mtime_set_new_day_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback);
 
 const char *mtime_get_month_name(uint8_t month);
 const char *mtime_get_day_of_week_name(uint8_t dayOfWeek);

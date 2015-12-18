@@ -125,8 +125,12 @@ void cmd_engine_tv_new_day(void)
   const uint16_t initialValue = persist_store_get_initial_value();
   if (persist_store_get_value() == initialValue) {
     /* The current value is already initial, no need to update */
+    hw_uart_write_string_P(PSTR("New day: values match\r\n"));
     return;
   }
+
+  persist_store_set_value(initialValue);
+  hw_uart_write_string_P(PSTR("New day: updated to initial value\r\n"));
 
   if (CmdEngineTvStateOn == TheState) {
     TheNextUpdateTime = mtick_count() + 60LU*1000;
