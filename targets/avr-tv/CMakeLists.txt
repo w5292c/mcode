@@ -21,6 +21,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/common/hw-uart.c
   ${MCODE_TOP}/src/common/scheduler.c
   ${MCODE_TOP}/src/common/cmd-engine.c
+  ${MCODE_TOP}/src/common/cmd-system.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
   ${MCODE_TOP}/src/avr/mtick.c
   ${MCODE_TOP}/src/avr/system.c

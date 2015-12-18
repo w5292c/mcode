@@ -237,6 +237,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_RTC
   cmd_engine_rtc_help();
 #endif /* MCODE_RTC */
+  cmd_engine_system_help();
   }
 #ifdef __linux__
   else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
@@ -352,6 +353,8 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (cmd_engine_rtc_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_RTC */
+  else if (cmd_engine_system_command(aString, &start_uart_editor)) {
+  }
   else if (*aString) {
     /* got unrecognized non-empty command */
     hw_uart_write_string_P(PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));

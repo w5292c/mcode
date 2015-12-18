@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,51 +22,46 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_CMD_ENGINE_H
-#define MCODE_CMD_ENGINE_H
+#include "cmd-engine.h"
 
-#include "mcode-config.h"
+#include "mtick.h"
+#include "utils.h"
+#include "hw-uart.h"
+#include "mglobal.h"
 
-#include <stdbool.h>
+static bool cmd_engine_sleep(const char *args, bool *startCmd);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void cmd_engine_system_help(void)
+{
+  hw_uart_write_string_P(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds\r\n"));
+}
 
-#ifdef MCODE_COMMAND_MODES
-typedef enum {
-  CmdModeNormal,
-  CmdModeRoot,
-  CmdModeUser
-} CmdMode;
-#endif /* MCODE_COMMAND_MODES */
+bool cmd_engine_system_command(const char *args, bool *startCmd)
+{
+  if (!strncmp_P(args, PSTR("sleep"), 5)) {
+    return cmd_engine_sleep(args + 5, startCmd);
+  }
 
-void cmd_engine_init (void);
-void cmd_engine_deinit (void);
+  return false;
+}
 
-void cmd_engine_start (void);
+bool cmd_engine_sleep(const char *args, bool *startCmd)
+{
+  args = string_skip_whitespace(args);
+  if (!args || !*args) {
+    /* Too few arguments */
+    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    return true;
+  }
+  /* Get the 'mticks' argument */
+  int mticks = -1;
+  args = string_next_number(args, &mticks);
+  if (!args || !*args || mticks < 0) {
+    /* Wrong 'mticks' argument */
+    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    return true;
+  }
 
-#ifdef MCODE_COMMAND_MODES
-void cmd_engine_set_mode(CmdMode mode);
-CmdMode cmd_engine_get_mode(void);
-#endif /* MCODE_COMMAND_MODES */
-
-void cmd_engine_system_help(void);
-bool cmd_engine_system_command(const char *args, bool *startCmd);
-
-#ifdef MCODE_TWI
-void cmd_engine_twi_help(void);
-bool cmd_engine_twi_read(const char *args);
-bool cmd_engine_twi_write(const char *args);
-#endif /* MCODE_TWI */
-
-#ifdef MCODE_RTC
-void cmd_engine_rtc_help(void);
-bool cmd_engine_rtc_command(const char *args, bool *startCmd);
-#endif /* MCODE_RTC */
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* MCODE_CMD_ENGINE_H */
+  mtick_sleep(mticks);
+  return true;
+}
