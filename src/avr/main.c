@@ -74,6 +74,10 @@ int main (void)
   line_editor_uart_init();
   cmd_engine_init();
 
+#ifdef MCODE_TV
+  cmd_engine_tv_init();
+#endif /* MCODE_TV */
+
   /* now, enable the interrupts */
   sei();
 

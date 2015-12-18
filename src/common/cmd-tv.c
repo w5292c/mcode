@@ -24,15 +24,40 @@
 
 #include "cmd-engine.h"
 
+#include "pwm.h"
+#include "mtick.h"
 #include "utils.h"
+#include "hw-leds.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "scheduler.h"
 #include "persistent-store.h"
 
+typedef enum {
+  CmdEngineTvStateOff = 0,
+  CmdEngineTvStateOn,
+} CmdEngineTvState;
+
+static void cmd_engine_tv_tick(void);
+static void cmd_engine_turn_tv_on(void);
+static void cmd_engine_turn_tv_off(void);
+static void cmd_engine_tv_update_value(void);
+static void cmd_engine_tv_set_state(uint8_t state);
 static bool cmd_engine_set_value(const char *args, bool *startCmd);
+
+static uint8_t TheState;
+static uint64_t TheNextUpdateTime;
+
+void cmd_engine_tv_init(void)
+{
+  cmd_engine_tv_set_state(CmdEngineTvStateOff);
+  mcode_scheduler_add(cmd_engine_tv_tick);
+}
 
 void cmd_engine_tv_help(void)
 {
+  hw_uart_write_string_P(PSTR("> tv-on - Turn the TV on\r\n"));
+  hw_uart_write_string_P(PSTR("> tv-off - Turn the TV off\r\n"));
   hw_uart_write_string_P(PSTR("> value - Show persistent value\r\n"));
   hw_uart_write_string_P(PSTR("> value-set <number> - Update persistent value to <number>\r\n"));
 }
@@ -46,6 +71,12 @@ bool cmd_engine_tv_command(const char *args, bool *startCmd)
     return true;
   } else if (!strncmp_P(args, PSTR("value-set "), 10)) {
     return cmd_engine_set_value(args + 10, startCmd);
+  } else if (!strcmp_P(args, PSTR("tv-on"))) {
+    cmd_engine_tv_set_state(CmdEngineTvStateOn);
+    return true;
+  } else if (!strcmp_P(args, PSTR("tv-off"))) {
+    cmd_engine_tv_set_state(CmdEngineTvStateOff);
+    return true;
   }
 
   return false;
@@ -77,4 +108,75 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
 
   persist_store_set_value(number);
   return true;
+}
+
+void cmd_engine_tv_tick(void)
+{
+  if (CmdEngineTvStateOn == TheState) {
+    const uint64_t currentTime = mtick_count();
+    if (TheNextUpdateTime < currentTime) {
+      /* Expire after another minute */
+      TheNextUpdateTime = currentTime + 60LU*1000;
+      cmd_engine_tv_update_value();
+    }
+  }
+}
+
+void cmd_engine_tv_update_value(void)
+{
+  const uint16_t value = persist_store_get_value();
+  if (!value) {
+    /* No more time for today */
+    cmd_engine_tv_set_state(CmdEngineTvStateOff);
+  }
+
+  persist_store_set_value(value - 1);
+}
+
+void cmd_engine_tv_set_state(uint8_t state)
+{
+  if (TheState == state) {
+    /* Already in the requested state */
+    return;
+  }
+
+  if (CmdEngineTvStateOn == state) {
+    /* Requested ON state, check we we still have enough time */
+    const uint16_t value = persist_store_get_value();
+    if (!value) {
+      /* No more time */
+      hw_uart_write_string_P(PSTR("Error: no more time\r\n"));
+      return;
+    }
+
+    persist_store_set_value(value - 1);
+    TheNextUpdateTime = mtick_count() + 60LU*1000;
+    cmd_engine_turn_tv_on();
+  } else {
+    cmd_engine_turn_tv_off();
+  }
+
+  TheState = state;
+}
+
+void cmd_engine_turn_tv_on(void)
+{
+#ifdef MCODE_LEDS
+    mcode_hw_leds_set(0, true);
+#endif /* MCODE_LEDS */
+
+#ifdef MCODE_PWM
+    pwm_set(0, 255u);
+#endif /* MCODE_PWM */
+}
+
+void cmd_engine_turn_tv_off(void)
+{
+#ifdef MCODE_LEDS
+    mcode_hw_leds_set(0, false);
+#endif /* MCODE_LEDS */
+
+#ifdef MCODE_PWM
+    pwm_set(0, 0);
+#endif /* MCODE_PWM */
 }
