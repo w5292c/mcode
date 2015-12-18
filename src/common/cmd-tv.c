@@ -122,6 +122,16 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
 
 void cmd_engine_tv_new_day(void)
 {
+  const uint16_t initialValue = persist_store_get_initial_value();
+  if (persist_store_get_value() == initialValue) {
+    /* The current value is already initial, no need to update */
+    return;
+  }
+
+  if (CmdEngineTvStateOn == TheState) {
+    TheNextUpdateTime = mtick_count() + 60LU*1000;
+    cmd_engine_tv_update_value();
+  }
 }
 
 void cmd_engine_tv_tick(void)
