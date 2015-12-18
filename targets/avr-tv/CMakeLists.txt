@@ -135,6 +135,7 @@ endif ( MCODE_RTC )
 
 if ( MCODE_RTC_DS3231 )
   set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-rtc-ds3231.c
     ${MCODE_TOP}/src/common/hw-rtc-ds3231.c
   )
 endif ( MCODE_RTC_DS3231 )

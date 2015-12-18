@@ -52,6 +52,7 @@ int main (void)
 
 #ifdef MCODE_RTC
   mtime_init();
+  rtc_alarm_init();
 #endif /* MCODE_RTC */
 
   /* now, UART can be initialized */
@@ -91,6 +92,7 @@ int main (void)
 #endif /* MCODE_LCD */
 
 #ifdef MCODE_RTC
+  rtc_alarm_deinit();
   mtime_deinit();
 #endif /* MCODE_RTC */
 

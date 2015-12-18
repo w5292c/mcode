@@ -56,6 +56,8 @@ typedef void (*mtime_date_ready)(bool success, const MDate *time);
 
 void mtime_init(void);
 void mtime_deinit(void);
+void rtc_alarm_init(void);
+void rtc_alarm_deinit(void);
 
 void mtime_get_time(mtime_time_ready callback);
 void mtime_set_time(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback);
