@@ -56,7 +56,7 @@ endif ( MCODE_LCD )
 if ( MCODE_TWI )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/avr/hw-twi.c
-    ${MCODE_TOP}/src/common/hw-twi.c
+    ${MCODE_TOP}/src/common/cmd-twi.c
   )
 endif ( MCODE_TWI )
 
