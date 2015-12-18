@@ -57,6 +57,7 @@ void cmd_engine_tv_init(void)
 
 void cmd_engine_tv_help(void)
 {
+  hw_uart_write_string_P(PSTR("> tv - Show if TV is ON or OFF\r\n"));
   hw_uart_write_string_P(PSTR("> tv-on - Turn the TV on\r\n"));
   hw_uart_write_string_P(PSTR("> tv-off - Turn the TV off\r\n"));
   hw_uart_write_string_P(PSTR("> value - Show persistent value\r\n"));
@@ -87,6 +88,13 @@ bool cmd_engine_tv_command(const char *args, bool *startCmd)
     return true;
   } else if (!strncmp_P(args, PSTR("value-init-set "), 15)) {
     return cmd_engine_set_ititial_value(args + 15, startCmd);
+  } else if (!strcmp_P(args, PSTR("tv"))) {
+    if (CmdEngineTvStateOn == TheState) {
+      hw_uart_write_string_P(PSTR("TV is ON\r\n"));
+    } else {
+      hw_uart_write_string_P(PSTR("TV is OFF\r\n"));
+    }
+    return true;
   }
 
   return false;
