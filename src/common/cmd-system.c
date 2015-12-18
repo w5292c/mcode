@@ -56,7 +56,7 @@ bool cmd_engine_sleep(const char *args, bool *startCmd)
   /* Get the 'mticks' argument */
   int mticks = -1;
   args = string_next_number(args, &mticks);
-  if (!args || !*args || mticks < 0) {
+  if (!args || *args || mticks < 0) {
     /* Wrong 'mticks' argument */
     hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
     return true;
