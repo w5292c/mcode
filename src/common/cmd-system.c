@@ -29,10 +29,12 @@
 #include "hw-uart.h"
 #include "mglobal.h"
 
+static bool cmd_engine_echo(const char *args, bool *startCmd);
 static bool cmd_engine_sleep(const char *args, bool *startCmd);
 
 void cmd_engine_system_help(void)
 {
+  hw_uart_write_string_P(PSTR("> echo <string> - Echo <string> to console\r\n"));
   hw_uart_write_string_P(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds\r\n"));
 }
 
@@ -40,9 +42,22 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
 {
   if (!strncmp_P(args, PSTR("sleep"), 5)) {
     return cmd_engine_sleep(args + 5, startCmd);
+  } else if (!strncmp_P(args, PSTR("echo"), 4)) {
+    return cmd_engine_echo(args + 4, startCmd);
   }
 
   return false;
+}
+
+bool cmd_engine_echo(const char *args, bool *startCmd)
+{
+  if (*args) {
+    ++args;
+    hw_uart_write_string(args);
+  }
+
+  hw_uart_write_string_P(PSTR("\r\n"));
+  return true;
 }
 
 bool cmd_engine_sleep(const char *args, bool *startCmd)
