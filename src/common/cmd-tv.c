@@ -68,6 +68,13 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
     return true;
   }
 
+#ifdef MCODE_COMMAND_MODES
+  if (CmdModeRoot != cmd_engine_get_mode()) {
+    hw_uart_write_string_P(PSTR("Error: only root can do this\r\n"));
+    return true;
+  }
+#endif /* MCODE_COMMAND_MODES */
+
   persist_store_set_value(number);
   return true;
 }
