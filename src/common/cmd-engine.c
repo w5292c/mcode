@@ -81,6 +81,7 @@ static void cmd_engine_handle_args(const char *args);
 static void cmd_engine_handle_pass(const char *pass);
 #endif /* MCODE_COMMAND_MODES */
 
+#ifdef MCODE_CONSOLE_ENABLED
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
   "lack\033[m. This is \033[32;40mgreen on black\033[m. This is \033[33;40myellow o"
@@ -138,6 +139,7 @@ static const char TheLongTestText[] PROGMEM =
   "the string_table variable, the array itself, in the Program Space. This DOES NOT"
   " put the actual strings themselves into Program Space. At this point, the string"
   "s are still in the Data Space, which is probably not what you want.";
+#endif /* MCODE_CONSOLE_ENABLED */
 
 void cmd_engine_init (void)
 {
