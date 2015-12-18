@@ -27,6 +27,7 @@
 #include "hw-twi.h"
 #include "hw-uart.h"
 #include "scheduler.h"
+#include "cmd-engine.h"
 
 #include <avr/interrupt.h>
 
@@ -54,12 +55,14 @@ static uint8_t TheBuffer[2];
 void rtc_alarm_tick(void)
 {
   if (TheIsrRequest) {
+    hw_uart_write_string_P(PSTR("Alarm1: triggered.\r\n"));
+    cmd_engine_start();
+    /* Clear ALARM1 flag */
     TheIsrRequest = false;
     TheBuffer[0] = 0x0f;
     TheBuffer[1] = 0x88;
     twi_set_write_callback(rtc_alarm_twi_write_done);
     twi_send(0xd0, 2, TheBuffer);
-    hw_uart_write_string_P(PSTR("INT1 event.\r\n"));
   }
 }
 
@@ -68,7 +71,6 @@ void rtc_alarm_twi_write_done(bool success)
   if (success) {
     /* Enable INT1 interrupt again */
     GICR |= (1U<<INT1);
-    hw_uart_write_string_P(PSTR("INT1 event 2.\r\n"));
   } else {
     hw_uart_write_string_P(PSTR("Error: failed clearing alarm flag in RTC.\r\n"));
   }
