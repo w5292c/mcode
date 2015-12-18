@@ -36,10 +36,10 @@ typedef enum {
 
 static void cmd_engine_update_ready(bool success);
 static const char *cmd_engine_rtc_error_string(uint8_t error);
-static bool cmd_engine_set_time(const char *args, bool *startCmd);
 static bool cmd_engine_set_date(const char *args, bool *startCmd);
 static void cmd_engine_date_ready(bool success, const MDate *date);
 static void cmd_engine_rtc_time_ready(bool success, const MTime *time);
+static bool cmd_engine_set_time(const char *args, bool *startCmd, bool alarm);
 
 void cmd_engine_rtc_help(void)
 {
@@ -47,6 +47,7 @@ void cmd_engine_rtc_help(void)
   hw_uart_write_string_P(PSTR("> time-set <hour> <min> <sec> - Update the current time\r\n"));
   hw_uart_write_string_P(PSTR("> date - Read the current date\r\n"));
   hw_uart_write_string_P(PSTR("> date-set <year> <month> <day> <weekday> - Update the current date\r\n"));
+  hw_uart_write_string_P(PSTR("> alarm-set <hour> <min> <sec> - Update the current alarm\r\n"));
 }
 
 bool cmd_engine_rtc_command(const char *args, bool *startCmd)
@@ -60,15 +61,17 @@ bool cmd_engine_rtc_command(const char *args, bool *startCmd)
     mtime_get_date(cmd_engine_date_ready);
     return true;
   } else if (!strncmp_P(args, PSTR("time-set"), 8)) {
-    return cmd_engine_set_time(args + 8, startCmd);
+    return cmd_engine_set_time(args + 8, startCmd, false);
   } else if (!strncmp_P(args, PSTR("date-set"), 8)) {
     return cmd_engine_set_date(args + 8, startCmd);
+  } else if (!strncmp_P(args, PSTR("alarm-set"), 9)) {
+    return cmd_engine_set_time(args + 9, startCmd, true);
   }
 
   return false;
 }
 
-bool cmd_engine_set_time(const char *args, bool *startCmd)
+bool cmd_engine_set_time(const char *args, bool *startCmd, bool alarm)
 {
   args = string_skip_whitespace(args);
   if (!args || !*args) {
@@ -114,7 +117,11 @@ bool cmd_engine_set_time(const char *args, bool *startCmd)
   }
 
   *startCmd = false;
-  mtime_set_time(hour, mins, secs, cmd_engine_update_ready);
+  if (alarm) {
+    mtime_set_alarm(hour, mins, secs, cmd_engine_update_ready);
+  } else {
+    mtime_set_time(hour, mins, secs, cmd_engine_update_ready);
+  }
   return true;
 }
 

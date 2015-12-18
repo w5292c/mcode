@@ -36,6 +36,8 @@ typedef enum {
   RtcStateSetAddressForTime,
   RtcStateSetAddressForDate,
   RtcStateSetTime,
+  RtcStateSetDate,
+  RtcStateSetAlarm,
 } RtcState;
 
 static uint8_t TheState;
@@ -76,17 +78,17 @@ void mtime_set_time(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done 
 {
   if (RtcStateIdle == TheState) {
     if (hours > 23) {
-      hw_uart_write_string_P(PSTR("Error: set time: wrong hour parameter"));
+      hw_uart_write_string_P(PSTR("Error: set time: wrong hour parameter\r\n"));
       (*callback)(false);
       return;
     }
     if (minutes > 59) {
-      hw_uart_write_string_P(PSTR("Error: set time: wrong minutes parameter"));
+      hw_uart_write_string_P(PSTR("Error: set time: wrong minutes parameter\r\n"));
       (*callback)(false);
       return;
     }
     if (seconds > 59) {
-      hw_uart_write_string_P(PSTR("Error: set time: wrong seconds parameter"));
+      hw_uart_write_string_P(PSTR("Error: set time: wrong seconds parameter\r\n"));
       (*callback)(false);
       return;
     }
@@ -125,22 +127,22 @@ void mtime_set_date(int16_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek,
 {
   if (RtcStateIdle == TheState) {
     if (year < 1900 || year > 2099) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong year parameter"));
+      hw_uart_write_string_P(PSTR("Error: set date: wrong year parameter\r\n"));
       (*callback)(false);
       return;
     }
     if (month < 1 || month > 31) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong month parameter"));
+      hw_uart_write_string_P(PSTR("Error: set date: wrong month parameter\r\n"));
       (*callback)(false);
       return;
     }
     if (day < 1 || day > 31) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong day parameter"));
+      hw_uart_write_string_P(PSTR("Error: set date: wrong day parameter\r\n"));
       (*callback)(false);
       return;
     }
     if (dayOfWeek < 1 || dayOfWeek > 7) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong day-of-week parameter"));
+      hw_uart_write_string_P(PSTR("Error: set date: wrong day-of-week parameter\r\n"));
       (*callback)(false);
       return;
     }
@@ -153,7 +155,44 @@ void mtime_set_date(int16_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek,
     /* Set month/century */
     TheBuffer[3] = (month % 10) | ((month/10)*0x10) | ((year < 2000) ? 0x80u : 0x00u);
     TheBuffer[4] = (year % 10) | (((year/10) % 10)*0x10);
-    TheState = RtcStateSetTime;
+    TheState = RtcStateSetDate;
+    TheWriteCallback = callback;
+    twi_set_write_callback(mtime_write_ready);
+    twi_send(0xd0u, 5, TheBuffer);
+  } else {
+    (*callback)(false);
+  }
+}
+
+void mtime_set_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback)
+{
+  if (RtcStateIdle == TheState) {
+    if (hours > 23) {
+      hw_uart_write_string_P(PSTR("Error: set alarm: wrong hour parameter\r\n"));
+      (*callback)(false);
+      return;
+    }
+    if (minutes > 59) {
+      hw_uart_write_string_P(PSTR("Error: set alarm: wrong minutes parameter\r\n"));
+      (*callback)(false);
+      return;
+    }
+    if (seconds > 59) {
+      hw_uart_write_string_P(PSTR("Error: set alarm: wrong seconds parameter\r\n"));
+      (*callback)(false);
+      return;
+    }
+    /* Set address: 0x07 (Alarm1) */
+    TheBuffer[0] = 0x07;
+    /* Set seconds */
+    TheBuffer[1] = (seconds % 10) | ((seconds/10)*0x10);
+    /* Set minutes */
+    TheBuffer[2] = (minutes % 10) | ((minutes/10)*0x10);
+    /* Set hours */
+    TheBuffer[3] = (hours % 10) | ((hours/10)*0x10);
+    /* No day/date match */
+    TheBuffer[4] = 0x80;
+    TheState = RtcStateSetAlarm;
     TheWriteCallback = callback;
     twi_set_write_callback(mtime_write_ready);
     twi_send(0xd0u, 5, TheBuffer);
@@ -166,6 +205,8 @@ void mtime_write_ready(bool success)
 {
   if (!success) {
     hw_uart_write_string_P(PSTR("RTC: error: failed writing to the TWI interface\r\n"));
+    (*TheWriteCallback)(false);
+    TheState = RtcStateIdle;
     return;
   }
 
@@ -181,6 +222,8 @@ void mtime_write_ready(bool success)
     twi_recv(0xd0u, 4);
     break;
   case RtcStateSetTime:
+  case RtcStateSetDate:
+  case RtcStateSetAlarm:
     (*TheWriteCallback)(true);
     TheState = RtcStateIdle;
     break;
@@ -194,6 +237,8 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
 {
   if (!success) {
     hw_uart_write_string_P(PSTR("RTC: error: failed reading the TWI interface\r\n"));
+    (*TheDateCallback)(false, NULL);
+    TheState = RtcStateIdle;
     return;
   }
 
@@ -203,6 +248,8 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
       mtime_parse_time(data);
     } else {
       hw_uart_write_string_P(PSTR("RTC: error: wrong data length\r\n"));
+      (*TheDateCallback)(false, NULL);
+      TheState = RtcStateIdle;
     }
     break;
   case RtcStateReadDate:
@@ -210,10 +257,14 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
       mtime_parse_date(data);
     } else {
       hw_uart_write_string_P(PSTR("RTC: error: wrong data length\r\n"));
+      (*TheDateCallback)(false, NULL);
+      TheState = RtcStateIdle;
     }
     break;
   default:
     hw_uart_write_string_P(PSTR("RTC: error: wrong state\r\n"));
+    (*TheDateCallback)(false, NULL);
+    TheState = RtcStateIdle;
     break;
   }
 }
