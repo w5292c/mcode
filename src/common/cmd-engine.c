@@ -60,8 +60,6 @@ static void cmd_engine_set_scroll_start (const char *aParams);
 #endif /* MCODE_CONSOLE_ENABLED */
 #ifdef MCODE_SECURITY
 #include "sha.h"
-
-static void cmd_engine_sha256(const char *aParams);
 #endif /* MCODE_SECURITY */
 #ifdef MCODE_COMMAND_MODES
 typedef enum {
@@ -227,7 +225,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
 #endif /* MCODE_HW_I80_ENABLED */
 #ifdef MCODE_SECURITY
-    hw_uart_write_string_P(PSTR("> sha256 <DATA> - calculate SHA256 hash\r\n"));
+    cmd_engine_ssl_help();
 #endif /* MCODE_SECURITY */
 #ifdef MCODE_COMMAND_MODES
     hw_uart_write_string_P(PSTR("> su [MODE(1|2|3)] - Set the command engine mode\r\n"));
@@ -336,8 +334,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_CONSOLE_ENABLED */
 #ifdef MCODE_SECURITY
-  else if (!strncmp_P(aString, PSTR("sha256 "), 7)) {
-    cmd_engine_sha256(&aString[7]);
+  else if (cmd_engine_ssl_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_SECURITY */
 #ifdef MCODE_COMMAND_MODES
@@ -552,29 +549,6 @@ void cmd_engine_set_scroll_start (const char *aParams)
   }
 }
 #endif /* MCODE_CONSOLE_ENABLED */
-
-#ifdef MCODE_SECURITY
-void cmd_engine_sha256(const char *aParams)
-{
-  const uint16_t n = strlen(aParams);
-  hw_uart_write_string_P(PSTR("Calculating sha256 hash, string: '"));
-  hw_uart_write_string(aParams);
-  hw_uart_write_string_P(PSTR("', length: 0x"));
-  hw_uart_write_uint(n);
-  hw_uart_write_string_P(PSTR("\r\n"));
-
-  uint8_t byteResultHash[SHA256_DIGEST_LENGTH];
-  SHA256((const unsigned char *)aParams, n, byteResultHash);
-
-  uint8_t i;
-  uint8_t *ptr = byteResultHash;
-  for (i = 0; i < SHA256_DIGEST_LENGTH; i += 2, ptr += 2) {
-    uint16_t data = ((*ptr) << 8) | (*(ptr + 1) << 0);
-    hw_uart_write_uint16(data, false);
-  }
-  hw_uart_write_string_P(PSTR("\r\n"));
-}
-#endif /* MCODE_SECURITY */
 
 #ifdef MCODE_COMMAND_MODES
 typedef enum {

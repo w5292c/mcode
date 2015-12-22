@@ -72,6 +72,11 @@ void cmd_engine_tv_new_day(void);
 bool cmd_engine_tv_command(const char *args, bool *startCmd);
 #endif /* MCODE_TV */
 
+#ifdef MCODE_SECURITY
+void cmd_engine_ssl_help(void);
+bool cmd_engine_ssl_command(const char *args, bool *startCmd);
+#endif /* MCODE_SECURITY */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

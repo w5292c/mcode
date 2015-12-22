@@ -119,6 +119,7 @@ if ( MCODE_SECURITY )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_SSL}/sha256.c
     ${MCODE_SSL}/mem_clr.c
+    ${MCODE_TOP}/src/common/cmd-ssl.c
   )
 endif ( MCODE_SECURITY )
 
