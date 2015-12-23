@@ -83,6 +83,11 @@ int main (void)
   /* now, enable the interrupts */
   sei();
 
+#ifdef MCODE_LCD
+  /* Now, as interrupts are enabled, we can reset LCD */
+  lcd_reset();
+#endif /* MCODE_LCD */
+
   /* Write some 'hello' text */
   hw_uart_write_string_P(PSTR("\r\nmain: ready\r\nTest value: ["));
   hw_uart_write_uintd(1234007, 0);
