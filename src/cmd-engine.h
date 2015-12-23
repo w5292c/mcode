@@ -82,6 +82,11 @@ void cmd_engine_i80_help(void);
 bool cmd_engine_i80_command(const char *command, bool *startCmd);
 #endif /* MCODE_HW_I80_ENABLED */
 
+#ifdef MCODE_CONSOLE_ENABLED
+void cmd_engine_console_help(void);
+bool cmd_engine_console_command(const char *command, bool *startCmd);
+#endif /* MCODE_CONSOLE_ENABLED */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

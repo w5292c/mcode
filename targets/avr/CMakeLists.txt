@@ -135,6 +135,12 @@ if ( MCODE_TV )
   )
 endif ( MCODE_TV )
 
+if ( MCODE_CONSOLE_ENABLED )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-console.c
+  )
+endif ( MCODE_CONSOLE_ENABLED )
+
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
 add_executable( console-test ${SRC_LIST} )
