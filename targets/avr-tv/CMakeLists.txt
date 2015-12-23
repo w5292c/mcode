@@ -89,6 +89,7 @@ if ( MCODE_LCD_ILI9481 )
     ${MCODE_TOP}/src/avr/hw-lcd.c
     ${MCODE_TOP}/src/avr/hw-i80.c
     ${MCODE_TOP}/src/avr/hw-lcd-i80.c
+    ${MCODE_TOP}/src/common/cmd-lcd.c
     ${MCODE_TOP}/src/common/hw-lcd-i80.c
     ${MCODE_TOP}/src/common/hw-lcd-ili9481.c
   )

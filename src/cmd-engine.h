@@ -77,6 +77,11 @@ void cmd_engine_ssl_help(void);
 bool cmd_engine_ssl_command(const char *args, bool *startCmd);
 #endif /* MCODE_SECURITY */
 
+#ifdef MCODE_HW_I80_ENABLED
+void cmd_engine_i80_help(void);
+bool cmd_engine_i80_command(const char *command, bool *startCmd);
+#endif /* MCODE_HW_I80_ENABLED */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

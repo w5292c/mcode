@@ -42,10 +42,6 @@
 
 #include <string.h>
 
-#ifdef MCODE_HW_I80_ENABLED
-static void cmd_engine_read (const char *aCommand);
-static void cmd_engine_write (const char *aCommand);
-#endif /* MCODE_HW_I80_ENABLED */
 #ifdef MCODE_PWM
 static void cmd_engine_pwm(const char *cmd);
 #endif /* MCODE_PWM */
@@ -220,6 +216,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_LEDS
     hw_uart_write_string_P(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
 #endif /* MCODE_LEDS */
+
+#ifdef MCODE_HW_I80_ENABLED
+    cmd_engine_i80_help();
+#endif /* MCODE_HW_I80_ENABLED */
 #ifdef MCODE_HW_I80_ENABLED
     hw_uart_write_string_P(PSTR("> w <CMD> <DAT> - write <CMD> with <DAT> to I80\r\n"));
     hw_uart_write_string_P(PSTR("> r <CMD> <LEN> - read <LEN> bytes with <CMD> in I80\r\n"));
@@ -257,15 +257,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("\r\n"));
     reboot();
   }
-#ifdef MCODE_HW_I80_ENABLED
-  else if (!strncmp_P(aString, PSTR("w "), 2)) {
-    /* WRITE command */
-    cmd_engine_write(&aString[2]);
-  } else if (!strncmp_P(aString, PSTR("r "), 2)) {
-    /* READ command */
-    cmd_engine_read(&aString[2]);
-  }
-#endif /* MCODE_HW_I80_ENABLED */
 #ifdef MCODE_PWM
   else if (!strncmp_P(aString, PSTR("pwm "), 4)) {
     cmd_engine_pwm(&aString[4]);
@@ -359,6 +350,10 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (cmd_engine_tv_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_TV */
+#ifdef MCODE_HW_I80_ENABLED
+  else if (cmd_engine_i80_command(aString, &start_uart_editor)) {
+  }
+#endif /* MCODE_HW_I80_ENABLED */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
   }
   else if (*aString) {
@@ -376,96 +371,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_COMMAND_MODES */
 }
-
-#ifdef MCODE_HW_I80_ENABLED
-void cmd_engine_read(const char *aCommand)
-{
-  uint8_t buffer[16];
-  uint8_t command = 0;
-  uint8_t dataLength = 0;
-
-  memset(buffer, 0, 16);
-  /* first, retrieve the command code */
-  int value = 0;
-  aCommand = string_skip_whitespace(aCommand);
-  aCommand = string_next_number(aCommand, &value);
-  command = (uint8_t)value;
-  aCommand = string_skip_whitespace(aCommand);
-
-  if (aCommand) {
-    value = 0;
-    string_next_number(aCommand, &value);
-    dataLength = (uint8_t)value;
-  }
-
-  /* Our read buffer is 16 bytes long */
-  if (dataLength > 16) {
-    dataLength = 16;
-  }
-
-  if (dataLength) {
-    hw_i80_read(command, dataLength, buffer);
-
-    /* Display the result */
-    hw_uart_write_string_P(PSTR("Got "));
-    hw_uart_write_uint(dataLength);
-    hw_uart_write_string_P(PSTR(" bytes:\r\n"));
-
-    uint8_t i;
-    for (i = 0; i < dataLength; ++i) {
-      hw_uart_write_uint(buffer[i]);
-      if (i != dataLength - 1) {
-        hw_uart_write_string_P(PSTR(" "));
-      }
-    }
-    hw_uart_write_string_P (PSTR("\r\n"));
-  } else {
-    hw_uart_write_string_P(PSTR("Wrong args, format: r <command> <number-of-byte-to-read>\r\n"));
-  }
-}
-
-void cmd_engine_write(const char *aCommand)
-{
-  int success = 1;
-  int dataLength = 0;
-  unsigned char command;
-#define MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH (32)
-  unsigned char buffer[MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH];
-
-  memset(buffer, 0, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH);
-
-  /* parse arguments */
-  const unsigned char ch0 = aCommand[0];
-  const unsigned char ch1 = aCommand[1];
-  const unsigned char ch2 = aCommand[2];
-
-  if (ch0 && ch1 && char_is_hex(ch0) && char_is_hex(ch1) && (' ' == ch2)) {
-    command = glob_get_byte (aCommand);
-    aCommand += 3;
-
-    while (*aCommand) {
-      volatile uint8_t chH = aCommand[0];
-      volatile uint8_t chL = aCommand[1];
-      if (chH && chL && char_is_hex(chH) && char_is_hex(chL) && (dataLength < MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH - 1)) {
-        buffer[dataLength++] = (glob_ch_to_val(chH) << 4) | glob_ch_to_val(chL);
-        aCommand += 2;
-      } else {
-        success = 0;
-        break;
-      }
-    }
-  } else {
-    success = 0;
-  }
-
-  if (success) {
-    /* pass the request to the I80 bus */
-    hw_i80_write(command, dataLength, buffer);
-  } else {
-    hw_uart_write_string_P (PSTR("Wrong args, format: W CC X1[X2[X3..XA]]\r\n"));
-  }
-}
-#endif /* MCODE_HW_I80_ENABLED */
 
 #ifdef MCODE_PWM
 void cmd_engine_pwm(const char *cmd)
