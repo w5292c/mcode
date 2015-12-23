@@ -28,16 +28,12 @@
 #include "utils.h"
 #include "hw-lcd.h"
 #include "mglobal.h"
-#include "hw-leds.h"
 #include "hw-uart.h"
 #include "line-editor-uart.h"
 #include "persistent-store.h"
 
 #include <string.h>
 
-#ifdef MCODE_LEDS
-static void cmd_engine_set_led(const char *cmd);
-#endif /* MCODE_LEDS */
 static void cmd_engine_on_cmd_ready (const char *aString);
 #ifdef MCODE_SECURITY
 #include "sha.h"
@@ -122,7 +118,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_pwm_help();
 #endif /* MCODE_PWM */
 #ifdef MCODE_LEDS
-    hw_uart_write_string_P(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
+    cmd_engine_led_help();
 #endif /* MCODE_LEDS */
 #ifdef MCODE_LCD
     cmd_engine_lcd_help();
@@ -153,8 +149,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_PWM */
 #ifdef MCODE_LEDS
-  else if (!strncmp_P(aString, PSTR("led "), 4)) {
-    cmd_engine_set_led(&aString[4]);
+  else if (cmd_engine_led_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_LEDS */
 #ifdef MCODE_TEST_IMAGES
@@ -212,38 +207,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_COMMAND_MODES */
 }
-
-#ifdef MCODE_LEDS
-/**
- * Set-LED command handler
- * @param[in] aCommand - The command parameters
- * @note The command parameters should go in the following format: "X Y";
- * X may be either 0 or 1 (LED index) and Y may be either 0 or 1 (OFF or ON).
- */
-void cmd_engine_set_led(const char *cmd)
-{
-  int index = -1;
-  int value = -1;
-  const char *const secondNumber = string_skip_whitespace(string_next_number(string_skip_whitespace(cmd), &index));
-  if (secondNumber) {
-    string_next_number(secondNumber, &value);
-  }
-  if (index >= 0) {
-    if (value >= 0) {
-      mcode_hw_leds_set(index, value);
-    } else {
-      const uint8_t on = mcode_hw_leds_get(index);
-      hw_uart_write_string_P(PSTR("LED"));
-      hw_uart_write_uint(index);
-      hw_uart_write_string_P(PSTR(", value: "));
-      hw_uart_write_uint(on);
-      hw_uart_write_string_P(PSTR("\r\n"));
-    }
-  } else {
-    hw_uart_write_string_P (PSTR("Wrong args, format: L I 0/1\r\n> I - the LED index [0..1]\r\n> 0/1 - turm OFF/ON\r\n"));
-  }
-}
-#endif /* MCODE_LEDS */
 
 #ifdef MCODE_COMMAND_MODES
 typedef enum {

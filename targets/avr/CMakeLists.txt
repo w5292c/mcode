@@ -94,6 +94,7 @@ endif ( MCODE_AVR_FUSES )
 if ( MCODE_LEDS )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/avr/hw-leds.c
+    ${MCODE_TOP}/src/common/cmd-leds.c
   )
 endif ( MCODE_LEDS )
 

@@ -97,7 +97,10 @@ void cmd_engine_pwm_help(void);
 bool cmd_engine_pwm_command(const char *command, bool *startCmd);
 #endif /* MCODE_PWM */
 
-
+#ifdef MCODE_LEDS
+void cmd_engine_led_help(void);
+bool cmd_engine_led_command(const char *command, bool *startCmd);
+#endif /* MCODE_LEDS */
 
 #ifdef __cplusplus
 } /* extern "C" */
