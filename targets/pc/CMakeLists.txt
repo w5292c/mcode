@@ -24,6 +24,10 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/hw-lcd.c
   ${MCODE_TOP}/src/common/console.c
+  ${MCODE_TOP}/src/common/cmd-lcd.c
+  ${MCODE_TOP}/src/common/cmd-ssl.c
+  ${MCODE_TOP}/src/common/hw-uart.c
+  ${MCODE_TOP}/src/common/cmd-system.c
   ${MCODE_TOP}/src/common/cmd-engine.c
   ${MCODE_TOP}/src/common/hw-lcd-i80.c
   ${MCODE_TOP}/src/common/cmd-test-image.c

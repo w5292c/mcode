@@ -25,17 +25,14 @@
 #include "cmd-engine.h"
 
 #include "pwm.h"
-#include "main.h"
+/*#include "main.h"*/
 #include "mtick.h"
 #include "utils.h"
-#include "system.h"
-#include "hw-i80.h"
 #include "hw-lcd.h"
 #include "mglobal.h"
 #include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
-#include "mcode-config.h"
 #include "cmd-test-image.h"
 #include "line-editor-uart.h"
 #include "persistent-store.h"
@@ -182,11 +179,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
   {
     /* HELP command */
     hw_uart_write_string_P(PSTR("Supported cmds:\r\n"));
-#if __linux__ == 1
-    hw_uart_write_string_P(PSTR("> exit/quit - exit\r\n"));
-#endif /* __linux__ == 1 */
-    hw_uart_write_string_P(PSTR("> ut - Show uptime\r\n"));
-    hw_uart_write_string_P(PSTR("> reboot - Initiate system reboot\r\n"));
 #ifdef MCODE_CONSOLE_ENABLED
     hw_uart_write_string_P(PSTR("> color xxxx - set text color\r\n"));
     hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
@@ -241,21 +233,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_RTC
   cmd_engine_tv_help();
 #endif /* MCODE_RTC */
-  }
-#ifdef __linux__
-  else if (!strcmp_P(aString, PSTR("quit")) || !strcmp_P(aString, PSTR("exit"))) {
-    /* EXIT command */
-    main_request_exit();
-    start_uart_editor = false;
-  }
-#endif /* __X86__ */
-  else if (!strcmp_P(aString, PSTR("ut"))) {
-    hw_uart_write_string_P(PSTR("Uptime: 0x"));
-    hw_uart_write_uint64(mtick_count(), true);
-    hw_uart_write_string_P(PSTR("\r\n"));
-  } else if (!strcmp_P(aString, PSTR("reboot"))) {
-    hw_uart_write_string_P(PSTR("\r\n"));
-    reboot();
   }
 #ifdef MCODE_PWM
   else if (!strncmp_P(aString, PSTR("pwm "), 4)) {

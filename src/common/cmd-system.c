@@ -24,8 +24,10 @@
 
 #include "cmd-engine.h"
 
+#include "main.h"
 #include "mtick.h"
 #include "utils.h"
+#include "system.h"
 #include "hw-uart.h"
 #include "mglobal.h"
 
@@ -34,6 +36,8 @@ static bool cmd_engine_sleep(const char *args, bool *startCmd);
 
 void cmd_engine_system_help(void)
 {
+  hw_uart_write_string_P(PSTR("> ut - Show uptime\r\n"));
+  hw_uart_write_string_P(PSTR("> reboot - Initiate a system reboot\r\n"));
   hw_uart_write_string_P(PSTR("> echo <string> - Echo <string> to console\r\n"));
   hw_uart_write_string_P(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds\r\n"));
 }
@@ -44,7 +48,23 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     return cmd_engine_sleep(args + 5, startCmd);
   } else if (!strncmp_P(args, PSTR("echo"), 4)) {
     return cmd_engine_echo(args + 4, startCmd);
+  } else if (!strcmp_P(args, PSTR("ut"))) {
+    hw_uart_write_string_P(PSTR("Uptime: 0x"));
+    hw_uart_write_uint64(mtick_count(), true);
+    hw_uart_write_string_P(PSTR("\r\n"));
+    return true;
+  } else if (!strcmp_P(args, PSTR("reboot"))) {
+    hw_uart_write_string_P(PSTR("\r\n"));
+    reboot();
+    return true;
   }
+#ifdef __linux__
+  else if (!strcmp_P(args, PSTR("quit")) || !strcmp_P(args, PSTR("exit"))) {
+    main_request_exit();
+    *startCmd = false;
+    return true;
+  }
+#endif /* __linux__ */
 
   return false;
 }

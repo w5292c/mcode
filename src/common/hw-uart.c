@@ -29,9 +29,11 @@
 
 #include <string.h>
 
+#ifndef __linux__
 void hw_uart_deinit(void)
 {
 }
+#endif /* __linux__ */
 
 void hw_uart_start_read(void)
 {
