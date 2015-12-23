@@ -25,6 +25,7 @@
 #include "cmd-engine.h"
 
 #include "utils.h"
+#include "hw-lcd.h"
 #include "hw-i80.h"
 #include "hw-uart.h"
 #include "mglobal.h"
@@ -34,15 +35,42 @@
 #ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_read(const char *args, bool *startCmd);
 static void cmd_engine_write(const char *args, bool *startCmd);
+#endif /* MCODE_HW_I80_ENABLED */
 
-void cmd_engine_i80_help(void)
+void cmd_engine_lcd_help(void)
 {
+  hw_uart_write_string_P(PSTR("> reset - Reset LCD module\r\n"));
+  hw_uart_write_string_P(PSTR("> on - Turn LCD module ON\r\n"));
+  hw_uart_write_string_P(PSTR("> off - Turn LCD module OFF\r\n"));
+  hw_uart_write_string_P(PSTR("> lcd-id Read the LCD ID\r\n"));
+
+#ifdef MCODE_HW_I80_ENABLED
   hw_uart_write_string_P(PSTR("> i80-w <CMD> <DAT> - Write <CMD> with <DAT> to I80\r\n"));
   hw_uart_write_string_P(PSTR("> i80-r <CMD> <LEN> - Read <LEN> bytes with <CMD> in I80\r\n"));
+#endif /* MCODE_HW_I80_ENABLED */
 }
 
-bool cmd_engine_i80_command(const char *command, bool *startCmd)
+bool cmd_engine_lcd_command(const char *command, bool *startCmd)
 {
+  if (!strcmp_P(command, PSTR("reset"))) {
+    lcd_reset();
+    return true;
+  } else if (!strcmp_P(command, PSTR("on"))) {
+    lcd_turn(true);
+    lcd_set_bl(true);
+    return true;
+  } else if (!strcmp_P(command, PSTR("off"))) {
+    lcd_set_bl(false);
+    lcd_turn(false);
+    return true;
+  } else if (!strcmp_P(command, PSTR("lcd-id"))) {
+    const uint32_t id = lcd_read_id();
+    hw_uart_write_string("LCD ID: 0x");
+    hw_uart_write_uint32(id, false);
+    hw_uart_write_string("\r\n");
+    return true;
+  }
+#ifdef MCODE_HW_I80_ENABLED
   if (!strncmp_P(command, PSTR("i80-w "), 6)) {
     cmd_engine_write(&command[6], startCmd);
     return true;
@@ -50,10 +78,12 @@ bool cmd_engine_i80_command(const char *command, bool *startCmd)
     cmd_engine_read(&command[6], startCmd);
     return true;
   }
+#endif /* MCODE_HW_I80_ENABLED */
 
   return false;
 }
 
+#ifdef MCODE_HW_I80_ENABLED
 void cmd_engine_read(const char *args, bool *startCmd)
 {
   uint8_t buffer[16];

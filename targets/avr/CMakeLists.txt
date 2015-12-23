@@ -52,6 +52,12 @@ option ( MCODE_RTC_DS3231 "Enable DS3231 RTC" ON )
 option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" ON )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )
 
+if ( MCODE_LCD )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-lcd.c
+  )
+endif ( MCODE_LCD )
+
 if ( MCODE_LCD_ILI9341 )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/avr/hw-spi.c
@@ -67,7 +73,6 @@ if ( MCODE_LCD_ILI9481 )
     ${MCODE_TOP}/src/avr/hw-lcd.c
     ${MCODE_TOP}/src/avr/hw-i80.c
     ${MCODE_TOP}/src/avr/hw-lcd-i80.c
-    ${MCODE_TOP}/src/common/cmd-lcd.c
     ${MCODE_TOP}/src/common/hw-lcd-i80.c
     ${MCODE_TOP}/src/common/hw-lcd-ili9481.c
   )

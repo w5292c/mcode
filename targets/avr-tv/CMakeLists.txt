@@ -52,6 +52,7 @@ if ( MCODE_LCD )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/fonts.c
     ${MCODE_TOP}/src/common/hw-lcd.c
+    ${MCODE_TOP}/src/common/cmd-lcd.c
   )
 endif ( MCODE_LCD )
 

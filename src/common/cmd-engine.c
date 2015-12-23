@@ -117,12 +117,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
     hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
 #endif /* MCODE_CONSOLE_ENABLED */
-#ifdef MCODE_LCD
-    hw_uart_write_string_P(PSTR("> reset - Reset LCD module\r\n"));
-    hw_uart_write_string_P(PSTR("> on - Turn LCD module ON\r\n"));
-    hw_uart_write_string_P(PSTR("> off - Turn LCD module OFF\r\n"));
-    hw_uart_write_string_P(PSTR("> lcd-id Read the LCD ID\r\n"));
-#endif /* MCODE_LCD */
 #ifdef MCODE_TEST_IMAGES
     hw_uart_write_string_P(PSTR("> timg - Load test image\r\n"));
     hw_uart_write_string_P(PSTR("> tlimg - Load large test image\r\n"));
@@ -136,10 +130,9 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #ifdef MCODE_LEDS
     hw_uart_write_string_P(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
 #endif /* MCODE_LEDS */
-
-#ifdef MCODE_HW_I80_ENABLED
-    cmd_engine_i80_help();
-#endif /* MCODE_HW_I80_ENABLED */
+#ifdef MCODE_LCD
+    cmd_engine_lcd_help();
+#endif /* MCODE_LCD */
 #ifdef MCODE_SECURITY
     cmd_engine_ssl_help();
 #endif /* MCODE_SECURITY */
@@ -148,17 +141,17 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> passwd - change the device password\r\n"));
 #endif /* MCODE_COMMAND_MODES */
 #ifdef MCODE_TWI
-  cmd_engine_twi_help();
+    cmd_engine_twi_help();
 #endif /* MCODE_TWI */
 #ifdef MCODE_RTC
-  cmd_engine_rtc_help();
+    cmd_engine_rtc_help();
 #endif /* MCODE_RTC */
-  cmd_engine_system_help();
+    cmd_engine_system_help();
 #ifdef MCODE_RTC
-  cmd_engine_tv_help();
+    cmd_engine_tv_help();
 #endif /* MCODE_RTC */
 #ifdef MCODE_CONSOLE_ENABLED
-  cmd_engine_console_help();
+    cmd_engine_console_help();
 #endif /* MCODE_CONSOLE_ENABLED */
   }
 #ifdef MCODE_PWM
@@ -171,22 +164,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_set_led(&aString[4]);
   }
 #endif /* MCODE_LEDS */
-#ifdef MCODE_LCD
-  else if (!strcmp_P(aString, PSTR("reset"))) {
-    lcd_reset();
-  } else if (!strcmp_P(aString, PSTR("on"))) {
-    lcd_turn(true);
-    lcd_set_bl(true);
-  } else if (!strcmp_P(aString, PSTR("off"))) {
-    lcd_set_bl(false);
-    lcd_turn(false);
-  } else if (!strcmp_P(aString, PSTR("lcd-id"))) {
-    const uint32_t id = lcd_read_id();
-    hw_uart_write_string("LCD ID: 0x");
-    hw_uart_write_uint32(id, false);
-    hw_uart_write_string("\r\n");
-  }
-#endif /* MCODE_LCD */
 #ifdef MCODE_TEST_IMAGES
   else if (!strcmp_P(aString, PSTR("timg"))) {
     cmd_test_image();
@@ -220,14 +197,14 @@ void cmd_engine_on_cmd_ready (const char *aString)
   else if (cmd_engine_tv_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_TV */
-#ifdef MCODE_HW_I80_ENABLED
-  else if (cmd_engine_i80_command(aString, &start_uart_editor)) {
+#ifdef MCODE_LCD
+  else if (cmd_engine_lcd_command(aString, &start_uart_editor)) {
   }
-#endif /* MCODE_HW_I80_ENABLED */
+#endif /* MCODE_LCD */
 #ifdef MCODE_CONSOLE_ENABLED
   else if (cmd_engine_console_command(aString, &start_uart_editor)) {
   }
-#endif /*  */
+#endif /* MCODE_CONSOLE_ENABLED */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
   }
   else if (*aString) {
