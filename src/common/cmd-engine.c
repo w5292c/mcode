@@ -71,10 +71,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
   }
 #endif /* MCODE_SECURITY */
 #ifdef MCODE_TWI
-  else if (cmd_engine_twi_read(aString)) {
-    start_uart_editor = false;
-  } else if (cmd_engine_twi_write(aString)) {
-    start_uart_editor = false;
+  else if (cmd_engine_twi_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_TWI */
 #ifdef MCODE_RTC

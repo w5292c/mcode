@@ -30,6 +30,8 @@
 #include "mglobal.h"
 
 static void twi_write_callback(bool result);
+static bool cmd_engine_twi_read(const char *args, bool *startCmd);
+static bool cmd_engine_twi_write(const char *args, bool *startCmd);
 static void twi_read_callback(bool result, uint8_t length, const uint8_t *data);
 
 #define BUFFER_LENGTH (20)
@@ -41,26 +43,31 @@ void cmd_engine_twi_help(void)
   hw_uart_write_string_P(PSTR("> twi-wr <addr> <hex-data> - Write <hex-data> to TWI device at <addr>\r\n"));
 }
 
-bool cmd_engine_twi_read(const char *args)
+bool cmd_engine_twi_command(const char *command, bool *startCmd)
 {
-  if (strncmp_P(args, PSTR("twi-rd "), 7)) {
-    return false;
+  if (!strncmp_P(command, PSTR("twi-rd "), 7)) {
+    return cmd_engine_twi_read(command + 7, startCmd);
+  } else if (!strncmp_P(command, PSTR("twi-wr "), 7)) {
+    return cmd_engine_twi_write(command + 7, startCmd);
   }
 
-  args += 7;
+  return false;
+}
 
+bool cmd_engine_twi_read(const char *args, bool *startCmd)
+{
   /* move to the arguments start */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     hw_uart_write_string_P(PSTR("Error: 1\r\n"));
-    return false;
+    return true;
   }
   /* Parse the TWI address */
   int twi_addr = 0;
   args = string_next_number(args, &twi_addr);
   if (!args || !*args) {
     hw_uart_write_string_P(PSTR("Error: 2\r\n"));
-    return false;
+    return true;
   }
   /* Parse the TWI read request length */
   int twi_length = 0;
@@ -70,7 +77,7 @@ bool cmd_engine_twi_read(const char *args)
     hw_uart_write_string_P(PSTR("Error: wrong length: 0x"));
     hw_uart_write_uint(twi_length);
     hw_uart_write_string_P(PSTR("\r\n"));
-    return false;
+    return true;
   }
 
   hw_uart_write_string_P(PSTR("Arguments, TWI address: 0x"));
@@ -79,23 +86,20 @@ bool cmd_engine_twi_read(const char *args)
   hw_uart_write_uint(twi_length);
   hw_uart_write_string_P(PSTR("\"\r\n"));
 
+  *startCmd = false;
   twi_set_read_callback(twi_read_callback);
   twi_recv(twi_addr, twi_length);
   return true;
 }
 
-bool cmd_engine_twi_write(const char *args)
+bool cmd_engine_twi_write(const char *args, bool *startCmd)
 {
-  if (strncmp_P(args, PSTR("twi-wr "), 7)) {
-    return false;
-  }
-
-  args += 7;
   /* Parse the TWI address */
   int twi_addr = 0;
+  args = string_skip_whitespace(args);
   args = string_next_number(args, &twi_addr);
   if (!args || !*args) {
-    return false;
+    return true;
   }
 
   uint8_t bufferFilled = 0;
@@ -105,7 +109,7 @@ bool cmd_engine_twi_write(const char *args)
     hw_uart_write_string_P(PSTR("Wrong hex data: \""));
     hw_uart_write_string(args);
     hw_uart_write_string_P(PSTR("\"\r\n"));
-    return false;
+    return true;
   }
 
   hw_uart_write_string_P(PSTR("TWI write, address: 0x"));
@@ -113,6 +117,7 @@ bool cmd_engine_twi_write(const char *args)
   hw_uart_write_string_P(PSTR(", write data:\r\n"));
   hw_uart_dump_buffer(bufferFilled, TheBuffer, true);
 
+  *startCmd = false;
   twi_set_write_callback(twi_write_callback);
   twi_send(twi_addr, bufferFilled, TheBuffer);
   return true;

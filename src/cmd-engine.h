@@ -56,8 +56,7 @@ bool cmd_engine_system_command(const char *args, bool *startCmd);
 
 #ifdef MCODE_TWI
 void cmd_engine_twi_help(void);
-bool cmd_engine_twi_read(const char *args);
-bool cmd_engine_twi_write(const char *args);
+bool cmd_engine_twi_command(const char *args, bool *startCmd);
 #endif /* MCODE_TWI */
 
 #ifdef MCODE_RTC
