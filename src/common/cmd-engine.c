@@ -24,7 +24,6 @@
 
 #include "cmd-engine.h"
 
-#include "pwm.h"
 #include "mtick.h"
 #include "utils.h"
 #include "hw-lcd.h"
@@ -37,9 +36,6 @@
 
 #include <string.h>
 
-#ifdef MCODE_PWM
-static void cmd_engine_pwm(const char *cmd);
-#endif /* MCODE_PWM */
 #ifdef MCODE_LEDS
 static void cmd_engine_set_led(const char *cmd);
 #endif /* MCODE_LEDS */
@@ -125,7 +121,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     cmd_engine_console_help();
 #endif /* MCODE_CONSOLE_ENABLED */
 #ifdef MCODE_PWM
-    hw_uart_write_string_P(PSTR("> pwm <ind> <value> - Set PWM value\r\n"));
+    cmd_engine_pwm_help();
 #endif /* MCODE_PWM */
 #ifdef MCODE_LEDS
     hw_uart_write_string_P(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
@@ -155,8 +151,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
 #endif /* MCODE_CONSOLE_ENABLED */
   }
 #ifdef MCODE_PWM
-  else if (!strncmp_P(aString, PSTR("pwm "), 4)) {
-    cmd_engine_pwm(&aString[4]);
+  else if (cmd_engine_pwm_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_PWM */
 #ifdef MCODE_LEDS
@@ -222,26 +217,6 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_COMMAND_MODES */
 }
-
-#ifdef MCODE_PWM
-void cmd_engine_pwm(const char *cmd)
-{
-  int index = -1;
-  int value = -1;
-  const char *const secondNumber = string_skip_whitespace(string_next_number(string_skip_whitespace(cmd), &index));
-  if (secondNumber) {
-    string_next_number(secondNumber, &value);
-  }
-
-  if (index < 0 || index > 2 || value < 0 || value > 255) {
-    hw_uart_write_string_P(PSTR("Wrong args, format: pwm <index> <value>\r\n"));
-    hw_uart_write_string_P(PSTR("Possible indexes: [0..2], values: [0..255]\r\n"));
-    return;
-  }
-
-  pwm_set(index, value);
-}
-#endif /* MCODE_PWM */
 
 #ifdef MCODE_LEDS
 /**

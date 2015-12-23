@@ -100,6 +100,7 @@ endif ( MCODE_LEDS )
 if ( MCODE_PWM )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/avr/pwm.c
+    ${MCODE_TOP}/src/common/cmd-pwm.c
   )
 endif ( MCODE_PWM )
 

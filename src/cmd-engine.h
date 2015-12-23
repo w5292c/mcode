@@ -87,6 +87,11 @@ void cmd_engine_console_help(void);
 bool cmd_engine_console_command(const char *command, bool *startCmd);
 #endif /* MCODE_CONSOLE_ENABLED */
 
+#ifdef MCODE_PWM
+void cmd_engine_pwm_help(void);
+bool cmd_engine_pwm_command(const char *command, bool *startCmd);
+#endif /* MCODE_PWM */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
