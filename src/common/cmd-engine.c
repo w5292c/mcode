@@ -26,7 +26,6 @@
 
 #include "mtick.h"
 #include "utils.h"
-#include "hw-lcd.h"
 #include "mglobal.h"
 #include "hw-uart.h"
 #include "line-editor-uart.h"
@@ -34,7 +33,8 @@
 
 #include <string.h>
 
-static void cmd_engine_on_cmd_ready (const char *aString);
+static void cmd_engine_show_help(void);
+static void cmd_engine_on_cmd_ready(const char *aString);
 #ifdef MCODE_SECURITY
 #include "sha.h"
 #endif /* MCODE_SECURITY */
@@ -99,50 +99,8 @@ void cmd_engine_on_cmd_ready (const char *aString)
 
   bool start_uart_editor = true;
 
-  if (!strcmp_P (aString, PSTR("help")))
-  {
-    /* HELP command */
-    hw_uart_write_string_P(PSTR("Supported cmds:\r\n"));
-#ifdef MCODE_CONSOLE_ENABLED
-    hw_uart_write_string_P(PSTR("> color xxxx - set text color\r\n"));
-    hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
-    hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
-#endif /* MCODE_CONSOLE_ENABLED */
-#ifdef MCODE_TEST_IMAGES
-    cmd_engine_images_help();
-#endif /* MCODE_TEST_IMAGES */
-#ifdef MCODE_CONSOLE_ENABLED
-    cmd_engine_console_help();
-#endif /* MCODE_CONSOLE_ENABLED */
-#ifdef MCODE_PWM
-    cmd_engine_pwm_help();
-#endif /* MCODE_PWM */
-#ifdef MCODE_LEDS
-    cmd_engine_led_help();
-#endif /* MCODE_LEDS */
-#ifdef MCODE_LCD
-    cmd_engine_lcd_help();
-#endif /* MCODE_LCD */
-#ifdef MCODE_SECURITY
-    cmd_engine_ssl_help();
-#endif /* MCODE_SECURITY */
-#ifdef MCODE_COMMAND_MODES
-    hw_uart_write_string_P(PSTR("> su [MODE(1|2|3)] - Set the command engine mode\r\n"));
-    hw_uart_write_string_P(PSTR("> passwd - change the device password\r\n"));
-#endif /* MCODE_COMMAND_MODES */
-#ifdef MCODE_TWI
-    cmd_engine_twi_help();
-#endif /* MCODE_TWI */
-#ifdef MCODE_RTC
-    cmd_engine_rtc_help();
-#endif /* MCODE_RTC */
-    cmd_engine_system_help();
-#ifdef MCODE_RTC
-    cmd_engine_tv_help();
-#endif /* MCODE_RTC */
-#ifdef MCODE_CONSOLE_ENABLED
-    cmd_engine_console_help();
-#endif /* MCODE_CONSOLE_ENABLED */
+  if (!strcmp_P (aString, PSTR("help"))) {
+    cmd_engine_show_help();
   }
 #ifdef MCODE_PWM
   else if (cmd_engine_pwm_command(aString, &start_uart_editor)) {
@@ -206,6 +164,43 @@ void cmd_engine_on_cmd_ready (const char *aString)
     line_editor_uart_start();
   }
 #endif /* MCODE_COMMAND_MODES */
+}
+
+void cmd_engine_show_help(void)
+{
+  hw_uart_write_string_P(PSTR("Supported cmds:\r\n"));
+#ifdef MCODE_TEST_IMAGES
+  cmd_engine_images_help();
+#endif /* MCODE_TEST_IMAGES */
+#ifdef MCODE_PWM
+  cmd_engine_pwm_help();
+#endif /* MCODE_PWM */
+#ifdef MCODE_LEDS
+  cmd_engine_led_help();
+#endif /* MCODE_LEDS */
+#ifdef MCODE_LCD
+  cmd_engine_lcd_help();
+#endif /* MCODE_LCD */
+#ifdef MCODE_SECURITY
+  cmd_engine_ssl_help();
+#endif /* MCODE_SECURITY */
+#ifdef MCODE_COMMAND_MODES
+  hw_uart_write_string_P(PSTR("> su [MODE(1|2|3)] - Set the command engine mode\r\n"));
+  hw_uart_write_string_P(PSTR("> passwd - change the device password\r\n"));
+#endif /* MCODE_COMMAND_MODES */
+#ifdef MCODE_TWI
+  cmd_engine_twi_help();
+#endif /* MCODE_TWI */
+#ifdef MCODE_RTC
+  cmd_engine_rtc_help();
+#endif /* MCODE_RTC */
+  cmd_engine_system_help();
+#ifdef MCODE_RTC
+  cmd_engine_tv_help();
+#endif /* MCODE_RTC */
+#ifdef MCODE_CONSOLE_ENABLED
+  cmd_engine_console_help();
+#endif /* MCODE_CONSOLE_ENABLED */
 }
 
 #ifdef MCODE_COMMAND_MODES

@@ -104,6 +104,9 @@ void cmd_engine_console_help(void)
   hw_uart_write_string_P(PSTR("> tstr - Show long string\r\n"));
   hw_uart_write_string_P(PSTR("> esc-pos - Show positioned test\r\n"));
   hw_uart_write_string_P(PSTR("> esc-color - Show colored strings\r\n"));
+  hw_uart_write_string_P(PSTR("> color xxxx - set text color\r\n"));
+  hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
+  hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
 }
 
 bool cmd_engine_console_command(const char *command, bool *startCmd)
