@@ -27,6 +27,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/cmd-lcd.c
   ${MCODE_TOP}/src/common/cmd-ssl.c
   ${MCODE_TOP}/src/common/hw-uart.c
+  ${MCODE_TOP}/src/common/strings.c
   ${MCODE_TOP}/src/common/cmd-system.c
   ${MCODE_TOP}/src/common/cmd-console.c
   ${MCODE_TOP}/src/common/cmd-engine.c

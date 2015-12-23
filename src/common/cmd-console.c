@@ -29,6 +29,7 @@
 #include "console.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 
 #include <string.h>
 
@@ -164,7 +165,7 @@ void cmd_engine_set_bg (const char *aParams)
     const uint16_t param = glob_str_to_uint16 (aParams);
     console_set_bg_color (param);
   } else {
-    hw_uart_write_string_P (PSTR("Wrong args\r\n"));
+    merror(MStringWrongArgument);
   }
 }
 
@@ -174,7 +175,7 @@ void cmd_engine_set_color (const char *aParams)
     const uint16_t param = glob_str_to_uint16 (aParams);
     console_set_color (param);
   } else {
-    hw_uart_write_string_P (PSTR("Wrong args\r\n"));
+    merror(MStringWrongArgument);
   }
 }
 
@@ -183,6 +184,6 @@ void cmd_engine_set_scroll_start(const char *args)
   if (4 == strlen (args)) {
     lcd_set_scroll_start(glob_str_to_uint16(args));
   } else {
-    hw_uart_write_string_P(PSTR("Wrong args\r\n"));
+    merror(MStringWrongArgument);
   }
 }

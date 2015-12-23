@@ -30,6 +30,7 @@
 #include "system.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 
 #include <string.h>
 
@@ -87,7 +88,7 @@ bool cmd_engine_sleep(const char *args, bool *startCmd)
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Get the 'mticks' argument */
@@ -95,7 +96,7 @@ bool cmd_engine_sleep(const char *args, bool *startCmd)
   args = string_next_number(args, &mticks);
   if (!args || *args || mticks < 0) {
     /* Wrong 'mticks' argument */
-    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    merror(MStringWrongArgument);
     return true;
   }
 

@@ -29,6 +29,7 @@
 #include "utils.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 #include "line-editor-uart.h"
 #include "persistent-store.h"
 
@@ -154,7 +155,7 @@ void cmd_engine_set_cmd_mode(const char *params)
     line_editor_set_echo(false);
     line_editor_uart_set_callback(cmd_engine_handle_pass);
   } else {
-    hw_uart_write_string_P(PSTR("Error: wrong arguments for 'su'.\r\nFormat: $ su [1/2/3]\r\n"));
+    merror(MStringWrongArgument);
   }
 }
 

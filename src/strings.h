@@ -22,45 +22,26 @@
  * SOFTWARE.
  */
 
-#include "cmd-engine.h"
+#ifndef MCODE_STRINGS_H
+#define MCODE_STRINGS_H
 
-#include "pwm.h"
-#include "utils.h"
-#include "hw-twi.h"
-#include "hw-uart.h"
-#include "mglobal.h"
-#include "strings.h"
+#include <stdint.h>
 
-static void cmd_engine_pwm(const char *args);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void cmd_engine_pwm_help(void)
-{
-  hw_uart_write_string_P(PSTR("> pwm <ind> <value> - Set PWM value\r\n"));
-}
+typedef enum {
+  MStringNull,
+  MStringError,
+  MStringWarning,
+  MStringWrongArgument,
+} MCodeStringId;
 
-bool cmd_engine_pwm_command(const char *command, bool *startCmd)
-{
-  if (!strncmp_P(command, PSTR("i80-w "), 6)) {
-    cmd_engine_pwm(command + 6);
-    return true;
-  }
+const char *mstring(uint8_t id);
 
-  return false;
-}
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-void cmd_engine_pwm(const char *args)
-{
-  int index = -1;
-  int value = -1;
-  args = string_skip_whitespace(args);
-  args = string_next_number(args, &index);
-  args = string_skip_whitespace(args);
-  string_next_number(args, &value);
-
-  if (index < 0 || index > 2 || value < 0 || value > 255) {
-    merror(MStringWrongArgument);
-    return;
-  }
-
-  pwm_set(index, value);
-}
+#endif /* MCODE_STRINGS_H */

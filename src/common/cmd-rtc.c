@@ -28,6 +28,7 @@
 #include "hw-rtc.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 
 typedef enum {
   CmdEngineRtcSetTimeTargetTime,
@@ -36,7 +37,6 @@ typedef enum {
 } CmdEngineRtcSetTimeTarget;
 
 typedef enum {
-  CmdEngineRtcErrorArgs,
   CmdEngineRtcErrorHw,
 } CmdEngineRtcError;
 
@@ -85,7 +85,7 @@ bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target)
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Get the 'hour' argument */
@@ -93,35 +93,35 @@ bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target)
   args = string_next_number(args, &hour);
   if (!args || !*args || hour > 23 || hour < 0) {
     /* Wrong 'hour' argument */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Parse <min> argument */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   int mins = -1;
   args = string_next_number(args, &mins);
   if (!args || !*args || mins > 59 || mins < 0) {
     /* Wrong 'min' argument */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Parse <seconds> argument */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   int secs = -1;
   args = string_next_number(args, &secs);
   if (!args || *args || secs > 59 || secs < 0) {
     /* Wrong 'second' argument */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
 
@@ -150,56 +150,56 @@ bool cmd_engine_set_date(const char *args, bool *startCmd)
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   int year = -1;
   args = string_next_number(args, &year);
   if (!args || !*args || year < 1900 || year > 2099) {
     /* Wrong 'year' argument */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Parse <month> argument */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   int month = -1;
   args = string_next_number(args, &month);
   if (!args || !*args || month < 1 || month > 12) {
     /* Wrong 'month' argument */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Parse <day> argument */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   int day = -1;
   args = string_next_number(args, &day);
   if (!args || !*args || day < 1 || day > 31) {
     /* Wrong 'day' argument */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Parse <week-day> argument */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
   int weekday = -1;
   args = string_next_number(args, &weekday);
   if (!args || *args || weekday < 1 || weekday > 7) {
     /* Wrong 'week-day' argument */
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorArgs));
+    merror(MStringWrongArgument);
     return true;
   }
 
@@ -260,8 +260,6 @@ void cmd_engine_date_ready(bool success, const MDate *date)
 const char *cmd_engine_rtc_error_string(uint8_t error)
 {
   switch (error) {
-  case CmdEngineRtcErrorArgs:
-    return PSTR("RTC: wrong arguments.\r\n");
   case CmdEngineRtcErrorHw:
     return PSTR("RTC: communication failed.\r\n");
   default:

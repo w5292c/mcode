@@ -28,6 +28,7 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 
 static void cmd_engine_set_led(const char *args);
 
@@ -56,7 +57,7 @@ void cmd_engine_set_led(const char *args)
   string_next_number(args, &value);
 
   if (index < 0 || index > 2 || value < 0 || value > 1) {
-    hw_uart_write_string_P(PSTR("Wrong args\r\n"));
+    merror(MStringWrongArgument);
     return;
   }
 

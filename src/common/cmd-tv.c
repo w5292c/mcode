@@ -30,6 +30,7 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 #include "scheduler.h"
 #include "persistent-store.h"
 
@@ -105,7 +106,7 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Get the 'number' argument */
@@ -113,7 +114,7 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
   args = string_next_number(args, &number);
   if (!args || *args) {
     /* Wrong 'number' argument */
-    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    merror(MStringWrongArgument);
     return true;
   }
 
@@ -163,7 +164,7 @@ bool cmd_engine_set_ititial_value(const char *args, bool *startCmd)
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
-    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Get the 'value' argument */
@@ -171,7 +172,7 @@ bool cmd_engine_set_ititial_value(const char *args, bool *startCmd)
   args = string_next_number(args, &value);
   if (!args || *args || value < 0) {
     /* Wrong 'number' argument */
-    hw_uart_write_string_P(PSTR("Error: wrong argument\r\n"));
+    merror(MStringWrongArgument);
     return true;
   }
 

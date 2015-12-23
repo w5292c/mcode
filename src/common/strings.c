@@ -22,45 +22,46 @@
  * SOFTWARE.
  */
 
-#include "cmd-engine.h"
-
-#include "pwm.h"
-#include "utils.h"
-#include "hw-twi.h"
-#include "hw-uart.h"
-#include "mglobal.h"
 #include "strings.h"
 
-static void cmd_engine_pwm(const char *args);
+#include "mglobal.h"
+#include "hw-uart.h"
 
-void cmd_engine_pwm_help(void)
+void merror(uint8_t id)
 {
-  hw_uart_write_string_P(PSTR("> pwm <ind> <value> - Set PWM value\r\n"));
+  hw_uart_write_string_P(mstring(MStringError));
+  mprintln(id);
 }
 
-bool cmd_engine_pwm_command(const char *command, bool *startCmd)
+void mwarning(uint8_t id)
 {
-  if (!strncmp_P(command, PSTR("i80-w "), 6)) {
-    cmd_engine_pwm(command + 6);
-    return true;
-  }
-
-  return false;
+  hw_uart_write_string_P(mstring(MStringWarning));
+  mprintln(id);
 }
 
-void cmd_engine_pwm(const char *args)
+void mprint(uint8_t id)
 {
-  int index = -1;
-  int value = -1;
-  args = string_skip_whitespace(args);
-  args = string_next_number(args, &index);
-  args = string_skip_whitespace(args);
-  string_next_number(args, &value);
+  hw_uart_write_string_P(mstring(id));
+}
 
-  if (index < 0 || index > 2 || value < 0 || value > 255) {
-    merror(MStringWrongArgument);
-    return;
+void mprintln(uint8_t id)
+{
+  mprint(id);
+  hw_uart_write_string_P(PSTR("\r\n"));
+}
+
+const char *mstring(uint8_t id)
+{
+  switch (id) {
+  case MStringNull:
+    return NULL;
+  case MStringError:
+    return PSTR("Error: ");
+  case MStringWarning:
+    return PSTR("Warning: ");
+  case MStringWrongArgument:
+    return PSTR("wrong argument(s)");
+  default:
+    return PSTR("##undefined##");
   }
-
-  pwm_set(index, value);
 }

@@ -29,6 +29,7 @@
 #include "hw-i80.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 
 #include <string.h>
 
@@ -132,14 +133,14 @@ void cmd_engine_write(const char *args, bool *startCmd)
   args = string_skip_whitespace(args);
   args = string_next_number(args, &command);
   if (!args) {
-    hw_uart_write_string_P(PSTR("Wrong args\r\n"));
+    merror(MStringWrongArgument);
     return;
   }
   /* Now, get the <command-data> */
   uint8_t bufferFilled;
   args = string_to_buffer(args, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH, buffer, &bufferFilled);
   if (args || !bufferFilled) {
-    hw_uart_write_string_P(PSTR("Wrong args\r\n"));
+    merror(MStringWrongArgument);
     return;
   }
 
