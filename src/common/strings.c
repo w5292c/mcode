@@ -27,6 +27,8 @@
 #include "mglobal.h"
 #include "hw-uart.h"
 
+static void mcode_out(const char *value);
+
 void merror(uint8_t id)
 {
   mprint(MStringError);
@@ -41,13 +43,24 @@ void mwarning(uint8_t id)
 
 void mprint(uint8_t id)
 {
-  hw_uart_write_string_P(mstring(id));
+  mcode_out(mstring(id));
 }
 
 void mprintln(uint8_t id)
 {
   mprint(id);
   mprint(MStringNewLine);
+}
+
+void mprintstrln(const char *string)
+{
+  mcode_out(string);
+  mprint(MStringNewLine);
+}
+
+void mcode_out(const char *value)
+{
+  hw_uart_write_string_P(value);
 }
 
 const char *mstring(uint8_t id)
