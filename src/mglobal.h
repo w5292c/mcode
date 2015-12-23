@@ -55,11 +55,6 @@ typedef void (*mcode_tick)(void);
  */
 typedef void (*mcode_done)(bool success);
 
-void merror(uint8_t id);
-void mwarning(uint8_t id);
-void mprint(uint8_t id);
-void mprintln(uint8_t id);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

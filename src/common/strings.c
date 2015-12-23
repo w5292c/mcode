@@ -29,13 +29,13 @@
 
 void merror(uint8_t id)
 {
-  hw_uart_write_string_P(mstring(MStringError));
+  mprint(MStringError);
   mprintln(id);
 }
 
 void mwarning(uint8_t id)
 {
-  hw_uart_write_string_P(mstring(MStringWarning));
+  mprint(MStringWarning);
   mprintln(id);
 }
 
@@ -47,7 +47,7 @@ void mprint(uint8_t id)
 void mprintln(uint8_t id)
 {
   mprint(id);
-  hw_uart_write_string_P(PSTR("\r\n"));
+  mprint(MStringNewLine);
 }
 
 const char *mstring(uint8_t id)
@@ -55,6 +55,8 @@ const char *mstring(uint8_t id)
   switch (id) {
   case MStringNull:
     return NULL;
+  case MStringNewLine:
+    return PSTR("\r\n");
   case MStringError:
     return PSTR("Error: ");
   case MStringWarning:

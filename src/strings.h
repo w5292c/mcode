@@ -33,12 +33,18 @@ extern "C" {
 
 typedef enum {
   MStringNull,
+  MStringNewLine,
   MStringError,
   MStringWarning,
   MStringWrongArgument,
 } MCodeStringId;
 
 const char *mstring(uint8_t id);
+
+void merror(uint8_t id);
+void mwarning(uint8_t id);
+void mprint(uint8_t id);
+void mprintln(uint8_t id);
 
 #ifdef __cplusplus
 } /* extern "C" */
