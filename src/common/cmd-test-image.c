@@ -22,9 +22,32 @@
  * SOFTWARE.
  */
 
-#include "cmd-test-image.h"
+#include "cmd-engine.h"
 
 #include "hw-lcd.h"
+#include "hw-uart.h"
+
+static void cmd_test_image(void);
+static void cmd_test_image_large(void);
+
+void cmd_engine_images_help(void)
+{
+  hw_uart_write_string_P(PSTR("> timg - Load test image\r\n"));
+  hw_uart_write_string_P(PSTR("> tlimg - Load large test image\r\n"));
+}
+
+bool cmd_engine_images_command(const char *command, bool *startCmd)
+{
+  if (!strcmp_P(command, PSTR("timg"))) {
+    cmd_test_image();
+    return true;
+  } else if (!strcmp_P(command, PSTR("tlimg"))) {
+    cmd_test_image_large();
+    return true;
+  }
+
+  return false;
+}
 
 void cmd_test_image(void)
 {

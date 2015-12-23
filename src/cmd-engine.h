@@ -80,6 +80,11 @@ bool cmd_engine_ssl_command(const char *args, bool *startCmd);
 #ifdef MCODE_LCD
 void cmd_engine_lcd_help(void);
 bool cmd_engine_lcd_command(const char *command, bool *startCmd);
+
+#ifdef MCODE_TEST_IMAGES
+void cmd_engine_images_help(void);
+bool cmd_engine_images_command(const char *command, bool *startCmd);
+#endif /* MCODE_TEST_IMAGES */
 #endif /* MCODE_LCD */
 
 #ifdef MCODE_CONSOLE_ENABLED
@@ -91,6 +96,8 @@ bool cmd_engine_console_command(const char *command, bool *startCmd);
 void cmd_engine_pwm_help(void);
 bool cmd_engine_pwm_command(const char *command, bool *startCmd);
 #endif /* MCODE_PWM */
+
+
 
 #ifdef __cplusplus
 } /* extern "C" */

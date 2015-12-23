@@ -30,7 +30,6 @@
 #include "mglobal.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
-#include "cmd-test-image.h"
 #include "line-editor-uart.h"
 #include "persistent-store.h"
 
@@ -114,8 +113,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
     hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
 #endif /* MCODE_CONSOLE_ENABLED */
 #ifdef MCODE_TEST_IMAGES
-    hw_uart_write_string_P(PSTR("> timg - Load test image\r\n"));
-    hw_uart_write_string_P(PSTR("> tlimg - Load large test image\r\n"));
+    cmd_engine_images_help();
 #endif /* MCODE_TEST_IMAGES */
 #ifdef MCODE_CONSOLE_ENABLED
     cmd_engine_console_help();
@@ -160,10 +158,7 @@ void cmd_engine_on_cmd_ready (const char *aString)
   }
 #endif /* MCODE_LEDS */
 #ifdef MCODE_TEST_IMAGES
-  else if (!strcmp_P(aString, PSTR("timg"))) {
-    cmd_test_image();
-  } else if (!strcmp_P(aString, PSTR("tlimg"))) {
-    cmd_test_image_large();
+  if (cmd_engine_images_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_TEST_IMAGES */
 #ifdef MCODE_SECURITY
