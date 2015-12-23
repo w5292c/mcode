@@ -78,6 +78,10 @@ int main (void)
   cmd_engine_tv_init();
 #endif /* MCODE_TV */
 
+#ifdef MCODE_SECURITY
+  cmd_engine_ssl_init();
+#endif /* MCODE_SECURITY */
+
   /* now, enable the interrupts */
   sei();
 

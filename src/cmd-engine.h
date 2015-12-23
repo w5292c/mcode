@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014,2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +73,7 @@ bool cmd_engine_tv_command(const char *args, bool *startCmd);
 #endif /* MCODE_TV */
 
 #ifdef MCODE_SECURITY
+void cmd_engine_ssl_init(void);
 void cmd_engine_ssl_help(void);
 bool cmd_engine_ssl_command(const char *args, bool *startCmd);
 #endif /* MCODE_SECURITY */
