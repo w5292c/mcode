@@ -1,7 +1,10 @@
 Introduction
 ============
-This is a test application that runs on ATMega32A for testing LCD modules connected to it using I80 interface.
-For STM32 specific information, see ./targets/stm32/README
+This is a small library for small devices, like ATMega32, etc...
+Most public header files can be found in the 'src/' folder.
+This library uses 'cmake' build system, the corresponding
+configuration files can be found in sub-directories of the
+'targets/' folder.
 
 Build instructions
 ==================
@@ -19,15 +22,7 @@ $ make
 
 Flashing devices:
 $ sudo avrdude -p m32 -c jtagmkI -P /dev/ttyUSB0 -n
-
-Creating the hex file:
-$ avr-objcopy -j .text -j .data -O ihex ./console-test demo.hex
-$ avr-objcopy -j .eeprom --change-section-lma .eeprom=0 -O ihex ./console-test demo_eeprom.hex
-$ avr-objcopy -O ihex -j .fuse ./console-test outfile.fuses.hex
-Info link: http://www.nongnu.org/avr-libc/user-manual/group__demo__project.html
-
-Creating archive:
-$ tar --exclude-vcs -cjf console-test.tar.bz2 console-test/
+More info can be found in the README file for a particular target.
 
 Console: escape sequences support
 =================================
