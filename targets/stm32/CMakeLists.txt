@@ -26,6 +26,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/hw-uart.c
   ${MCODE_TOP}/src/common/scheduler.c
   ${MCODE_TOP}/src/common/hw-lcd-spi.c
+  ${MCODE_TOP}/src/common/cmd-system.c
   ${MCODE_TOP}/src/common/cmd-engine.c
   ${MCODE_TOP}/src/common/hw-lcd-ili9341.c
   ${MCODE_TOP}/src/common/cmd-test-image.c
@@ -41,10 +42,23 @@ set ( SRC_LIST
 
 set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )
 
+option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
+
+if ( MCODE_LCD )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-lcd.c
+  )
+endif ( MCODE_LCD )
+
+if ( MCODE_CONSOLE_ENABLED )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-console.c
+  )
+endif ( MCODE_CONSOLE_ENABLED )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
@@ -53,3 +67,11 @@ add_executable(${CMAKE_PROJECT_NAME} ${SRC_LIST} ${CMSIS_STARTUP_SOURCE} ${CMSIS
 STM32_SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME})
 STM32_SET_HSE_VALUE(${CMAKE_PROJECT_NAME} 8000000)
 STM32_ADD_HEX_BIN_TARGETS(${CMAKE_PROJECT_NAME})
+
+add_custom_command (
+  TARGET console-test
+  POST_BUILD
+  COMMAND arm-none-eabi-size console-test
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  COMMENT "Show some statistics"
+)

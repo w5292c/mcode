@@ -27,6 +27,8 @@
 #include "hw-lcd.h"
 #include "hw-uart.h"
 
+#include <string.h>
+
 static void cmd_test_image(void);
 static void cmd_test_image_large(void);
 

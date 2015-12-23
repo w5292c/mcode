@@ -31,6 +31,8 @@
 #include "hw-uart.h"
 #include "mglobal.h"
 
+#include <string.h>
+
 static bool cmd_engine_echo(const char *args, bool *startCmd);
 static bool cmd_engine_sleep(const char *args, bool *startCmd);
 

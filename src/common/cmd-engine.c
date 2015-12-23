@@ -28,6 +28,8 @@
 #include "hw-uart.h"
 #include "line-editor-uart.h"
 
+#include <string.h>
+
 static void cmd_engine_show_help(void);
 static void cmd_engine_on_cmd_ready(const char *aString);
 
