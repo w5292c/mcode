@@ -36,8 +36,6 @@
 #include "cmd-engine.h"
 #include "line-editor-uart.h"
 
-#include <avr/io.h>
-#include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
 int main (void)
