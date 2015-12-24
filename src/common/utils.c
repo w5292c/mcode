@@ -114,6 +114,10 @@ const char *string_skip_whitespace(const char *str)
 
 const char *string_next_number(const char *str, int *value)
 {
+  if (!str || !*str) {
+    return NULL;
+  }
+
   if (!strncmp("0x", str, 2)) {
     return string_next_hex_number(str + 2, value);
   } else {
@@ -124,12 +128,17 @@ const char *string_next_number(const char *str, int *value)
 const char *string_next_decimal_number(const char *str, int *value)
 {
   int parsedValue = 0;
+  bool hasValue = false;
   if (str) {
     do {
       const char ch = *str;
-      if (!ch || !char_is_numeric(ch)) {
+      if (!ch) {
+        str = NULL;
+        break;
+      } else if (!char_is_numeric(ch)) {
         break;
       } else {
+        hasValue = true;
         const uint8_t charValue = glob_ch_to_val(ch);
         parsedValue *= 10;
         parsedValue += charValue;
@@ -138,7 +147,9 @@ const char *string_next_decimal_number(const char *str, int *value)
     } while (1);
   }
 
-  *value = parsedValue;
+  if (hasValue && value) {
+    *value = parsedValue;
+  }
 
   return str;
 }
@@ -146,12 +157,17 @@ const char *string_next_decimal_number(const char *str, int *value)
 const char *string_next_hex_number(const char *str, int *value)
 {
   int parsedValue = 0;
+  bool hasValue = false;
   if (str) {
     do {
       const char ch = *str;
-      if (!ch || !char_is_hex(ch)) {
+      if (!ch) {
+        str = NULL;
+        break;
+      } else if (!char_is_hex(ch)) {
         break;
       } else {
+        hasValue = true;
         const uint8_t charValue = glob_ch_to_val(ch);
         parsedValue *= 16;
         parsedValue += charValue;
@@ -160,7 +176,9 @@ const char *string_next_hex_number(const char *str, int *value)
     } while (1);
   }
 
-  *value = parsedValue;
+  if (hasValue && value) {
+    *value = parsedValue;
+  }
 
   return str;
 }
@@ -172,7 +190,7 @@ const char *string_next_token(const char *str, int *length)
     do {
       const char ch = *str;
       if (!ch) {
-        str = 0;
+        str = NULL;
         break;
       } else if (char_is_whitespace(ch)) {
         break;
@@ -183,7 +201,9 @@ const char *string_next_token(const char *str, int *length)
     } while (1);
   }
 
-  *length = result;
+  if (length) {
+    *length = result;
+  }
 
   return str;
 }
@@ -191,11 +211,8 @@ const char *string_next_token(const char *str, int *length)
 const char *string_to_buffer(const char *str,
                              uint8_t bufferLength, uint8_t *buffer, uint8_t *bufferFilled)
 {
-  if (!str) {
-    return str;
-  }
-  if (!(*str)) {
-    return str;
+  if (!str || !*str) {
+    return NULL;
   }
 
   uint8_t filled = 0;
@@ -211,6 +228,7 @@ const char *string_to_buffer(const char *str,
     const uint8_t ch = *str;
     if (!ch) {
       /* no more chars, exit */
+      str = NULL;
       break;
     }
     if (!char_is_hex(ch)) {
