@@ -74,6 +74,8 @@ const char *mstring(uint8_t id)
     return PSTR("Error: ");
   case MStringWarning:
     return PSTR("Warning: ");
+  case MStringInternalError:
+    return PSTR("internal error");
   case MStringWrongArgument:
     return PSTR("wrong argument(s)");
   default:

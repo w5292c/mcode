@@ -31,23 +31,23 @@
 #include <avr/interrupt.h>
 
 typedef enum {
-    /* system states */
-    ETwiStateNull = 0,
-    ETwiStateIdle,
-    ETwiStateCancelling,
-    /* TWI reading states */
-    ETwiStateRdSendStart,
-    ETwiStateRdSendSlvAddr,
-    ETwiStateRdReadingBytes,
-    ETwiStateRdReadingBytesLast,
-    ETwiStateRdDone,
-    ETwiStateRdDoneError,
-    /* TWI writing states */
-    ETwiStateWrSendStart,
-    ETwiStateWrSendSlvAddr,
-    ETwiStateWrWritingData,
-    ETwiStateWrDone,
-    ETwiStateWrDoneError
+  /* system states */
+  ETwiStateNull = 0,
+  ETwiStateIdle,
+  ETwiStateCancelling,
+  /* TWI reading states */
+  ETwiStateRdSendStart,
+  ETwiStateRdSendSlvAddr,
+  ETwiStateRdReadingBytes,
+  ETwiStateRdReadingBytesLast,
+  ETwiStateRdDone,
+  ETwiStateRdDoneError,
+  /* TWI writing states */
+  ETwiStateWrSendStart,
+  ETwiStateWrSendSlvAddr,
+  ETwiStateWrWritingData,
+  ETwiStateWrDone,
+  ETwiStateWrDoneError
 } TwiCState;
 
 #ifndef READ_BUFFER_LENGTH
@@ -135,18 +135,26 @@ static void hw_twi_sched_tick(void)
   {
   case ETwiStateWrDone:
     TheTwiState = ETwiStateIdle;
-    (*TheWriteCallback)(true);
+    if (TheWriteCallback) {
+      (*TheWriteCallback)(true);
+    }
     break;
   case ETwiStateWrDoneError:
     TheTwiState = ETwiStateIdle;
-    (*TheWriteCallback)(false);
+    if (TheWriteCallback) {
+      (*TheWriteCallback)(false);
+    }
     break;
   case ETwiStateRdDone:
     TheTwiState = ETwiStateIdle;
-    (*TheReadCallback)(true, TheRequestLength, (const uint8_t *)TheReadBuffer);
+    if (TheReadCallback) {
+      (*TheReadCallback)(true, TheRequestLength, (const uint8_t *)TheReadBuffer);
+    }
     break;
   case ETwiStateRdDoneError:
-    (*TheReadCallback)(false, 0, NULL);
+    if (TheReadCallback) {
+      (*TheReadCallback)(false, 0, NULL);
+    }
     break;
   default:
     break;
@@ -155,8 +163,8 @@ static void hw_twi_sched_tick(void)
 
 static inline void hw_twi_send_start(void)
 {
-    /* send the START condition */
-    TWCR = ((1<<TWINT) | (1<<TWSTA) | (1<<TWEN)) | (1<<TWIE);
+  /* send the START condition */
+  TWCR = ((1<<TWINT) | (1<<TWSTA) | (1<<TWEN)) | (1<<TWIE);
 }
 
 /**

@@ -36,6 +36,7 @@ typedef enum {
   MStringNewLine,
   MStringError,
   MStringWarning,
+  MStringInternalError,
   MStringWrongArgument,
 } MCodeStringId;
 
