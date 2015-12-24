@@ -89,43 +89,31 @@ bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target)
     return true;
   }
   /* Get the 'hour' argument */
-  int hour = -1;
+  uint16_t hour = -1;
   args = string_next_number(args, &hour);
-  if (!args || !*args || hour > 23 || hour < 0) {
+  if (!args || hour > 23u) {
     /* Wrong 'hour' argument */
     merror(MStringWrongArgument);
     return true;
   }
   /* Parse <min> argument */
   args = string_skip_whitespace(args);
-  if (!args || !*args) {
-    /* Too few arguments */
-    merror(MStringWrongArgument);
-    return true;
-  }
-  int mins = -1;
+  uint16_t mins = -1;
   args = string_next_number(args, &mins);
-  if (!args || !*args || mins > 59 || mins < 0) {
+  if (!args || mins > 59u) {
     /* Wrong 'min' argument */
     merror(MStringWrongArgument);
     return true;
   }
   /* Parse <seconds> argument */
   args = string_skip_whitespace(args);
-  if (!args || !*args) {
-    /* Too few arguments */
-    merror(MStringWrongArgument);
-    return true;
-  }
-  int secs = -1;
+  uint16_t secs = -1;
   args = string_next_number(args, &secs);
-  if (!args || *args || secs > 59 || secs < 0) {
+  if (args || secs > 59) {
     /* Wrong 'second' argument */
     merror(MStringWrongArgument);
     return true;
   }
-
-  *startCmd = false;
 
   switch (target) {
   case CmdEngineRtcSetTimeTargetTime:
@@ -141,6 +129,7 @@ bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target)
     return false;
   }
 
+  *startCmd = false;
   return true;
 }
 
@@ -153,51 +142,36 @@ bool cmd_engine_set_date(const char *args, bool *startCmd)
     merror(MStringWrongArgument);
     return true;
   }
-  int year = -1;
+  uint16_t year = 0;
   args = string_next_number(args, &year);
-  if (!args || !*args || year < 1900 || year > 2099) {
+  if (!args || year < 1900 || year > 2099) {
     /* Wrong 'year' argument */
     merror(MStringWrongArgument);
     return true;
   }
   /* Parse <month> argument */
   args = string_skip_whitespace(args);
-  if (!args || !*args) {
-    /* Too few arguments */
-    merror(MStringWrongArgument);
-    return true;
-  }
-  int month = -1;
+  uint16_t month = 0;
   args = string_next_number(args, &month);
-  if (!args || !*args || month < 1 || month > 12) {
+  if (!args || month < 1 || month > 12) {
     /* Wrong 'month' argument */
     merror(MStringWrongArgument);
     return true;
   }
   /* Parse <day> argument */
   args = string_skip_whitespace(args);
-  if (!args || !*args) {
-    /* Too few arguments */
-    merror(MStringWrongArgument);
-    return true;
-  }
-  int day = -1;
+  uint16_t day = 0;
   args = string_next_number(args, &day);
-  if (!args || !*args || day < 1 || day > 31) {
+  if (!args || day < 1 || day > 31) {
     /* Wrong 'day' argument */
     merror(MStringWrongArgument);
     return true;
   }
   /* Parse <week-day> argument */
   args = string_skip_whitespace(args);
-  if (!args || !*args) {
-    /* Too few arguments */
-    merror(MStringWrongArgument);
-    return true;
-  }
-  int weekday = -1;
+  uint16_t weekday = 0;
   args = string_next_number(args, &weekday);
-  if (!args || *args || weekday < 1 || weekday > 7) {
+  if (args || weekday < 1 || weekday > 7) {
     /* Wrong 'week-day' argument */
     merror(MStringWrongArgument);
     return true;

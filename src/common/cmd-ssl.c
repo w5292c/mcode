@@ -145,9 +145,9 @@ CmdMode cmd_engine_get_mode(void)
 
 void cmd_engine_set_cmd_mode(const char *params)
 {
-  int value = 0;
+  uint16_t value = 0;
   const char *next = string_next_number(string_skip_whitespace(params), &value);
-  if (next && !*next && value > 0 && value < 4) {
+  if (next && value > 0 && value < 4) {
     TheCommandEngineStateRequest = (CmdMode)(value - 1);
     hw_uart_write_string_P(PSTR("Enter password: "));
     TheCommandEngineState = CommandEngineStatePass;

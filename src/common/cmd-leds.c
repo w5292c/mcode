@@ -49,14 +49,14 @@ bool cmd_engine_led_command(const char *command, bool *startCmd)
 
 void cmd_engine_set_led(const char *args)
 {
-  int index = -1;
-  int value = -1;
+  uint16_t index = -1;
+  uint16_t value = -1;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &index);
   args = string_skip_whitespace(args);
   string_next_number(args, &value);
 
-  if (index < 0 || index > 2 || value < 0 || value > 1) {
+  if (index > 2u || value > 1u) {
     merror(MStringWrongArgument);
     return;
   }

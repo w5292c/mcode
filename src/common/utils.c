@@ -112,7 +112,7 @@ const char *string_skip_whitespace(const char *str)
   return str;
 }
 
-const char *string_next_number(const char *str, int *value)
+const char *string_next_number(const char *str, uint16_t *value)
 {
   if (!str || !*str) {
     return NULL;
@@ -125,10 +125,10 @@ const char *string_next_number(const char *str, int *value)
   }
 }
 
-const char *string_next_decimal_number(const char *str, int *value)
+const char *string_next_decimal_number(const char *str, uint16_t *value)
 {
-  int parsedValue = 0;
   bool hasValue = false;
+  uint16_t parsedValue = 0;
   if (str) {
     do {
       const char ch = *str;
@@ -140,7 +140,7 @@ const char *string_next_decimal_number(const char *str, int *value)
       } else {
         hasValue = true;
         const uint8_t charValue = glob_ch_to_val(ch);
-        parsedValue *= 10;
+        parsedValue *= 10u;
         parsedValue += charValue;
         ++str;
       }
@@ -154,10 +154,10 @@ const char *string_next_decimal_number(const char *str, int *value)
   return str;
 }
 
-const char *string_next_hex_number(const char *str, int *value)
+const char *string_next_hex_number(const char *str, uint16_t *value)
 {
-  int parsedValue = 0;
   bool hasValue = false;
+  uint16_t parsedValue = 0;
   if (str) {
     do {
       const char ch = *str;

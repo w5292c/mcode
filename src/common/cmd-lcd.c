@@ -93,17 +93,15 @@ void cmd_engine_read(const char *args, bool *startCmd)
 
   memset(buffer, 0, 16);
   /* first, retrieve the command code */
-  int value = 0;
+  uint16_t value = 0;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &value);
   command = (uint8_t)value;
   args = string_skip_whitespace(args);
 
-  if (args) {
-    value = 0;
-    string_next_number(args, &value);
-    dataLength = (uint8_t)value;
-  }
+  value = 0;
+  string_next_number(args, &value);
+  dataLength = (uint8_t)value;
 
   /* Our read buffer is 16 bytes long */
   if (dataLength > 16) {
@@ -128,18 +126,14 @@ void cmd_engine_write(const char *args, bool *startCmd)
   unsigned char buffer[MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH];
   memset(buffer, 0, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH);
 
-  int command = -1;
+  uint16_t command = 0;
   /* Get the <command> first */
   args = string_skip_whitespace(args);
   args = string_next_number(args, &command);
-  if (!args) {
-    merror(MStringWrongArgument);
-    return;
-  }
   /* Now, get the <command-data> */
-  uint8_t bufferFilled;
-  args = string_to_buffer(args, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH, buffer, &bufferFilled);
-  if (args || !bufferFilled) {
+  uint8_t bufferFilled = 0;
+  string_to_buffer(args, MCODE_CMD_ENGINE_WRITE_BUFFER_LENGTH, buffer, &bufferFilled);
+  if (!bufferFilled) {
     merror(MStringWrongArgument);
     return;
   }

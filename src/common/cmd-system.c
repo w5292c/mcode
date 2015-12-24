@@ -85,16 +85,11 @@ bool cmd_engine_echo(const char *args, bool *startCmd)
 
 bool cmd_engine_sleep(const char *args, bool *startCmd)
 {
-  args = string_skip_whitespace(args);
-  if (!args || !*args) {
-    /* Too few arguments */
-    merror(MStringWrongArgument);
-    return true;
-  }
   /* Get the 'mticks' argument */
-  int mticks = -1;
-  args = string_next_number(args, &mticks);
-  if (!args || *args || mticks < 0) {
+  uint16_t mticks = 0;
+  args = string_skip_whitespace(args);
+  string_next_number(args, &mticks);
+  if (!mticks) {
     /* Wrong 'mticks' argument */
     merror(MStringWrongArgument);
     return true;

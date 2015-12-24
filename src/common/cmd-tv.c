@@ -103,16 +103,11 @@ bool cmd_engine_tv_command(const char *args, bool *startCmd)
 
 bool cmd_engine_set_value(const char *args, bool *startCmd)
 {
-  args = string_skip_whitespace(args);
-  if (!args || !*args) {
-    /* Too few arguments */
-    merror(MStringWrongArgument);
-    return true;
-  }
   /* Get the 'number' argument */
-  int number = -1;
+  uint16_t number = -1;
+  args = string_skip_whitespace(args);
   args = string_next_number(args, &number);
-  if (!args || *args) {
+  if (args || number == -1) {
     /* Wrong 'number' argument */
     merror(MStringWrongArgument);
     return true;
@@ -168,9 +163,9 @@ bool cmd_engine_set_ititial_value(const char *args, bool *startCmd)
     return true;
   }
   /* Get the 'value' argument */
-  int value = -1;
+  uint16_t value = -1;
   args = string_next_number(args, &value);
-  if (!args || *args || value < 0) {
+  if (args || value == -1) {
     /* Wrong 'number' argument */
     merror(MStringWrongArgument);
     return true;

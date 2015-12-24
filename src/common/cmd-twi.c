@@ -28,6 +28,7 @@
 #include "hw-twi.h"
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "strings.h"
 
 static void twi_write_callback(bool result);
 static bool cmd_engine_twi_read(const char *args, bool *startCmd);
@@ -63,20 +64,18 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
     return true;
   }
   /* Parse the TWI address */
-  int twi_addr = 0;
+  uint16_t twi_addr = 0;
   args = string_next_number(args, &twi_addr);
-  if (!args || !*args) {
-    hw_uart_write_string_P(PSTR("Error: 2\r\n"));
+  if (!args || !twi_addr) {
+    merror(MStringWrongArgument);
     return true;
   }
   /* Parse the TWI read request length */
-  int twi_length = 0;
+  uint16_t twi_length = 0;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &twi_length);
-  if (!args || *args || twi_length <= 0 || twi_length > 20) {
-    hw_uart_write_string_P(PSTR("Error: wrong length: 0x"));
-    hw_uart_write_uint(twi_length);
-    hw_uart_write_string_P(PSTR("\r\n"));
+  if (args || !twi_length || twi_length > 20) {
+    merror(MStringWrongArgument);
     return true;
   }
 
@@ -84,7 +83,7 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
   hw_uart_write_uint(twi_addr);
   hw_uart_write_string_P(PSTR(", length: 0x"));
   hw_uart_write_uint(twi_length);
-  hw_uart_write_string_P(PSTR("\"\r\n"));
+  mprint(MStringNewLine);
 
   *startCmd = false;
   twi_set_read_callback(twi_read_callback);
@@ -95,20 +94,19 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
 bool cmd_engine_twi_write(const char *args, bool *startCmd)
 {
   /* Parse the TWI address */
-  int twi_addr = 0;
+  uint16_t twi_addr = 0;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &twi_addr);
-  if (!args || !*args) {
+  if (!args || !twi_addr) {
+    merror(MStringWrongArgument);
     return true;
   }
 
   uint8_t bufferFilled = 0;
   args = string_skip_whitespace(args);
-  const char *end = string_to_buffer(args, BUFFER_LENGTH, TheBuffer, &bufferFilled);
-  if (!end || *end || !bufferFilled) {
-    hw_uart_write_string_P(PSTR("Wrong hex data: \""));
-    hw_uart_write_string(args);
-    hw_uart_write_string_P(PSTR("\"\r\n"));
+  args = string_to_buffer(args, BUFFER_LENGTH, TheBuffer, &bufferFilled);
+  if (args || !bufferFilled) {
+    merror(MStringWrongArgument);
     return true;
   }
 
