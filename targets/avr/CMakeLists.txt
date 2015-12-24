@@ -108,7 +108,6 @@ endif ( MCODE_PWM )
 
 if ( MCODE_SECURITY )
   add_definitions ( -DMD32_REG_T=long )
-  add_definitions ( -DOPENSSL_SMALL_FOOTPRINT )
 
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_SSL}/sha256.c
