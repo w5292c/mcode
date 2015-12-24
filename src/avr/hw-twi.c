@@ -92,46 +92,40 @@ void twi_deinit(void)
 {
 }
 
-void twi_set_read_callback(twi_read_ready callback)
-{
-  TheReadCallback = callback;
-}
-
-void twi_set_write_callback(twi_write_ready callback)
-{
-  TheWriteCallback = callback;
-}
-
-void twi_recv(uint8_t addr, uint8_t length)
+void twi_recv(uint8_t addr, uint8_t length, twi_read_ready callback)
 {
   if (ETwiStateIdle == TheTwiState) {
     TheRequestAddress = (addr & 0xFEU);
     TheRequestLength = length;
 
+    TheReadCallback = callback;
     TheTwiState = ETwiStateRdSendStart;
     hw_twi_send_start();
   }
   else {
-    if (TheReadCallback) {
-      hw_uart_write_string_P(PSTR("Error: wrong state: 0x"));
-      hw_uart_write_uint(TheTwiState);
-      hw_uart_write_string_P(PSTR("\r\n"));
-      (*TheReadCallback)(false, 0, NULL);
+    hw_uart_write_string_P(PSTR("Error: wrong state: 0x"));
+    hw_uart_write_uint(TheTwiState);
+    hw_uart_write_string_P(PSTR("\r\n"));
+    if (callback) {
+      (*callback)(false, 0, NULL);
     }
   }
 }
 
-void twi_send(uint8_t addr, uint8_t length, const uint8_t *data)
+void twi_send(uint8_t addr, uint8_t length, const uint8_t *data, twi_write_ready callback)
 {
   if (ETwiStateIdle == TheTwiState) {
     TheRequestAddress = (addr & 0xFEU);
     TheRequestLength = length;
     TheWriteBuffer = data;
 
+    TheWriteCallback = callback;
     TheTwiState = ETwiStateWrSendStart;
     hw_twi_send_start();
   } else {
-    (*TheWriteCallback)(false);
+    if (callback) {
+      (*callback)(false);
+    }
   }
 }
 

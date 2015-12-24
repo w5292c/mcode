@@ -42,12 +42,8 @@ typedef void (*twi_read_ready)(bool success, uint8_t length, const uint8_t *data
 void twi_init(void);
 void twi_deinit(void);
 
-void twi_set_read_callback(twi_read_ready callback);
-void twi_set_write_callback(twi_write_ready callback);
-
-void twi_send(uint8_t addr, uint8_t length, const uint8_t *data);
-void twi_send_P(uint8_t addr, uint8_t length, const uint8_t *data);
-void twi_recv(uint8_t addr, uint8_t length);
+void twi_recv(uint8_t addr, uint8_t length, twi_read_ready callback);
+void twi_send(uint8_t addr, uint8_t length, const uint8_t *data, twi_write_ready callback);
 
 #endif /* MCODE_TWI */
 

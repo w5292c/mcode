@@ -86,8 +86,7 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
   mprint(MStringNewLine);
 
   *startCmd = false;
-  twi_set_read_callback(twi_read_callback);
-  twi_recv(twi_addr, twi_length);
+  twi_recv(twi_addr, twi_length, twi_read_callback);
   return true;
 }
 
@@ -116,8 +115,7 @@ bool cmd_engine_twi_write(const char *args, bool *startCmd)
   hw_uart_dump_buffer(bufferFilled, TheBuffer, true);
 
   *startCmd = false;
-  twi_set_write_callback(twi_write_callback);
-  twi_send(twi_addr, bufferFilled, TheBuffer);
+  twi_send(twi_addr, bufferFilled, TheBuffer, twi_write_callback);
   return true;
 }
 

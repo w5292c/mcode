@@ -69,8 +69,7 @@ void rtc_alarm_tick(void)
   if (TheIsrRequest) {
     /* Now, check which alarm expired */
     TheBuffer[0] = 0x0f;
-    twi_set_write_callback(rtc_alarm_twi_write_done);
-    twi_send(0xd0, 1, TheBuffer);
+    twi_send(0xd0, 1, TheBuffer, rtc_alarm_twi_write_done);
     TheState = RtcAlarmStateSetStatusAddress;
     TheIsrRequest = false;
   }
@@ -86,8 +85,7 @@ void rtc_alarm_twi_write_done(bool success)
 
   switch (TheState) {
   case RtcAlarmStateSetStatusAddress:
-    twi_set_read_callback(rtc_alarm_read_ready);
-    twi_recv(0xd0, 1);
+    twi_recv(0xd0, 1, rtc_alarm_read_ready);
     TheState = RtcAlarmStateReadStatus;
     break;
   case RtcAlarmStateClearFlag:
@@ -143,8 +141,7 @@ void rtc_alarm_check_status(uint8_t status)
   TheState = RtcAlarmStateClearFlag;
   TheBuffer[0] = 0x0f;
   TheBuffer[1] = 0x88;
-  twi_set_write_callback(rtc_alarm_twi_write_done);
-  twi_send(0xd0, 2, TheBuffer);
+  twi_send(0xd0, 2, TheBuffer, rtc_alarm_twi_write_done);
 }
 
 ISR(INT1_vect)
