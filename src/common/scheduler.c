@@ -24,30 +24,25 @@
 
 #include "scheduler.h"
 
-#include <string.h>
-
+#ifndef MCODE_TICKS_COUNT
 #define MCODE_TICKS_COUNT (8)
+#endif /* MCODE_TICKS_COUNT */
 
-static int NoExitRequest;
-static int ClientsNumber;
+static bool ExitRequest;
+static uint8_t ClientsNumber;
 static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
 void mcode_scheduler_init(void)
 {
-  ClientsNumber = 0;
-  NoExitRequest = 1;
-  memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
 }
-
 void mcode_scheduler_deinit(void)
 {
-  memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
 }
 
 void mcode_scheduler_start(void)
 {
   int i;
-  while (NoExitRequest) {
+  while (!ExitRequest) {
     for (i = 0; i < ClientsNumber; i++) {
       mcode_tick tick = TheApplicationTicks[i];
       if (tick) {
@@ -59,7 +54,7 @@ void mcode_scheduler_start(void)
 
 void mcode_scheduler_stop(void)
 {
-  NoExitRequest = 0;
+  ExitRequest = true;
 }
 
 void mcode_scheduler_add(mcode_tick tick)
