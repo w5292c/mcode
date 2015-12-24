@@ -143,11 +143,12 @@ CmdMode cmd_engine_get_mode(void)
   return (CmdMode)TheMode;
 }
 
-void cmd_engine_set_cmd_mode(const char *params)
+void cmd_engine_set_cmd_mode(const char *args)
 {
   uint16_t value = 0;
-  const char *next = string_next_number(string_skip_whitespace(params), &value);
-  if (next && value > 0 && value < 4) {
+  args = string_skip_whitespace(args);
+  args = string_next_number(args, &value);
+  if (!args && value > 0 && value < 4) {
     TheCommandEngineStateRequest = (CmdMode)(value - 1);
     hw_uart_write_string_P(PSTR("Enter password: "));
     TheCommandEngineState = CommandEngineStatePass;
