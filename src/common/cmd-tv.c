@@ -53,11 +53,15 @@ static bool cmd_engine_set_ititial_value(const char *args, bool *startCmd);
 
 static uint8_t TheState;
 static uint64_t TheNextUpdateTime;
+static volatile bool TheExternalInterrupt;
 
 void cmd_engine_tv_init(void)
 {
   cmd_engine_tv_set_state(CmdEngineTvStateOff);
   mcode_scheduler_add(cmd_engine_tv_tick);
+#ifdef __AVR__
+  cmd_engine_tv_init_avr();
+#endif /* __AVR__ */
 }
 
 void cmd_engine_tv_help(void)
@@ -148,6 +152,11 @@ void cmd_engine_tv_new_day(void)
 
 void cmd_engine_tv_tick(void)
 {
+  if (TheExternalInterrupt) {
+    mprintstrln(PSTR("External interrupt"));
+    TheExternalInterrupt = false;
+  }
+
   if (CmdEngineTvStateOn == TheState) {
 #ifdef MCODE_PWM
     static uint16_t delay = 0;
@@ -248,4 +257,9 @@ void cmd_engine_turn_tv_off(void)
 #ifdef MCODE_PWM
   pwm_set(0, 0);
 #endif /* MCODE_PWM */
+}
+
+void cmd_engine_tv_ext_req_changed_interrupt(void)
+{
+  TheExternalInterrupt = true;
 }

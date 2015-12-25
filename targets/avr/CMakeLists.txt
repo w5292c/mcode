@@ -138,6 +138,7 @@ endif ( MCODE_RTC_DS3231 )
 
 if ( MCODE_TV )
   set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/cmd-tv.c
     ${MCODE_TOP}/src/common/cmd-tv.c
   )
 endif ( MCODE_TV )

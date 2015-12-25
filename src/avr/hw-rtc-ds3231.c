@@ -53,7 +53,7 @@ void rtc_alarm_init(void)
   DDRD &= ~(1U << DDD3);
   /* Enable pull-up resistor for PD3 */
   PORTD |= (1U << PD3);
-  MCUCR = 0;
+  MCUCR |= (0U<<ISC00)|(0U<<ISC01);
   GICR |= (1U<<INT1);
   TheState = RtcAlarmStateIdle;
   mcode_scheduler_add(rtc_alarm_tick);
