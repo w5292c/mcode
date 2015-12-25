@@ -36,13 +36,15 @@
 
 static bool cmd_engine_echo(const char *args, bool *startCmd);
 static bool cmd_engine_sleep(const char *args, bool *startCmd);
+static void cmd_engine_system_test(const char *args, bool *startCmd);
 
 void cmd_engine_system_help(void)
 {
-  hw_uart_write_string_P(PSTR("> ut - Show uptime\r\n"));
-  hw_uart_write_string_P(PSTR("> reboot - Initiate a system reboot\r\n"));
-  hw_uart_write_string_P(PSTR("> echo <string> - Echo <string> to console\r\n"));
-  hw_uart_write_string_P(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds\r\n"));
+  mprintstrln(PSTR("> ut - Show uptime"));
+  mprintstrln(PSTR("> reboot - Initiate a system reboot"));
+  mprintstrln(PSTR("> echo <string> - Echo <string> to console"));
+  mprintstrln(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds"));
+  mprintstrln(PSTR("> test [<args>] - Usually empty placeholder for temparary experiments"));
 }
 
 bool cmd_engine_system_command(const char *args, bool *startCmd)
@@ -59,6 +61,12 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
   } else if (!strcmp_P(args, PSTR("reboot"))) {
     hw_uart_write_string_P(PSTR("\r\n"));
     reboot();
+    return true;
+  } else if (!strcmp_P(args, PSTR("test"))) {
+    cmd_engine_system_test(NULL, startCmd);
+    return true;
+  } else if (!strncmp_P(args, PSTR("test "), 5)) {
+    cmd_engine_system_test(args + 5, startCmd);
     return true;
   }
 #ifdef __linux__
@@ -97,4 +105,8 @@ bool cmd_engine_sleep(const char *args, bool *startCmd)
 
   mtick_sleep(mticks);
   return true;
+}
+
+void cmd_engine_system_test(const char *args, bool *startCmd)
+{
 }
