@@ -56,8 +56,8 @@ typedef enum {
 #warning "READ_BUFFER_LENGTH already defined"
 #endif /* READ_BUFFER_LENGTH */
 
-static twi_read_ready TheReadCallback;
-static twi_write_ready TheWriteCallback;
+static mcode_read_ready TheReadCallback;
+static mcode_done TheWriteCallback;
 
 static uint8_t volatile TheTwiIndex = 0;
 static uint8_t volatile TheTwiState = ETwiStateNull;
@@ -92,7 +92,7 @@ void twi_deinit(void)
 {
 }
 
-void twi_recv(uint8_t addr, uint8_t length, twi_read_ready callback)
+void twi_recv(uint8_t addr, uint8_t length, mcode_read_ready callback)
 {
   if (ETwiStateIdle == TheTwiState) {
     TheRequestAddress = (addr & 0xFEU);
@@ -112,7 +112,7 @@ void twi_recv(uint8_t addr, uint8_t length, twi_read_ready callback)
   }
 }
 
-void twi_send(uint8_t addr, uint8_t length, const uint8_t *data, twi_write_ready callback)
+void twi_send(uint8_t addr, uint8_t length, const uint8_t *data, mcode_done callback)
 {
   if (ETwiStateIdle == TheTwiState) {
     TheRequestAddress = (addr & 0xFEU);

@@ -55,6 +55,11 @@ typedef void (*mcode_tick)(void);
  */
 typedef void (*mcode_done)(bool success);
 
+/**
+ * Generic function to report result of an async read request
+ */
+typedef void (*mcode_read_ready)(bool success, uint8_t length, const uint8_t *data);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
