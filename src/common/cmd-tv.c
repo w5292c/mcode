@@ -34,6 +34,10 @@
 #include "scheduler.h"
 #include "persistent-store.h"
 
+#ifdef MCODE_PWM
+#include <stdlib.h>
+#endif /* MCODE_PWM */
+
 typedef enum {
   CmdEngineTvStateOff = 0,
   CmdEngineTvStateOn,
@@ -145,6 +149,15 @@ void cmd_engine_tv_new_day(void)
 void cmd_engine_tv_tick(void)
 {
   if (CmdEngineTvStateOn == TheState) {
+#ifdef MCODE_PWM
+    static uint16_t delay = 0;
+    if (!delay--) {
+      delay = ((uint32_t)rand()*300)/RAND_MAX;
+      const uint8_t value = ((uint32_t)rand())*255/RAND_MAX;
+      pwm_set(0, value);
+    }
+#endif /* MCODE_PWM */
+
     const uint64_t currentTime = mtick_count();
     if (TheNextUpdateTime < currentTime) {
       /* Expire after another minute */
@@ -222,21 +235,17 @@ void cmd_engine_tv_set_state(uint8_t state)
 void cmd_engine_turn_tv_on(void)
 {
 #ifdef MCODE_LEDS
-    mcode_hw_leds_set(0, true);
+  mcode_hw_leds_set(0, true);
 #endif /* MCODE_LEDS */
-
-#ifdef MCODE_PWM
-    pwm_set(0, 255u);
-#endif /* MCODE_PWM */
 }
 
 void cmd_engine_turn_tv_off(void)
 {
 #ifdef MCODE_LEDS
-    mcode_hw_leds_set(0, false);
+  mcode_hw_leds_set(0, false);
 #endif /* MCODE_LEDS */
 
 #ifdef MCODE_PWM
-    pwm_set(0, 0);
+  pwm_set(0, 0);
 #endif /* MCODE_PWM */
 }
