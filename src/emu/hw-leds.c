@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014,2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,16 +31,16 @@ static uint8_t TheLedStates = 0;
 /*
  * Test code that manages 2 test LEDs connected to PB2, PB3
  */
-void mcode_hw_leds_init (void)
+void leds_init(void)
 {
   TheLedStates = 0;
 }
 
-void mcode_hw_leds_deinit (void)
+void leds_deinit(void)
 {
 }
 
-void mcode_hw_leds_set (int index, int on)
+void leds_set(int index, int on)
 {
   hw_uart_write_string("Setting LED");
   hw_uart_write_uint(index);
@@ -51,14 +51,13 @@ void mcode_hw_leds_set (int index, int on)
   if (index >= 0 && index < 8) {
     if (on) {
       TheLedStates |= (1U << index);
-    }
-    else {
+    } else {
       TheLedStates &= ~(1U << index);
     }
   }
 }
 
-int mcode_hw_leds_get (int index)
+int leds_get(int index)
 {
   return (index >=0 && index < 8) ? (TheLedStates & (1U << index)) : 0;
 }

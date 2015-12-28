@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   hw_uart_init();
   lcd_init(TheWidth, TheHeight);
   /* init LEDs */
-  mcode_hw_leds_init();
+  leds_init();
   /* init the line editor and the command engine */
   line_editor_uart_init();
   cmd_engine_init();

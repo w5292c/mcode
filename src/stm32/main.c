@@ -43,7 +43,7 @@ int main(void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mtick_init();
-  mcode_hw_leds_init();
+  leds_init();
   hw_uart_init();
   lcd_init(240, 320);
   mtick_add(main_mtick);
@@ -60,7 +60,7 @@ int main(void)
   /* Clean-up */
   cmd_engine_deinit();
   lcd_deinit();
-  mcode_hw_leds_deinit();
+  leds_deinit();
   mtick_deinit();
   mcode_scheduler_deinit();
   return 0;
@@ -78,19 +78,19 @@ void main_tick(void)
 
   switch (TheCase) {
   case 0:
-    mcode_hw_leds_set(1, 1);
-    mcode_hw_leds_set(2, 0);
-    mcode_hw_leds_set(3, 0);
+    leds_set(1, 1);
+    leds_set(2, 0);
+    leds_set(3, 0);
     break;
   case 1:
-    mcode_hw_leds_set(1, 0);
-    mcode_hw_leds_set(2, 1);
-    mcode_hw_leds_set(3, 0);
+    leds_set(1, 0);
+    leds_set(2, 1);
+    leds_set(3, 0);
     break;
   case 2:
-    mcode_hw_leds_set(1, 0);
-    mcode_hw_leds_set(2, 0);
-    mcode_hw_leds_set(3, 1);
+    leds_set(1, 0);
+    leds_set(2, 0);
+    leds_set(3, 1);
     break;
   default:
     break;

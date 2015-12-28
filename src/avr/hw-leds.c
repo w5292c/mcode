@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014,2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,12 @@
 #include <avr/io.h>
 
 inline static uint8_t
-mcode_hw_leds_get_led_bit (int index) { return (index == 0) ? (1U << PD4) : (1U << PD5); }
+leds_get_led_bit(int index) { return (index == 0) ? (1U << PD4) : (1U << PD5); }
 
 /*
  * Test code that manages 2 test LEDs connected to PB2, PB3
  */
-void mcode_hw_leds_init (void)
+void leds_init(void)
 {
   /* configure PB2, PB3 as outputs */
   DDRD |= ((1U << DDD4)|(1U << DDD5));
@@ -42,13 +42,13 @@ void mcode_hw_leds_init (void)
   PORTD &= ~((1U << PD4)|(1U << PD5));
 }
 
-void mcode_hw_leds_deinit (void)
+void leds_deinit(void)
 {
 }
 
-void mcode_hw_leds_set (int index, int on)
+void leds_set(int index, int on)
 {
-  const uint8_t ledBit = mcode_hw_leds_get_led_bit (index);
+  const uint8_t ledBit = leds_get_led_bit(index);
   if (on) {
     PORTD |= ledBit;
   } else {
@@ -56,8 +56,8 @@ void mcode_hw_leds_set (int index, int on)
   }
 }
 
-int mcode_hw_leds_get (int index)
+int leds_get(int index)
 {
-  const uint8_t ledBit = mcode_hw_leds_get_led_bit (index);
+  const uint8_t ledBit = leds_get_led_bit(index);
   return (PORTD & ledBit) ? 1 : 0;
 }

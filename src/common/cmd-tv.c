@@ -244,14 +244,14 @@ void cmd_engine_tv_set_state(uint8_t state)
 void cmd_engine_turn_tv_on(void)
 {
 #ifdef MCODE_LEDS
-  mcode_hw_leds_set(0, true);
+  leds_set(0, true);
 #endif /* MCODE_LEDS */
 }
 
 void cmd_engine_turn_tv_off(void)
 {
 #ifdef MCODE_LEDS
-  mcode_hw_leds_set(0, false);
+  leds_set(0, false);
 #endif /* MCODE_LEDS */
 
 #ifdef MCODE_PWM

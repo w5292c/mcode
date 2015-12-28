@@ -63,7 +63,7 @@ int main (void)
 #endif /* MCODE_CONSOLE */
 #ifdef MCODE_LEDS
   /* init LEDs */
-  mcode_hw_leds_init();
+  leds_init();
 #endif /* MCODE_LEDS */
 #ifdef MCODE_PWM
   pwm_init();

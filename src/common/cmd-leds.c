@@ -61,5 +61,5 @@ void cmd_engine_set_led(const char *args)
     return;
   }
 
-  mcode_hw_leds_set(index, value);
+  leds_set(index, value);
 }

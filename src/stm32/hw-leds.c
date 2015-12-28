@@ -31,7 +31,7 @@
 /*
  * Test code that manages 2 test LEDs connected to PB2, PB3
  */
-void mcode_hw_leds_init (void)
+void leds_init(void)
 {
   /* GPIO configuration */
   /* Enable clocks */
@@ -52,11 +52,11 @@ void mcode_hw_leds_init (void)
   GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_RESET);
 }
 
-void mcode_hw_leds_deinit (void)
+void leds_deinit(void)
 {
 }
 
-void mcode_hw_leds_set (int index, int on)
+void leds_set(int index, int on)
 {
   const BitAction value = on ? Bit_SET : Bit_RESET;
   switch (index) {
@@ -77,7 +77,7 @@ void mcode_hw_leds_set (int index, int on)
   }
 }
 
-int mcode_hw_leds_get (int index)
+int leds_get(int index)
 {
   int value = 0;
   switch (index) {

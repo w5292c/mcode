@@ -29,11 +29,11 @@
 extern "C" {
 #endif
 
-void mcode_hw_leds_init (void);
-void mcode_hw_leds_deinit (void);
+void leds_init(void);
+void leds_deinit(void);
 
-void mcode_hw_leds_set (int index, int on);
-int mcode_hw_leds_get (int index);
+void leds_set(int index, int on);
+int leds_get(int index);
 
 #ifdef __cplusplus
 } /* extern "C" */
