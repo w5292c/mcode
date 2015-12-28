@@ -24,9 +24,9 @@
 
 #include "cmd-engine.h"
 
-#include "pwm.h"
 #include "utils.h"
 #include "hw-twi.h"
+#include "hw-pwm.h"
 #include "hw-uart.h"
 #include "mglobal.h"
 #include "strings.h"

@@ -24,11 +24,11 @@
 
 #include "mcode-config.h"
 
-#include "pwm.h"
 #include "mtick.h"
 #include "hw-lcd.h"
 #include "hw-twi.h"
 #include "hw-rtc.h"
+#include "hw-pwm.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "console.h"

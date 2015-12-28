@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "pwm.h"
+#include "hw-pwm.h"
 
 #include <avr/io.h>
 

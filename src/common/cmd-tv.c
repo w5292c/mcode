@@ -24,9 +24,9 @@
 
 #include "cmd-engine.h"
 
-#include "pwm.h"
 #include "mtick.h"
 #include "utils.h"
+#include "hw-pwm.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "mglobal.h"
