@@ -82,6 +82,7 @@ int main (void)
 
   /* now, enable the interrupts */
   sei();
+  pwm_set(2, 255);
 
 #ifdef MCODE_LCD
   /* Now, as interrupts are enabled, we can reset LCD */

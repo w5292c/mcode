@@ -51,13 +51,13 @@ static void cmd_engine_tv_set_state(uint8_t state);
 static bool cmd_engine_set_value(const char *args, bool *startCmd);
 static bool cmd_engine_set_ititial_value(const char *args, bool *startCmd);
 
-static uint8_t TheState;
+static uint8_t TheState = CmdEngineTvStateOn;
 static uint64_t TheNextUpdateTime;
 static volatile bool TheExternalInterrupt;
 
 void cmd_engine_tv_init(void)
 {
-  cmd_engine_tv_set_state(CmdEngineTvStateOff);
+/*  cmd_engine_tv_set_state(CmdEngineTvStateOff);*/
   mcode_scheduler_add(cmd_engine_tv_tick);
 #ifdef __AVR__
   cmd_engine_tv_init_avr();
@@ -144,10 +144,10 @@ void cmd_engine_tv_new_day(void)
   persist_store_set_value(initialValue);
   hw_uart_write_string_P(PSTR("New day: updated to initial value\r\n"));
 
-  if (CmdEngineTvStateOn == TheState) {
+/*  if (CmdEngineTvStateOn == TheState) {
     TheNextUpdateTime = mtick_count() + 60LU*1000;
     cmd_engine_tv_update_value();
-  }
+  }*/
 }
 
 void cmd_engine_tv_tick(void)
@@ -163,16 +163,16 @@ void cmd_engine_tv_tick(void)
     if (!delay--) {
       delay = ((uint32_t)rand()*300)/RAND_MAX;
       const uint8_t value = ((uint32_t)rand())*255/RAND_MAX;
-      pwm_set(0, value);
+      pwm_set(2, value);
     }
 #endif /* MCODE_PWM */
 
-    const uint64_t currentTime = mtick_count();
+/*    const uint64_t currentTime = mtick_count();
     if (TheNextUpdateTime < currentTime) {
-      /* Expire after another minute */
+      Expire after another minute
       TheNextUpdateTime = currentTime + 60LU*1000;
       cmd_engine_tv_update_value();
-    }
+    }*/
   }
 }
 
@@ -255,7 +255,7 @@ void cmd_engine_turn_tv_off(void)
 #endif /* MCODE_LEDS */
 
 #ifdef MCODE_PWM
-  pwm_set(0, 0);
+  pwm_set(2, 0);
 #endif /* MCODE_PWM */
 }
 
