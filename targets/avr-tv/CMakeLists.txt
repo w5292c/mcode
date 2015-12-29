@@ -32,7 +32,7 @@ set (SRC_LIST
 option ( MCODE_TV "Enable TV control" ON )
 option ( MCODE_TWI "Enable TWI support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
-option ( MCODE_PWM "Enable PWM support" OFF )
+option ( MCODE_PWM "Enable PWM support" ON )
 option ( MCODE_LCD "Enable LCD support" OFF )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
 option ( MCODE_CONSOLE "Enable console support" OFF )

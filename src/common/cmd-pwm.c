@@ -40,8 +40,8 @@ void cmd_engine_pwm_help(void)
 
 bool cmd_engine_pwm_command(const char *command, bool *startCmd)
 {
-  if (!strncmp_P(command, PSTR("i80-w "), 6)) {
-    cmd_engine_pwm(command + 6);
+  if (!strncmp_P(command, PSTR("pwm "), 4)) {
+    cmd_engine_pwm(command + 4);
     return true;
   }
 
