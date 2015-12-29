@@ -123,7 +123,7 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
 
 #ifdef MCODE_COMMAND_MODES
   if (CmdModeRoot != cmd_engine_get_mode()) {
-    hw_uart_write_string_P(PSTR("Error: only root can do this\r\n"));
+    merror(MStringWrongMode);
     return true;
   }
 #endif /* MCODE_COMMAND_MODES */
@@ -195,7 +195,7 @@ bool cmd_engine_set_ititial_value(const char *args, bool *startCmd)
 
 #ifdef MCODE_COMMAND_MODES
   if (CmdModeRoot != cmd_engine_get_mode()) {
-    hw_uart_write_string_P(PSTR("Error: only root can do this\r\n"));
+    merror(MStringWrongMode);
     return true;
   }
 #endif /* MCODE_COMMAND_MODES */

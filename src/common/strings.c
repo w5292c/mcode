@@ -78,6 +78,8 @@ const char *mstring(uint8_t id)
     return PSTR("internal error");
   case MStringWrongArgument:
     return PSTR("wrong argument(s)");
+  case MStringWrongMode:
+    return PSTR("only root can do this");
   default:
     return PSTR("##undefined##");
   }

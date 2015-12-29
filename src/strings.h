@@ -38,6 +38,7 @@ typedef enum {
   MStringWarning,
   MStringInternalError,
   MStringWrongArgument,
+  MStringWrongMode,
 } MCodeStringId;
 
 const char *mstring(uint8_t id);

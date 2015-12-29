@@ -82,6 +82,13 @@ bool cmd_engine_rtc_command(const char *args, bool *startCmd)
 
 bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target)
 {
+#ifdef MCODE_COMMAND_MODES
+  if (CmdModeRoot != cmd_engine_get_mode()) {
+    merror(MStringWrongMode);
+    return true;
+  }
+#endif /* MCODE_COMMAND_MODES */
+
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     /* Too few arguments */
@@ -135,6 +142,13 @@ bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target)
 
 bool cmd_engine_set_date(const char *args, bool *startCmd)
 {
+#ifdef MCODE_COMMAND_MODES
+  if (CmdModeRoot != cmd_engine_get_mode()) {
+    merror(MStringWrongMode);
+    return true;
+  }
+#endif /* MCODE_COMMAND_MODES */
+
   /* Parse the 'year' argument */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
