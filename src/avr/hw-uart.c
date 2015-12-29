@@ -79,9 +79,11 @@ void uart_write_char(char ch)
 
 void hw_uart_write_string_P(const char *aString)
 {
-  uint8_t ch;
-  while (0 != (ch = pgm_read_byte(aString++))) {
-    uart_write_char(ch);
+  if (aString) {
+    uint8_t ch;
+    while (0 != (ch = pgm_read_byte(aString++))) {
+      uart_write_char(ch);
+    }
   }
 }
 

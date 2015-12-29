@@ -47,7 +47,9 @@ void merror(uint8_t id);
 void mwarning(uint8_t id);
 void mprint(uint8_t id);
 void mprintln(uint8_t id);
+void mprintstr(const char *string);
 void mprintstrln(const char *string);
+
 
 #ifdef __cplusplus
 } /* extern "C" */

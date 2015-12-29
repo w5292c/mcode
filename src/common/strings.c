@@ -58,6 +58,11 @@ void mprintstrln(const char *string)
   mprint(MStringNewLine);
 }
 
+void mprintstr(const char *string)
+{
+  mcode_out(string);
+}
+
 void mcode_out(const char *value)
 {
   hw_uart_write_string_P(value);

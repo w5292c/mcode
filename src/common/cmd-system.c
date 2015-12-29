@@ -54,9 +54,30 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
   } else if (!strncmp_P(args, PSTR("echo"), 4)) {
     return cmd_engine_echo(args + 4, startCmd);
   } else if (!strcmp_P(args, PSTR("ut"))) {
-    hw_uart_write_string_P(PSTR("Uptime: 0x"));
-    hw_uart_write_uint64(mtick_count(), true);
-    hw_uart_write_string_P(PSTR("\r\n"));
+    const uint64_t tickCount = mtick_count();
+    uint64_t count = tickCount;
+    const uint32_t milliSeconds = count%1000;
+    count = count/1000;
+    const uint32_t seconds = count%60;
+    count = count/60;
+    const uint32_t minutes = count%60;
+    count = count/60;
+    const uint32_t hours = count%24;
+    count = count/24;
+    const uint32_t days = count;
+    mprintstr(PSTR("Uptime: 0x"));
+    hw_uart_write_uint64(tickCount, true);
+    mprintstr(PSTR("; days: "));
+    hw_uart_write_uintd(days, 0);
+    mprintstr(PSTR(", hours: "));
+    hw_uart_write_uintd(hours, 0);
+    mprintstr(PSTR(", minutes: "));
+    hw_uart_write_uintd(minutes, 0);
+    mprintstr(PSTR(", seconds: "));
+    hw_uart_write_uintd(seconds, 0);
+   mprintstr(PSTR(", milli-seconds: "));
+    hw_uart_write_uintd(milliSeconds, 0);
+    mprint(MStringNewLine);
     return true;
   } else if (!strcmp_P(args, PSTR("reboot"))) {
     hw_uart_write_string_P(PSTR("\r\n"));
