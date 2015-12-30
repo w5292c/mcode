@@ -25,6 +25,7 @@
 #include "scheduler.h"
 
 #include "strings.h"
+#include "hw-uart.h"
 
 #ifndef MCODE_TICKS_COUNT
 #define MCODE_TICKS_COUNT (8)
@@ -45,8 +46,13 @@ void mcode_scheduler_deinit(void)
 
 void mcode_scheduler_start(void)
 {
+  hw_uart_write_string_P(PSTR("Scheduler init, mask: "));
+  hw_uart_write_uintd(CurrentExitRequestMask, 0);
+  hw_uart_write_string_P(PSTR("\r\n"));
+
   if (!CurrentExitRequestMask) {
     CurrentExitRequestMask = 1u;
+    hw_uart_write_string_P(PSTR("Updated to '1'\r\n"));
   } else {
     if (CurrentExitRequestMask != 0x80u) {
       CurrentExitRequestMask = (CurrentExitRequestMask << 1);
@@ -56,6 +62,10 @@ void mcode_scheduler_start(void)
       return;
     }
   }
+
+  hw_uart_write_string_P(PSTR("Scheduler start, mask: "));
+  hw_uart_write_uintd((uint32_t)CurrentExitRequestMask, 0);
+  hw_uart_write_string_P(PSTR("\r\n"));
 
   uint8_t i;
   while (!(ExitRequests & CurrentExitRequestMask)) {
@@ -71,11 +81,18 @@ void mcode_scheduler_start(void)
   if (CurrentExitRequestMask) {
     CurrentExitRequestMask = (CurrentExitRequestMask>>1);
   }
+
+  hw_uart_write_string_P(PSTR("Scheduler start done, mask: "));
+  hw_uart_write_uintd((uint32_t)CurrentExitRequestMask, 0);
+  hw_uart_write_string_P(PSTR("\r\n"));
 }
 
 void mcode_scheduler_stop(void)
 {
   ExitRequests |= CurrentExitRequestMask;
+  hw_uart_write_string_P(PSTR("Scheduler stop, mask: "));
+  hw_uart_write_uintd(CurrentExitRequestMask, 0);
+  hw_uart_write_string_P(PSTR("\r\n"));
 }
 
 void mcode_scheduler_add(mcode_tick tick)

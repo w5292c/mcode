@@ -128,6 +128,65 @@ bool cmd_engine_sleep(const char *args, bool *startCmd)
   return true;
 }
 
+#include "hw-twi.h"
+#include "scheduler.h"
+
+typedef enum {
+  TestStateIdle = 0,
+  TestStateWriteAddress,
+  TestStateReadData,
+} TestState;
+
+static uint8_t TheState;
+static uint8_t TheBuffer[8];
+
+static void cmd_engine_system_write_done(bool result);
+static void cmd_engine_system_read_done(bool result, uint8_t length, const uint8_t *data);
+
 void cmd_engine_system_test(const char *args, bool *startCmd)
 {
+  if (TheState != TestStateIdle) {
+    merror(MStringInternalError);
+    return;
+  }
+
+  TheState = TestStateWriteAddress;
+
+  mprintstrln(PSTR("Start..."));
+  twi_send(0xaeu, 2, TheBuffer, cmd_engine_system_write_done);
+  mcode_scheduler_start();
+  mprintstrln(PSTR("Done."));
+}
+
+void cmd_engine_system_write_done(bool result)
+{
+  mprintstrln(PSTR("Write done."));
+  if (TestStateWriteAddress != TheState) {
+    merror(MStringInternalError);
+    TheState = TestStateIdle;
+    mcode_scheduler_stop();
+    return;
+  }
+
+  twi_recv(0xaeu, 16, cmd_engine_system_read_done);
+  TheState = TestStateReadData;
+
+  mprintstrln(PSTR("Handling 'write-done' finished."));
+}
+
+void cmd_engine_system_read_done(bool result, uint8_t length, const uint8_t *data)
+{
+   mprintstrln(PSTR("Read done."));
+
+  if (TestStateReadData != TheState) {
+    merror(MStringInternalError);
+    TheState = TestStateIdle;
+    mcode_scheduler_stop();
+    return;
+  }
+
+  hw_uart_dump_buffer(length, data, true);
+  TheState = TestStateIdle;
+  mcode_scheduler_stop();
+  mprintstrln(PSTR("Handling 'read-done' finished."));
 }
