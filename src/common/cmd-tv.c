@@ -85,10 +85,10 @@ bool cmd_engine_tv_command(const char *args, bool *startCmd)
   } else if (!strncmp_P(args, PSTR("value-set "), 10)) {
     return cmd_engine_set_value(args + 10, startCmd);
   } else if (!strcmp_P(args, PSTR("tv-on"))) {
-    cmd_engine_tv_set_state(CmdEngineTvStateOn);
+    cmd_engine_tv_emulate_ext_request(true);
     return true;
   } else if (!strcmp_P(args, PSTR("tv-off"))) {
-    cmd_engine_tv_set_state(CmdEngineTvStateOff);
+    cmd_engine_tv_emulate_ext_request(false);
     return true;
   } else if (!strcmp_P(args, PSTR("value-init"))) {
     hw_uart_write_string_P(PSTR("Initial value: "));
@@ -153,8 +153,13 @@ void cmd_engine_tv_new_day(void)
 void cmd_engine_tv_tick(void)
 {
   if (TheExternalInterrupt) {
-    mprintstrln(PSTR("External interrupt"));
     TheExternalInterrupt = false;
+
+    if (cmd_engine_tv_ext_request()) {
+      cmd_engine_tv_set_state(CmdEngineTvStateOn);
+    } else {
+      cmd_engine_tv_set_state(CmdEngineTvStateOff);
+    }
   }
 
   if (CmdEngineTvStateOn == TheState) {

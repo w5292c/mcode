@@ -71,6 +71,7 @@ void cmd_engine_tv_new_day(void);
 bool cmd_engine_tv_command(const char *args, bool *startCmd);
 #ifdef __AVR__
 void cmd_engine_tv_init_avr(void);
+bool cmd_engine_tv_ext_request(void);
 void cmd_engine_tv_emulate_ext_request(bool on);
 void cmd_engine_tv_ext_req_changed_interrupt(void);
 #endif /* __AVR__ */

@@ -29,11 +29,17 @@
 void cmd_engine_tv_init_avr(void)
 {
   /* Configure INT0 pin (PD2) as output */
+  /**@todo Update, should be input in the final code */
   DDRD |= (1U << DDD2);
-  /* Set PD3 */
-  PORTD |= (1U << PD2);
-  MCUCR |= (0U<<ISC00)|(1U<<ISC01);
+  /* Reset PD3: PWR_OFF */
+  PORTD &= (1U << PD2);
+  MCUCR |= (0U<<ISC01)|(1U<<ISC00);
   GICR |= (1U<<INT0);
+}
+
+bool cmd_engine_tv_ext_request(void)
+{
+  return (PORTD & (1U << PD2)) ? true : false;
 }
 
 void cmd_engine_tv_emulate_ext_request(bool on)
