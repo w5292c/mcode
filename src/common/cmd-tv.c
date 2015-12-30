@@ -168,7 +168,7 @@ void cmd_engine_tv_tick(void)
     if (!delay--) {
       delay = ((uint32_t)rand()*300)/RAND_MAX;
       const uint8_t value = ((uint32_t)rand())*255/RAND_MAX;
-      pwm_set(0, value);
+      pwm_set(2, value);
     }
 #endif /* MCODE_PWM */
 
@@ -260,7 +260,7 @@ void cmd_engine_turn_tv_off(void)
 #endif /* MCODE_LEDS */
 
 #ifdef MCODE_PWM
-  pwm_set(0, 0);
+  pwm_set(2, 0);
 #endif /* MCODE_PWM */
 }
 
