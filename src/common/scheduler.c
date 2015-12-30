@@ -66,14 +66,16 @@ void mcode_scheduler_start(void)
       }
     }
   }
+
+  ExitRequests &= ~CurrentExitRequestMask;
+  if (CurrentExitRequestMask) {
+    CurrentExitRequestMask = (CurrentExitRequestMask>>1);
+  }
 }
 
 void mcode_scheduler_stop(void)
 {
   ExitRequests |= CurrentExitRequestMask;
-  if (CurrentExitRequestMask) {
-    CurrentExitRequestMask = (CurrentExitRequestMask>>1);
-  }
 }
 
 void mcode_scheduler_add(mcode_tick tick)
