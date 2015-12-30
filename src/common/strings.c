@@ -85,6 +85,8 @@ const char *mstring(uint8_t id)
     return PSTR("wrong argument(s)");
   case MStringWrongMode:
     return PSTR("only root can do this");
+  case MStringErrorLimit:
+    return PSTR("limit reached");
   default:
     return PSTR("##undefined##");
   }

@@ -39,6 +39,7 @@ typedef enum {
   MStringInternalError,
   MStringWrongArgument,
   MStringWrongMode,
+  MStringErrorLimit,
 } MCodeStringId;
 
 const char *mstring(uint8_t id);

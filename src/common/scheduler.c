@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014,2015 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,42 @@
 
 #include "scheduler.h"
 
+#include "strings.h"
+
 #ifndef MCODE_TICKS_COUNT
 #define MCODE_TICKS_COUNT (8)
 #endif /* MCODE_TICKS_COUNT */
 
-static bool ExitRequest;
+static uint8_t ExitRequests;
 static uint8_t ClientsNumber;
+static uint8_t CurrentExitRequestMask;
 static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
 void mcode_scheduler_init(void)
 {
 }
+
 void mcode_scheduler_deinit(void)
 {
 }
 
 void mcode_scheduler_start(void)
 {
-  int i;
-  while (!ExitRequest) {
-    for (i = 0; i < ClientsNumber; i++) {
+  if (!CurrentExitRequestMask) {
+    CurrentExitRequestMask = 1u;
+  } else {
+    if (CurrentExitRequestMask != 0x80u) {
+      CurrentExitRequestMask = (CurrentExitRequestMask << 1);
+    } else {
+      /* No more bits for another start, extend 'ExitRequests' to more bits? */
+      merror(MStringErrorLimit);
+      return;
+    }
+  }
+
+  uint8_t i;
+  while (!(ExitRequests & CurrentExitRequestMask)) {
+    for (i = 0; i < ClientsNumber; ++i) {
       mcode_tick tick = TheApplicationTicks[i];
       if (tick) {
         (*tick)();
@@ -54,7 +70,10 @@ void mcode_scheduler_start(void)
 
 void mcode_scheduler_stop(void)
 {
-  ExitRequest = true;
+  ExitRequests |= CurrentExitRequestMask;
+  if (CurrentExitRequestMask) {
+    CurrentExitRequestMask = (CurrentExitRequestMask>>1);
+  }
 }
 
 void mcode_scheduler_add(mcode_tick tick)
