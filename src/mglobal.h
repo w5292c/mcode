@@ -27,6 +27,7 @@
 
 #define __need_NULL
 #include <stddef.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #ifdef __AVR__
@@ -37,6 +38,7 @@
 #define strcmp_P strcmp
 #define strncmp_P strncmp
 #define strlen_P strlen
+#define pgm_read_dword(ptr) (*((const uint32_t *)ptr))
 #endif /* __AVR__ */
 
 #ifdef __cplusplus
