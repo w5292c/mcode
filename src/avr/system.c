@@ -26,19 +26,34 @@
 
 #include "mtick.h"
 #include "hw-uart.h"
+#include "strings.h"
 
 #include <avr/wdt.h>
+#include <avr/boot.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
 void reboot(void)
 {
-  hw_uart_write_string_P(PSTR("\r\nSystem reboot has been requested.\r\n"));
-/*  mtick_sleep(1);*/
+  mprintstrln(PSTR("System reboot has been requested."));
   /* Disable all interrupts */
   cli();
   /* Enable the Watchdog timer with the smallest timeout */
   wdt_enable(WDTO_15MS);
   /* Peacefully wait for the system reset */
   for(;;);
+}
+
+void bootloader(void)
+{
+  mprintstrln(PSTR("Bootloader requested."));
+  typedef void (*boot)(void);
+  const uint8_t hfuse = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+  const boot vector = (boot)((hfuse & ~FUSE_BOOTSZ1) ?
+    ((hfuse & ~FUSE_BOOTSZ0) ? 0x3f00u : 0x3e00u) :
+    ((hfuse & ~FUSE_BOOTSZ0) ? 0x3c00u : 0x3800u));
+  mprintstr(PSTR("Bootloader vector: 0x"));
+  hw_uart_write_uint32((uint32_t)(uint16_t)vector, false);
+  mprintln(MStringNull);
+  vector();
 }

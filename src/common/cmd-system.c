@@ -42,6 +42,7 @@ void cmd_engine_system_help(void)
 {
   mprintstrln(PSTR("> ut - Show uptime"));
   mprintstrln(PSTR("> reboot - Initiate a system reboot"));
+  mprintstrln(PSTR("> bootloader - Reboot to bootloader mode"));
   mprintstrln(PSTR("> echo <string> - Echo <string> to console"));
   mprintstrln(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds"));
   mprintstrln(PSTR("> test [<args>] - Usually empty placeholder for temparary experiments"));
@@ -80,8 +81,10 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     mprint(MStringNewLine);
     return true;
   } else if (!strcmp_P(args, PSTR("reboot"))) {
-    hw_uart_write_string_P(PSTR("\r\n"));
     reboot();
+    return true;
+  } else if (!strcmp_P(args, PSTR("bootloader"))) {
+    bootloader();
     return true;
   } else if (!strcmp_P(args, PSTR("test"))) {
     cmd_engine_system_test(NULL, startCmd);

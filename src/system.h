@@ -30,4 +30,9 @@
  */
 void reboot(void);
 
+/*!
+ * Request to launch the bootloader code
+ */
+void bootloader(void);
+
 #endif /* MCODE_SYSTEM_H */
