@@ -6,6 +6,16 @@ Attached HW
 1) RTC PCB:
 - AT24C32: EEPROM (4094x8);
 - DS3231: RTC;
+- TV-RQ-OUT: 470 Ohm;
+- TV-RQ-IN: 4K7 to GND; 4K7 to PA7;
+
+TV connector
+============
+1) TV-RQ-IN (green);
+2) TV-RQ-OUT (orange);
+3) N.C. (orange/white);
+4) Power: +5V (brown);
+5) Power: GND (blue);
 
 Cristal
 =======
@@ -27,7 +37,7 @@ GPIO pins allocation
 |  PA4 |      |            |            |
 |  PA5 |      |            |            |
 |  PA6 |      |            |            |
-|  PA7 |      |            |            |
+|  PA7 |      |  TV-RQ-OUT |            |
 -----------------------------------------
 |  PB0 |      |            |            |
 |  PB1 |      |            |            |
@@ -49,8 +59,8 @@ GPIO pins allocation
 -----------------------------------------
 |  PD0 |    + | UART:  RXD | UART:  RXD |
 |  PD1 |    + | UART:  TXD | UART:  TXD |
-|  PD2 |      |            |            |
-|  PD3 |    + | INT1       |            |
+|  PD2 |    + | INT0:TV-RQ |            |
+|  PD3 |    + | INT1:  RTC |            |
 |  PD4 |      |            |            |
 |  PD5 |      |            |            |
 |  PD6 |      |            |            |
@@ -59,3 +69,4 @@ GPIO pins allocation
 
 TODO List
 =========
+1) Implement bootloader
