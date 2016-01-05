@@ -251,6 +251,8 @@ void cmd_engine_turn_tv_on(void)
 #ifdef MCODE_LEDS
   leds_set(0, true);
 #endif /* MCODE_LEDS */
+
+  cmd_engine_tv_turn(true);
 }
 
 void cmd_engine_turn_tv_off(void)
@@ -262,6 +264,8 @@ void cmd_engine_turn_tv_off(void)
 #ifdef MCODE_PWM
   pwm_set(2, 0);
 #endif /* MCODE_PWM */
+
+  cmd_engine_tv_turn(false);
 }
 
 void cmd_engine_tv_ext_req_changed_interrupt(void)
