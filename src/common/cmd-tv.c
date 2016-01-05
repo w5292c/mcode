@@ -232,7 +232,9 @@ void cmd_engine_tv_set_state(uint8_t state)
     const uint16_t value = persist_store_get_value();
     if (!value) {
       /* No more time */
+#if 0
       hw_uart_write_string_P(PSTR("Error: no more time\r\n"));
+#endif
       return;
     }
 

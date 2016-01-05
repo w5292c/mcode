@@ -45,7 +45,7 @@ void cmd_engine_tv_init_avr(void)
 
 bool cmd_engine_tv_ext_request(void)
 {
-  return (PORTD & (1U << PD2)) ? true : false;
+  return (PIND & (1U << PIND2)) ? true : false;
 }
 
 void cmd_engine_tv_turn(bool on)
