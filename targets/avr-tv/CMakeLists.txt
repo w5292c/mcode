@@ -161,6 +161,8 @@ target_link_libraries (console-test "-mmcu=atmega32")
 
 include_directories ( "${PROJECT_BINARY_DIR}/include/" )
 
+include ( "../avr/bootloader.cmake" )
+
 add_custom_command (
   TARGET console-test
   POST_BUILD
