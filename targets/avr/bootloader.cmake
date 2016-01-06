@@ -9,7 +9,7 @@ set (BL_SRC_LIST
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
 add_executable( bootloader ${BL_SRC_LIST} )
-target_link_libraries ( bootloader "-mmcu=atmega32 -Ttext=0x3800 -nostartfiles -nodefaultlibs" )
+target_link_libraries ( bootloader "-mmcu=atmega32 -Ttext=0x7000 -nostartfiles -nodefaultlibs" )
 
 add_custom_command (
   TARGET bootloader
