@@ -60,7 +60,7 @@ void hw_uart_init(void)
   UBRRL = (unsigned char)3;
   /* Enable receiver and transmitter */
   UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
-  /* Set frame format: 8data, 2stop bit */
+  /* Set frame format: 8data, 1stop bit */
   UCSRC = (1<<URSEL)|(3<<UCSZ0);
 
   mcode_scheduler_add(hw_uart_tick);
