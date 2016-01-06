@@ -50,8 +50,8 @@ void bootloader(void)
   typedef void (*boot)(void);
   const uint8_t hfuse = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
   const boot vector = (boot)((hfuse & ~FUSE_BOOTSZ1) ?
-    ((hfuse & ~FUSE_BOOTSZ0) ? 0x3f00u : 0x3e00u) :
-    ((hfuse & ~FUSE_BOOTSZ0) ? 0x3c00u : 0x3800u));
+    ((hfuse & ~FUSE_BOOTSZ0) ? 0x7e00u : 0x7c00u) :
+    ((hfuse & ~FUSE_BOOTSZ0) ? 0x7800u : 0x7000u));
   mprintstr(PSTR("Bootloader vector: 0x"));
   hw_uart_write_uint32((uint32_t)(uint16_t)vector, false);
   mprintln(MStringNull);
