@@ -58,6 +58,7 @@ void hw_uart_init(void)
   /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
   UBRRL = (unsigned char)3;
+  UCSRA = 0;
   /* Enable receiver and transmitter */
   UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
   /* Set frame format: 8data, 1stop bit */
