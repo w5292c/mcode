@@ -169,7 +169,7 @@ add_custom_command (
   COMMAND avr-size console-test
   COMMAND avr-objdump -h -S console-test > console-test.lst
   COMMAND avr-objcopy -j .text -j .data -O ihex console-test console-test.flash.hex
-  COMMAND avr-objcopy -O ihex -j .eeprom console-test console-test.eeprom.hex
+  COMMAND avr-objcopy --change-section-lma .eeprom=0 -O ihex -j .eeprom console-test console-test.eeprom.hex
   COMMAND avr-objcopy -O ihex -j .fuse console-test console-test.fuse.hex
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   COMMENT "Building HEX files to flash to CPU"

@@ -23,10 +23,12 @@
  */
 
 #include <avr/io.h>
+#include <avr/wdt.h>
 #include <stdbool.h>
 #include <avr/boot.h>
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
+#include <avr/interrupt.h>
 
 static void bl_main_loop(void);
 static uint8_t bl_uart_read_char(void);
@@ -34,6 +36,7 @@ static void bl_uart_write_char(uint8_t ch);
 
 int main(void)
 {
+  cli();
   /* Configure UART */
   /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
@@ -53,8 +56,9 @@ void bl_main_loop(void)
   /* For a 32K devices addresses are 16-bit.
      Should be updated for larger devices, if required. */
   uint16_t address = 0;
-  uint16_t temp_int;
+  uint16_t size;
   uint8_t val;
+  uint8_t buffer[SPM_PAGESIZE];
 
   while (true) {
     const uint8_t ch = bl_uart_read_char();
@@ -64,7 +68,7 @@ void bl_main_loop(void)
     /* Request to set address */
     else if (ch == 'A') {
       address = (bl_uart_read_char()<<8) | bl_uart_read_char();
-      bl_uart_write_char('\r'); // Send OK back.
+      bl_uart_write_char('\r');
     }
     /* Check for autoincrement */
     else if (ch == 'a') {
@@ -73,12 +77,13 @@ void bl_main_loop(void)
     }
     /* Exit request, return to the application space */
     else if (ch == 'E') {
-      void (*funcptr)(void) = 0x0000;
-
       boot_spm_busy_wait();
       boot_rww_enable();
       bl_uart_write_char('\r');
-      funcptr();
+      /* Use WD timer for system reset */
+      wdt_enable(WDTO_15MS);
+      /* Peacefully wait for the system reset */
+      for(;;);
     } else if (ch == 'e') {
       /* Chip erase */
       for (address = 0; address < 0x7000U; address += SPM_PAGESIZE) {
@@ -93,7 +98,7 @@ void bl_main_loop(void)
       bl_uart_write_char(SPM_PAGESIZE&0xFF);
     } else if(ch=='B') {
       /* Start block load */
-      temp_int = (bl_uart_read_char()<<8) | bl_uart_read_char();
+      size = (bl_uart_read_char()<<8) | bl_uart_read_char();
       val = bl_uart_read_char();
       if (val == 'F') {
         const uint16_t baseAddr = (address<<1);
@@ -102,31 +107,39 @@ void bl_main_loop(void)
         do {
           const uint16_t data = bl_uart_read_char() | (bl_uart_read_char() << 8);
           boot_page_fill(addr, data);
-          temp_int -= 2;
+          size -= 2;
           addr += 2;
-        } while (temp_int);
+        } while (size);
         boot_page_write(baseAddr);
         boot_spm_busy_wait();
         boot_rww_enable();
         address = addr >> 1;
         bl_uart_write_char('\r');
       } else if (val == 'E') {
+        uint8_t i;
+        for (i = 0; i < size; ++i) {
+          buffer[i] = bl_uart_read_char();
+        }
+
+        /* Then program the EEPROM */
+        eeprom_write_block(buffer, (void *)address, size);
+        address += size;
+        bl_uart_write_char('\r');
       } else {
         bl_uart_write_char('?');
       }
-/*      bl_uart_write_char(BlockLoad(temp_int, val, &address));*/
     } else if(ch=='g') {
       uint16_t i;
       /* Start block read */
-      temp_int = (bl_uart_read_char()<<8) | bl_uart_read_char();
+      size = (bl_uart_read_char()<<8) | bl_uart_read_char();
       val = bl_uart_read_char();
       if (val == 'F') {
         uint16_t addr = (address<<1);
-        for (i=0; i < temp_int; ++i, ++addr) {
+        for (i=0; i < size; ++i, ++addr) {
           bl_uart_write_char(pgm_read_byte_near(addr));
         }
       } else if (val == 'E') {
-        for (i=0; i < temp_int; ++i) {
+        for (i=0; i < size; ++i) {
           bl_uart_write_char(eeprom_read_byte((void *)address++));
         }
       } else {
