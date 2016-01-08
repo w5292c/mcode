@@ -36,6 +36,7 @@ static void bl_uart_write_char(uint8_t ch);
 
 int main(void)
 {
+  /* Make sure, interrupts are disabled */
   cli();
   /* Configure UART */
   /* Set baud rate: 115200 */
@@ -43,9 +44,9 @@ int main(void)
   UBRRL = (unsigned char)3;
   UCSRA = 0;
   /* Enable receiver and transmitter */
-  UCSRB = (1<<RXEN)|(1<<TXEN);
+  UCSRB = _BV(RXEN)|_BV(TXEN);
   /* Set frame format: 8data, 1stop bit */
-  UCSRC = (1<<URSEL)|(3<<UCSZ0);
+  UCSRC = _BV(URSEL)|(3<<UCSZ0);
 
   bl_main_loop();
   return 0;
@@ -150,7 +151,7 @@ void bl_main_loop(void)
       bl_uart_write_char('A');
       bl_uart_write_char('V');
       bl_uart_write_char('R');
-      bl_uart_write_char(' ');
+      bl_uart_write_char('-');
       bl_uart_write_char('1');
       bl_uart_write_char('0');
       bl_uart_write_char('9');
