@@ -84,6 +84,12 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     reboot();
     return true;
   } else if (!strcmp_P(args, PSTR("bootloader"))) {
+#ifdef MCODE_COMMAND_MODES
+    if (CmdModeRoot != cmd_engine_get_mode()) {
+      merror(MStringWrongMode);
+      return true;
+    }
+#endif /* MCODE_COMMAND_MODES */
     bootloader();
     return true;
   } else if (!strcmp_P(args, PSTR("test"))) {
