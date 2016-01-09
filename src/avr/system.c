@@ -27,6 +27,7 @@
 #include "mtick.h"
 #include "hw-uart.h"
 #include "strings.h"
+#include "mcode-config.h"
 
 #include <avr/wdt.h>
 #include <avr/boot.h>
@@ -47,6 +48,6 @@ void reboot(void)
 void bootloader(void)
 {
   mprintstrln(PSTR("Enter bootloader mode."));
-  void (*bl_main)(void) = (void *)0x7000u;
+  void (*bl_main)(void) = (void *)MCODE_BOOTLOADER_BASE;
   bl_main();
 }

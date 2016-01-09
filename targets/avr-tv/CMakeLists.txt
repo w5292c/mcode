@@ -49,6 +49,8 @@ option ( MCODE_RTC_DS3231 "Enable DS3231 RTC" ON )
 option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" OFF )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )
 
+option ( MCODE_BOOTLOADER "Include AVR109-based bootloader code" ON )
+
 if ( MCODE_LCD )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/fonts.c
@@ -154,14 +156,16 @@ if ( MCODE_TV )
   )
 endif ( MCODE_TV )
 
+if ( MCODE_BOOTLOADER )
+  include ( "../avr/bootloader.cmake" )
+endif ( MCODE_BOOTLOADER )
+
+include_directories ( "${PROJECT_BINARY_DIR}/include/" )
+
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
 add_executable( console-test ${SRC_LIST} )
 target_link_libraries (console-test "-mmcu=atmega32")
-
-include_directories ( "${PROJECT_BINARY_DIR}/include/" )
-
-include ( "../avr/bootloader.cmake" )
 
 add_custom_command (
   TARGET console-test

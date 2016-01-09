@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include "mcode-config.h"
+
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <stdbool.h>
@@ -87,7 +89,7 @@ void bl_main_loop(void)
       for(;;);
     } else if (ch == 'e') {
       /* Chip erase */
-      for (address = 0; address < 0x7000U; address += SPM_PAGESIZE) {
+      for (address = 0; address < MCODE_BOOTLOADER_BASE; address += SPM_PAGESIZE) {
         eeprom_busy_wait();
         boot_spm_busy_wait();
         boot_page_erase(address);

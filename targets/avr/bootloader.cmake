@@ -2,14 +2,14 @@ set ( MCODE_BL_TOP ${CMAKE_SOURCE_DIR}/../../src/avr/bootloader/ )
 
 include_directories( ${MCODE_BL_TOP} )
 
-set (BL_SRC_LIST
+set ( BL_SRC_LIST
   ${MCODE_BL_TOP}/main.c
 )
 
-configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
+set ( MCODE_BOOTLOADER_BASE 0x7000 )
 
 add_executable( bootloader ${BL_SRC_LIST} )
-target_link_libraries ( bootloader "-mmcu=atmega32 -Ttext=0x7000" )
+target_link_libraries ( bootloader "-mmcu=atmega32 -Ttext=${MCODE_BOOTLOADER_BASE}" )
 
 add_custom_command (
   TARGET bootloader
