@@ -6,7 +6,7 @@ set ( BL_SRC_LIST
   ${MCODE_BL_TOP}/main.c
 )
 
-set ( MCODE_BOOTLOADER_BASE 0x7000 )
+set ( MCODE_BOOTLOADER_BASE 0x7c00 )
 
 add_executable( bootloader ${BL_SRC_LIST} )
 target_link_libraries ( bootloader "-mmcu=atmega32 -Ttext=${MCODE_BOOTLOADER_BASE}" )
