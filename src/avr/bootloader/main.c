@@ -60,7 +60,8 @@ void bl_main_loop(void)
      Should be updated for larger devices, if required. */
   uint16_t address = 0;
   uint16_t size;
-  uint8_t val;
+  uint8_t type;
+  uint8_t i;
   uint8_t buffer[SPM_PAGESIZE];
 
   while (true) {
@@ -88,12 +89,8 @@ void bl_main_loop(void)
       /* Peacefully wait for the system reset */
       for(;;);
     } else if (ch == 'e') {
-      /* Chip erase */
-      for (address = 0; address < MCODE_BOOTLOADER_BASE; address += SPM_PAGESIZE) {
-        eeprom_busy_wait();
-        boot_spm_busy_wait();
-        boot_page_erase(address);
-      }
+      /* Chip erase, ingore for now,
+         actual write requests erase pages before writing */
       bl_uart_write_char('\r');
     } else if(ch=='b') {
       bl_uart_write_char('Y');
@@ -101,24 +98,39 @@ void bl_main_loop(void)
       bl_uart_write_char(SPM_PAGESIZE&0xFF);
     } else if(ch=='B') {
       /* Start block load */
-      size = (bl_uart_read_char()<<8) | bl_uart_read_char();
-      val = bl_uart_read_char();
-      if (val == 'F') {
-        const uint16_t baseAddr = (address<<1);
-        uint16_t addr = baseAddr;
+      size = (bl_uart_read_char() << 8) | bl_uart_read_char();
+      type = bl_uart_read_char();
+      if (type == 'F') {
+        /* Fill the buffer with data from UART */
+        for (i = 0; i < (uint8_t)size; ++i) {
+          buffer[i] = bl_uart_read_char();
+        }
 
-        do {
-          const uint16_t data = bl_uart_read_char() | (bl_uart_read_char() << 8);
+        /* Erase the requested page */
+        eeprom_busy_wait();
+        const uint16_t baseAddr = (address<<1);
+        boot_page_erase(baseAddr);
+        boot_spm_busy_wait();
+
+        /* Fill the page with the received data */
+        uint16_t addr = baseAddr;
+        for (i = 0; i < (uint8_t)size; i += 2) {
+          const uint16_t data = buffer[i] | (buffer[i + 1] << 8);
           boot_page_fill(addr, data);
-          size -= 2;
           addr += 2;
-        } while (size);
+        }
+
+        /* Write the page */
         boot_page_write(baseAddr);
         boot_spm_busy_wait();
+
+        /* Enable the RWW for the next operation, prepare for the next request */
         boot_rww_enable();
+
+        /* Update the current address */
         address = addr >> 1;
         bl_uart_write_char('\r');
-      } else if (val == 'E') {
+      } else if (type == 'E') {
         uint8_t i;
         for (i = 0; i < size; ++i) {
           buffer[i] = bl_uart_read_char();
@@ -135,13 +147,13 @@ void bl_main_loop(void)
       uint16_t i;
       /* Start block read */
       size = (bl_uart_read_char()<<8) | bl_uart_read_char();
-      val = bl_uart_read_char();
-      if (val == 'F') {
+      type = bl_uart_read_char();
+      if (type == 'F') {
         uint16_t addr = (address<<1);
         for (i=0; i < size; ++i, ++addr) {
           bl_uart_write_char(pgm_read_byte_near(addr));
         }
-      } else if (val == 'E') {
+      } else if (type == 'E') {
         for (i=0; i < size; ++i) {
           bl_uart_write_char(eeprom_read_byte((void *)address++));
         }
