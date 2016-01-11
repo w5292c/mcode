@@ -6,6 +6,7 @@ set ( BL_SRC_LIST
   ${MCODE_BL_TOP}/main.c
 )
 
+# Expected HFUSE: 0x9D; 1KB staring 0x7C00
 set ( MCODE_BOOTLOADER_BASE 0x7c00 )
 
 add_executable( bootloader ${BL_SRC_LIST} )
