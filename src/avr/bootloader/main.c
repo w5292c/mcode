@@ -38,8 +38,6 @@ static void bl_uart_write_char(uint8_t ch);
 
 int main(void)
 {
-  /* Make sure, interrupts are disabled */
-  cli();
   /* Configure UART */
   /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
