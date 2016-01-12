@@ -109,6 +109,11 @@ void cmd_engine_led_help(void);
 bool cmd_engine_led_command(const char *command, bool *startCmd);
 #endif /* MCODE_LEDS */
 
+#ifdef MCODE_SOUND
+void cmd_engine_led_help(void);
+bool cmd_engine_led_command(const char *command, bool *startCmd);
+#endif /* MCODE_SOUND */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

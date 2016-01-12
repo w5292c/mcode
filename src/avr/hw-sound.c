@@ -60,7 +60,7 @@ void sound_deinit(void)
 
 void sound_play_note(uint8_t note, uint16_t length)
 {
-  while (true) {
+  do {
     /* Parse the tone of the note */
     const uint8_t tone = (note & 0x0fu);
     if (tone > 0x0bu) {
@@ -125,7 +125,7 @@ void sound_play_note(uint8_t note, uint16_t length)
       merror(MStringInternalError);
       break;
     }
-  }
+  } while (false);
 
   const uint64_t target = mtick_count() + length + 1;
   while (target > mtick_count()) {}

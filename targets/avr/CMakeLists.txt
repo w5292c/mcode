@@ -153,6 +153,7 @@ endif ( MCODE_CONSOLE_ENABLED )
 if ( MCODE_SOUND )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/avr/hw-sound.c
+    ${MCODE_TOP}/src/common/cmd-sound.c
   )
 endif ( MCODE_SOUND )
 
