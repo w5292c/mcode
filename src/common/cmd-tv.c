@@ -260,22 +260,19 @@ void cmd_engine_handle_new_value(uint16_t value)
 #ifdef MCODE_SOUND
   switch (value) {
   case 0:
-    sound_play_note(0x04, 2000);
+    sound_play_note(0x58, 2000);
     sound_play_note(0xff, 200);
   case 1:
-    sound_play_note(0x24, 500);
+    sound_play_note(0x56, 500);
     sound_play_note(0xff, 200);
   case 2:
-    sound_play_note(0x44, 500);
+    sound_play_note(0x54, 500);
     sound_play_note(0xff, 200);
   case 3:
-    sound_play_note(0x64, 500);
+    sound_play_note(0x52, 500);
     sound_play_note(0xff, 200);
   case 4:
-    sound_play_note(0x84, 500);
-    sound_play_note(0xff, 200);
-  case 5:
-    sound_play_note(0xa4, 500);
+    sound_play_note(0x50, 500);
     sound_play_note(0xff, 200);
     break;
   default:
