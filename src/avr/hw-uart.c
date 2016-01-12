@@ -74,8 +74,8 @@ void hw_uart_set_callback(hw_uart_char_event aCallback)
 
 void uart_write_char(char ch)
 {
-  while (!(UCSRA & (1<<UDRE)));
   UDR = ch;
+  loop_until_bit_is_set(UCSRA, UDRE);
 }
 
 void hw_uart_write_string_P(const char *aString)
