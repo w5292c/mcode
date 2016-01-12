@@ -69,9 +69,8 @@ GPIO pins allocation
 |  PD4 |      |            |            |
 |  PD5 |      |            |            |
 |  PD6 |      |            |            |
-|  PD7 |      |            |            |
+|  PD7 |      | OC2: SOUND |            |
 -----------------------------------------
 
 TODO List
 =========
-1) Implement bootloader

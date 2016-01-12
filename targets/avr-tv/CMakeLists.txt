@@ -35,6 +35,7 @@ option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_PWM "Enable PWM support" ON )
 option ( MCODE_LCD "Enable LCD support" OFF )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
+option ( MCODE_SOUND "Enable sound support" ON )
 option ( MCODE_CONSOLE "Enable console support" OFF )
 option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
@@ -155,6 +156,12 @@ if ( MCODE_TV )
     ${MCODE_TOP}/src/common/cmd-tv.c
   )
 endif ( MCODE_TV )
+
+if ( MCODE_SOUND )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-sound.c
+  )
+endif ( MCODE_SOUND )
 
 if ( MCODE_BOOTLOADER )
   include ( "../avr/bootloader.cmake" )

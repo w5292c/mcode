@@ -39,6 +39,7 @@ option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_TWI "Enable TWI support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
+option ( MCODE_SOUND "Enable sound support" OFF )
 option ( MCODE_CONSOLE "Enable console support" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
@@ -148,6 +149,12 @@ if ( MCODE_CONSOLE_ENABLED )
     ${MCODE_TOP}/src/common/cmd-console.c
   )
 endif ( MCODE_CONSOLE_ENABLED )
+
+if ( MCODE_SOUND )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-sound.c
+  )
+endif ( MCODE_SOUND )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
