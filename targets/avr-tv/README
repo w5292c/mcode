@@ -23,12 +23,12 @@ Frequency: 7.3728MHz
 
 Flashing target
 ===============
-sudo avarice --erase --program --file console-test --part atmega32 --jtag /dev/ttyUSB1 --verify --reset-srst
+$ avarice --erase --program --file console-test --part atmega32 --jtag /dev/ttyUSB1 --verify --reset-srst
 
 Bootloader
 ==========
 Here is the command line for flashing SW using 'avrdude' and the bootloader:
-$ avrdude -b 115200 -c avr109 -p m32 -P /dev/ttyUSB0 -U flash:w:console-test.flash.hex -U eeprom:w:console-test.eeprom.hex
+$ avrdude -b 115200 -c avr109 -p m32 -P /dev/rfcomm0 -U flash:w:console-test.flash.hex -U eeprom:w:console-test.eeprom.hex
 
 GPIO pins allocation
 ====================
@@ -71,6 +71,10 @@ GPIO pins allocation
 |  PD6 |      |            |            |
 |  PD7 |      | OC2: SOUND |            |
 -----------------------------------------
+
+Connecting to the Bluetooth device
+==================================
+$ sudo rfcomm connect rfcomm0
 
 TODO List
 =========
