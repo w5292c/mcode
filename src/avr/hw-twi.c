@@ -51,7 +51,7 @@ typedef enum {
 } TwiCState;
 
 #ifndef READ_BUFFER_LENGTH
-#define READ_BUFFER_LENGTH (20)
+#define READ_BUFFER_LENGTH (32)
 #else /* READ_BUFFER_LENGTH */
 #warning "READ_BUFFER_LENGTH already defined"
 #endif /* READ_BUFFER_LENGTH */
