@@ -11,8 +11,8 @@ sudo avarice --erase --program --file console-test --part atmega32 --jtag /dev/t
 
 Bootloader
 ==========
-Here is the command line that configures 'avrdude':
-$ avrdude -b 115200 -c avr109 -p m32 -P /dev/ttyUSB0
+Here is the command line for flashing SW using 'avrdude' and the bootloader:
+$ avrdude -b 115200 -c avr109 -p m32 -P /dev/ttyUSB0 -U flash:w:console-test.flash.hex -U eeprom:w:console-test.eeprom.hex
 
 GPIO pins allocation
 ====================

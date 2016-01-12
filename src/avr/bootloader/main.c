@@ -131,8 +131,7 @@ void bl_main_loop(void)
         address = addr >> 1;
         bl_uart_write_char('\r');
       } else if (type == 'E') {
-        uint8_t i;
-        for (i = 0; i < size; ++i) {
+        for (i = 0; i < (uint8_t)size; ++i) {
           buffer[i] = bl_uart_read_char();
         }
 
@@ -144,17 +143,16 @@ void bl_main_loop(void)
         bl_uart_write_char('?');
       }
     } else if(ch=='g') {
-      uint16_t i;
       /* Start block read */
       size = (bl_uart_read_char()<<8) | bl_uart_read_char();
       type = bl_uart_read_char();
       if (type == 'F') {
         uint16_t addr = (address<<1);
-        for (i=0; i < size; ++i, ++addr) {
+        for (i = 0; i < (uint8_t)size; ++i, ++addr) {
           bl_uart_write_char(pgm_read_byte_near(addr));
         }
       } else if (type == 'E') {
-        for (i=0; i < size; ++i) {
+        for (i = 0; i < (uint8_t)size; ++i) {
           bl_uart_write_char(eeprom_read_byte((void *)address++));
         }
       } else {

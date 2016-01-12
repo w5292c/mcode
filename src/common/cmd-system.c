@@ -34,6 +34,7 @@
 
 #include <string.h>
 
+static void cmd_engine_call(const char *args, bool *startCmd);
 static bool cmd_engine_echo(const char *args, bool *startCmd);
 static bool cmd_engine_sleep(const char *args, bool *startCmd);
 static void cmd_engine_system_test(const char *args, bool *startCmd);
@@ -43,6 +44,7 @@ void cmd_engine_system_help(void)
   mprintstrln(PSTR("> ut - Show uptime"));
   mprintstrln(PSTR("> reboot - Initiate a system reboot"));
   mprintstrln(PSTR("> bootloader - Reboot to bootloader mode"));
+  mprintstrln(PSTR("> call <addr> - Call a program at <addr>"));
   mprintstrln(PSTR("> echo <string> - Echo <string> to console"));
   mprintstrln(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds"));
   mprintstrln(PSTR("> test [<args>] - Usually empty placeholder for temparary experiments"));
@@ -76,7 +78,7 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     hw_uart_write_uintd(minutes, 0);
     mprintstr(PSTR(", seconds: "));
     hw_uart_write_uintd(seconds, 0);
-   mprintstr(PSTR(", milli-seconds: "));
+    mprintstr(PSTR(", milli-seconds: "));
     hw_uart_write_uintd(milliSeconds, 0);
     mprint(MStringNewLine);
     return true;
@@ -97,6 +99,15 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     return true;
   } else if (!strncmp_P(args, PSTR("test "), 5)) {
     cmd_engine_system_test(args + 5, startCmd);
+    return true;
+  } else if (!strncmp_P(args, PSTR("call "), 5)) {
+#ifdef MCODE_COMMAND_MODES
+    if (CmdModeRoot != cmd_engine_get_mode()) {
+      merror(MStringWrongMode);
+      return true;
+    }
+#endif /* MCODE_COMMAND_MODES */
+    cmd_engine_call(args + 5, startCmd);
     return true;
   }
 #ifdef __linux__
@@ -135,6 +146,28 @@ bool cmd_engine_sleep(const char *args, bool *startCmd)
 
   mtick_sleep(mticks);
   return true;
+}
+
+void cmd_engine_call(const char *args, bool *startCmd)
+{
+  uint16_t address = 0x0000u;
+  args = string_skip_whitespace(args);
+  if (!args) {
+    merror(MStringWrongArgument);
+    return;
+  }
+  args = string_next_number(args, &address);
+  if (string_skip_whitespace(args)) {
+    merror(MStringWrongArgument);
+    return;
+  }
+
+  mprintstr(PSTR("Calling program at address: 0x"));
+  hw_uart_write_uint64(address, true);
+  mprint(MStringNewLine);
+
+  const mcode_tick program = (mcode_tick)address;
+  program();
 }
 
 void cmd_engine_system_test(const char *args, bool *startCmd)
