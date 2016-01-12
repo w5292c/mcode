@@ -50,11 +50,11 @@ static const uint16_t ThePreScalers[] PROGMEM = {
   1u, 8u, 32u, 64u, 128u, 256u, 1024u
 };
 
-void hw_sound_init(void)
+void sound_init(void)
 {
 }
 
-void hw_sound_deinit(void)
+void sound_deinit(void)
 {
 }
 

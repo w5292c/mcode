@@ -31,6 +31,7 @@
 #include "hw-uart.h"
 #include "mglobal.h"
 #include "strings.h"
+#include "hw-sound.h"
 #include "scheduler.h"
 #include "persistent-store.h"
 
@@ -48,6 +49,7 @@ static void cmd_engine_turn_tv_on(void);
 static void cmd_engine_turn_tv_off(void);
 static void cmd_engine_tv_update_value(void);
 static void cmd_engine_tv_set_state(uint8_t state);
+static void cmd_engine_handle_new_value(uint16_t value);
 static bool cmd_engine_set_value(const char *args, bool *startCmd);
 static bool cmd_engine_set_ititial_value(const char *args, bool *startCmd);
 
@@ -129,6 +131,7 @@ bool cmd_engine_set_value(const char *args, bool *startCmd)
 #endif /* MCODE_COMMAND_MODES */
 
   persist_store_set_value(number);
+  cmd_engine_handle_new_value(number);
   return true;
 }
 
@@ -142,6 +145,7 @@ void cmd_engine_tv_new_day(void)
   }
 
   persist_store_set_value(initialValue);
+  cmd_engine_handle_new_value(initialValue);
   hw_uart_write_string_P(PSTR("New day: updated to initial value\r\n"));
 
   if (CmdEngineTvStateOn == TheState) {
@@ -215,9 +219,11 @@ void cmd_engine_tv_update_value(void)
   if (!value) {
     /* No more time for today */
     cmd_engine_tv_set_state(CmdEngineTvStateOff);
+    return;
   }
 
   persist_store_set_value(value - 1);
+  cmd_engine_handle_new_value(value - 1);
 }
 
 void cmd_engine_tv_set_state(uint8_t state)
@@ -239,6 +245,7 @@ void cmd_engine_tv_set_state(uint8_t state)
     }
 
     persist_store_set_value(value - 1);
+    cmd_engine_handle_new_value(value - 1);
     TheNextUpdateTime = mtick_count() + 60LU*1000;
     cmd_engine_turn_tv_on();
   } else {
@@ -246,6 +253,35 @@ void cmd_engine_tv_set_state(uint8_t state)
   }
 
   TheState = state;
+}
+
+void cmd_engine_handle_new_value(uint16_t value)
+{
+#ifdef MCODE_SOUND
+  switch (value) {
+  case 0:
+    sound_play_note(0x04, 2000);
+    sound_play_note(0xff, 200);
+  case 1:
+    sound_play_note(0x24, 500);
+    sound_play_note(0xff, 200);
+  case 2:
+    sound_play_note(0x44, 500);
+    sound_play_note(0xff, 200);
+  case 3:
+    sound_play_note(0x64, 500);
+    sound_play_note(0xff, 200);
+  case 4:
+    sound_play_note(0x84, 500);
+    sound_play_note(0xff, 200);
+  case 5:
+    sound_play_note(0xa4, 500);
+    sound_play_note(0xff, 200);
+    break;
+  default:
+    break;
+  }
+#endif /* MCODE_SOUND */
 }
 
 void cmd_engine_turn_tv_on(void)

@@ -26,6 +26,7 @@
 
 #include "hw-twi.h"
 #include "hw-uart.h"
+#include "hw-sound.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
 
@@ -128,6 +129,12 @@ void rtc_alarm_check_status(uint8_t status)
   if (status & 0x01u) {
     hw_uart_write_string_P(PSTR("Alarm1: triggered.\r\n"));
     cmd_engine_start();
+#ifdef MCODE_SOUND
+    sound_play_note(0x49u, 500);
+    sound_play_note(0x45u, 500);
+    sound_play_note(0x40u, 500);
+    sound_play_note(0x44u, 500);
+#endif /* MCODE_SOUND */
   }
   /* Now, check the alarm-2 (new-day alarm) */
   if (status & 0x02u) {

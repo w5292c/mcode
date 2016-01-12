@@ -32,6 +32,7 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "console.h"
+#include "hw-sound.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
 #include "line-editor-uart.h"
@@ -72,6 +73,10 @@ int main (void)
   line_editor_uart_init();
   cmd_engine_init();
 
+#ifdef MCODE_SOUND
+  sound_init();
+#endif /* MCODE_SOUND */
+
 #ifdef MCODE_TV
   cmd_engine_tv_init();
 #endif /* MCODE_TV */
@@ -96,6 +101,10 @@ int main (void)
 
   /* start the scheduler, it never exits */
   mcode_scheduler_start();
+
+#ifdef MCODE_SOUND
+  sound_deinit();
+#endif /* MCODE_SOUND */
 
   /* Clean-up */
 #ifdef MCODE_LCD
