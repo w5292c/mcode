@@ -52,6 +52,8 @@ static const uint16_t ThePreScalers[] PROGMEM = {
 
 void sound_init(void)
 {
+  TCCR2 = 0;
+  DDRD |= _BV(DDD7);
 }
 
 void sound_deinit(void)
