@@ -181,15 +181,14 @@ add_custom_command (
   COMMAND avr-objdump -h -S console-test > console-test.lst
   COMMAND avr-objcopy -j .text -j .data -O ihex console-test console-test.flash.hex
   COMMAND avr-objcopy --change-section-lma .eeprom=0 -O ihex -j .eeprom console-test console-test.eeprom.hex
-  COMMAND avr-objcopy -O ihex -j .fuse console-test console-test.fuse.hex
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   COMMENT "Building HEX files to flash to CPU"
 )
 
 #[ALL]
 add_custom_target(flash
-  COMMAND sudo avrdude -B 8 -p m32 -c jtagmkI -P /dev/ttyUSB0 -U flash:w:console-test.flash.hex
-  DEPENDS console-test ${PROJECT_BINARY_DIR}/console-test.flash.hex
+  COMMAND avrdude -b 115200 -c avr109 -p m32 -P /dev/ttyUSB0 -U flash:w:console-test.flash.hex -U eeprom:w:console-test.eeprom.hex
+  DEPENDS console-test ${PROJECT_BINARY_DIR}/console-test.flash.hex ${PROJECT_BINARY_DIR}/console-test.eeprom.hex
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   COMMENT "Flashing..."
 )
