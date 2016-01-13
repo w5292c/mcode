@@ -28,19 +28,25 @@
 #include "strings.h"
 #include "hw-sound.h"
 
+#include <string.h>
 #include <avr/pgmspace.h>
 
 static void cmd_engine_play_note(const char *args, bool *startCmd);
+static void cmd_engine_play_tune(const char *args, bool *startCmd);
 
 void cmd_engine_led_help(void)
 {
   mprintstrln(PSTR("> sound <note> <length> - Play <note>, <length> msecs"));
+  mprintstrln(PSTR("> tune <NNTT>[<NNTT>...] - Play tune, notes NN and TT length"));
 }
 
 bool cmd_engine_led_command(const char *command, bool *startCmd)
 {
   if (!strncmp_P(command, PSTR("sound "), 6)) {
     cmd_engine_play_note(command + 6, startCmd);
+    return true;
+  } else if (!strncmp_P(command, PSTR("tune "), 5)) {
+    cmd_engine_play_tune(command + 5, startCmd);
     return true;
   }
 
@@ -62,4 +68,24 @@ void cmd_engine_play_note(const char *args, bool *startCmd)
   }
 
   sound_play_note((uint8_t)note, length);
+}
+
+void cmd_engine_play_tune(const char *args, bool *startCmd)
+{
+  args = string_skip_whitespace(args);
+  if (!args) {
+    merror(MStringWrongArgument);
+    return;
+  }
+
+  uint8_t length;
+  uint8_t buffer[32];
+  memset(buffer, 0, 32);
+  args = string_to_buffer(args, 31, buffer, &length);
+  if (args || !length) {
+    merror(MStringWrongArgument);
+    return;
+  }
+
+  sound_play_tune((const uint16_t *)buffer);
 }

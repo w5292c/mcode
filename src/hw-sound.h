@@ -58,7 +58,7 @@ void sound_play_note(uint8_t note, uint16_t length);
  * Play a tune stored in RAM.
  * Each item in the 'notes' has note info and time info,
  * for example: 0xTTNN; TT represents length of the note,
- * length = 50ms*TT; NN - represents the note, similar to
+ * length = 20ms*TT; NN - represents the note, similar to
  * 'note' in 'sound_play_note'.
  */
 void sound_play_tune(const uint16_t *notes);

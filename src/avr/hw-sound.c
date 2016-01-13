@@ -25,7 +25,9 @@
 #include "hw-sound.h"
 
 #include "mtick.h"
+#include "hw-uart.h"
 #include "strings.h"
+#include "mcode-config.h"
 
 #include <stdbool.h>
 #include <avr/pgmspace.h>
@@ -157,6 +159,15 @@ void sound_play_tune_P(const uint16_t *notes)
 void sound_play_note_ex(uint16_t noteInfo)
 {
   const uint8_t note = (uint8_t)noteInfo;
-  const uint16_t length = 50u*((uint16_t)((uint8_t)(noteInfo>>8)));
+  const uint16_t length = 20u*((uint16_t)((uint8_t)(noteInfo>>8)));
+
+#ifdef MCODE_TUNE_TRACK
+  mprintstr(PSTR("Note: 0x"));
+  hw_uart_write_uint8(note, false);
+  mprintstr(PSTR(", length: "));
+  hw_uart_write_uintd(length, 0);
+  mprint(MStringNewLine);
+#endif /* MCODE_TUNE_TRACK */
+
   sound_play_note(note, length);
 }
