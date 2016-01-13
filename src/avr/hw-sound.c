@@ -50,6 +50,8 @@ static const uint16_t ThePreScalers[] PROGMEM = {
   1u, 8u, 32u, 64u, 128u, 256u, 1024u
 };
 
+static void sound_play_note_ex(uint16_t noteInfo);
+
 void sound_init(void)
 {
   TCCR2 = 0;
@@ -134,4 +136,27 @@ void sound_play_note(uint8_t note, uint16_t length)
 
   /* Turn off the sound */
   TCCR2 = 0;
+}
+
+void sound_play_tune(const uint16_t *notes)
+{
+  uint16_t noteInfo;
+  while (0 != (noteInfo = *notes++)) {
+    sound_play_note_ex(noteInfo);
+  }
+}
+
+void sound_play_tune_P(const uint16_t *notes)
+{
+  uint16_t noteInfo;
+  while (0 != (noteInfo = pgm_read_word(*notes++))) {
+    sound_play_note_ex(noteInfo);
+  }
+}
+
+void sound_play_note_ex(uint16_t noteInfo)
+{
+  const uint8_t note = (uint8_t)noteInfo;
+  const uint16_t length = 50u*((uint16_t)((uint8_t)(noteInfo>>8)));
+  sound_play_note(note, length);
 }

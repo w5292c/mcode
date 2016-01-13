@@ -54,4 +54,19 @@ void sound_deinit(void);
  */
 void sound_play_note(uint8_t note, uint16_t length);
 
+/**
+ * Play a tune stored in RAM.
+ * Each item in the 'notes' has note info and time info,
+ * for example: 0xTTNN; TT represents length of the note,
+ * length = 50ms*TT; NN - represents the note, similar to
+ * 'note' in 'sound_play_note'.
+ */
+void sound_play_tune(const uint16_t *notes);
+
+/**
+ * Play a tune stored in flash memory.
+ * @sa sound_play_tune
+ */
+void sound_play_tune_P(const uint16_t *notes);
+
 #endif /* HW_MCODE_SOUND_H */
