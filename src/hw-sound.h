@@ -69,4 +69,10 @@ void sound_play_tune(const uint16_t *notes);
  */
 void sound_play_tune_P(const uint16_t *notes);
 
+/**
+ * Play a tune stored in EEPROM.
+ * @sa sound_play_tune
+ */
+void sound_play_tune_E(const uint16_t *notes);
+
 #endif /* HW_MCODE_SOUND_H */

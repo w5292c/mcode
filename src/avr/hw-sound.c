@@ -30,6 +30,7 @@
 #include "mcode-config.h"
 
 #include <stdbool.h>
+#include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 
 /* 2*Fclk/Fnote: 4 times (OCRn plus one), when N (prescaler) is one; */
@@ -151,7 +152,15 @@ void sound_play_tune(const uint16_t *notes)
 void sound_play_tune_P(const uint16_t *notes)
 {
   uint16_t noteInfo;
-  while (0 != (noteInfo = pgm_read_word(*notes++))) {
+  while (0 != (noteInfo = pgm_read_word(notes++))) {
+    sound_play_note_ex(noteInfo);
+  }
+}
+
+void sound_play_tune_E(const uint16_t *notes)
+{
+  uint16_t noteInfo;
+  while (0 != (noteInfo = eeprom_read_word(notes++))) {
     sound_play_note_ex(noteInfo);
   }
 }
