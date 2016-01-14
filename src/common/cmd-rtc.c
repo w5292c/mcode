@@ -26,7 +26,6 @@
 
 #include "utils.h"
 #include "hw-rtc.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
 
@@ -49,12 +48,12 @@ static bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target
 
 void cmd_engine_rtc_help(void)
 {
-  hw_uart_write_string_P(PSTR("> time - Read the current time\r\n"));
-  hw_uart_write_string_P(PSTR("> time-set <hour> <min> <sec> - Update the current time\r\n"));
-  hw_uart_write_string_P(PSTR("> date - Read the current date\r\n"));
-  hw_uart_write_string_P(PSTR("> date-set <year> <month> <day> <weekday> - Update the current date\r\n"));
-  hw_uart_write_string_P(PSTR("> alarm-set <hour> <min> <sec> - Update the current alarm\r\n"));
-  hw_uart_write_string_P(PSTR("> new-day-set <hour> <min> <sec> - Update the new-day alarm\r\n"));
+  mprintstrln(PSTR("> time - Read the current time"));
+  mprintstrln(PSTR("> time-set <hour> <min> <sec> - Update the current time"));
+  mprintstrln(PSTR("> date - Read the current date"));
+  mprintstrln(PSTR("> date-set <year> <month> <day> <weekday> - Update the current date"));
+  mprintstrln(PSTR("> alarm-set <hour> <min> <sec> - Update the current alarm"));
+  mprintstrln(PSTR("> new-day-set <hour> <min> <sec> - Update the new-day alarm"));
 }
 
 bool cmd_engine_rtc_command(const char *args, bool *startCmd)
@@ -199,7 +198,7 @@ bool cmd_engine_set_date(const char *args, bool *startCmd)
 void cmd_engine_update_ready(bool success)
 {
   if (!success) {
-    hw_uart_write_string_P(cmd_engine_rtc_error_string(CmdEngineRtcErrorHw));
+    mprintstrln(cmd_engine_rtc_error_string(CmdEngineRtcErrorHw));
   }
 
   cmd_engine_start();
@@ -208,18 +207,18 @@ void cmd_engine_update_ready(bool success)
 void cmd_engine_rtc_time_ready(bool success, const MTime *time)
 {
   if (!success) {
-    hw_uart_write_string_P(PSTR("RTC communication failed.\r\n"));
+    mprint(MStringInternalError);
     cmd_engine_start();
     return;
   }
 
-  hw_uart_write_string_P(PSTR("Time: "));
-  hw_uart_write_uintd(time->hours, 2);
-  hw_uart_write_string_P(PSTR(":"));
-  hw_uart_write_uintd(time->minutes, 2);
-  hw_uart_write_string_P(PSTR(":"));
-  hw_uart_write_uintd(time->seconds, 2);
-  hw_uart_write_string_P(PSTR("\r\n"));
+  mprintstr(PSTR("Time: "));
+  mprint_uintd(time->hours, 2);
+  mputch(':');
+  mprint_uintd(time->minutes, 2);
+  mputch(':');
+  mprint_uintd(time->seconds, 2);
+  mprint(MStringNewLine);
 
   cmd_engine_start();
 }
@@ -227,20 +226,20 @@ void cmd_engine_rtc_time_ready(bool success, const MTime *time)
 void cmd_engine_date_ready(bool success, const MDate *date)
 {
   if (!success) {
-    hw_uart_write_string_P(PSTR("RTC communication failed.\r\n"));
+    mprint(MStringInternalError);
     cmd_engine_start();
     return;
   }
 
-  hw_uart_write_string_P(PSTR("Date: "));
-  hw_uart_write_uintd(date->year, 4);
-  hw_uart_write_string_P(PSTR("-"));
-  hw_uart_write_string_P(mtime_get_month_name(date->month));
-  hw_uart_write_string_P(PSTR("-"));
-  hw_uart_write_uintd(date->day, 2);
-  hw_uart_write_string_P(PSTR(" ("));
-  hw_uart_write_string_P(mtime_get_day_of_week_name(date->dayOfWeek));
-  hw_uart_write_string_P(PSTR(")\r\n"));
+  mprintstr(PSTR("Date: "));
+  mprint_uintd(date->year, 4);
+  mputch('-');
+  mprintstr(mtime_get_month_name(date->month));
+  mputch('-');
+  mprint_uintd(date->day, 2);
+  mprintstr(PSTR(" ("));
+  mprintstr(mtime_get_day_of_week_name(date->dayOfWeek));
+  mprintstrln(PSTR(")"));
 
   cmd_engine_start();
 }
@@ -249,8 +248,8 @@ const char *cmd_engine_rtc_error_string(uint8_t error)
 {
   switch (error) {
   case CmdEngineRtcErrorHw:
-    return PSTR("RTC: communication failed.\r\n");
+    return PSTR("RTC: communication failed.");
   default:
-    return PSTR("RTC: unrecognized error.\r\n");
+    return PSTR("RTC: unrecognized error.");
   }
 }

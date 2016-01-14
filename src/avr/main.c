@@ -29,6 +29,7 @@
 #include "hw-twi.h"
 #include "hw-rtc.h"
 #include "hw-pwm.h"
+#include "mstring.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "console.h"
@@ -94,9 +95,9 @@ int main (void)
 #endif /* MCODE_LCD */
 
   /* Write some 'hello' text */
-  hw_uart_write_string_P(PSTR("\r\nmain: ready\r\nTest value: ["));
-  hw_uart_write_uintd(1234007, 0);
-  hw_uart_write_string_P(PSTR("]\r\n"));
+  mprintstr(PSTR("\r\nmain: ready\r\nTest value: ["));
+  mprint_uintd(1234007, 0);
+  mprintstrln(PSTR("]\r\n"));
   cmd_engine_start();
 
   /* start the scheduler, it never exits */

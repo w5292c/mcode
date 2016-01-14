@@ -172,9 +172,9 @@ void sound_play_note_ex(uint16_t noteInfo)
 
 #ifdef MCODE_TUNE_TRACK
   mprintstr(PSTR("Note: 0x"));
-  hw_uart_write_uint8(note, false);
+  mprint_uint8(note, false);
   mprintstr(PSTR(", length: "));
-  hw_uart_write_uintd(length, 0);
+  mprint_uintd(length, 0);
   mprint(MStringNewLine);
 #endif /* MCODE_TUNE_TRACK */
 

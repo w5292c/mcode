@@ -39,33 +39,6 @@ void hw_uart_start_read(void)
 {
 }
 
-void hw_uart_write_uintd(uint32_t value, uint8_t minDigits)
-{
-  if (!minDigits) {
-    minDigits = 1;
-  }
-  uint8_t temp;
-  for (temp = 10; temp < minDigits; ++temp) {
-    uart_write_char('0');
-  }
-  uint8_t digits = 10;
-  bool keepZeroes = false;
-  uint32_t factor = 1000000000U;
-  while (factor) {
-    temp = value/factor;
-    if (temp || keepZeroes || digits <= minDigits) {
-      uart_write_char((char)temp + '0');
-    }
-    if (temp) {
-      keepZeroes = true;
-      value -= factor*temp;
-    }
-
-    factor /= 10;
-    --digits;
-  }
-}
-
 void hw_uart_write_uint64(uint64_t value, bool skipZeros)
 {
   const uint32_t upper = (uint32_t)(value>>32);

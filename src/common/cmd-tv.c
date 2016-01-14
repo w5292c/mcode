@@ -28,7 +28,6 @@
 #include "utils.h"
 #include "hw-pwm.h"
 #include "hw-leds.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
 #include "hw-sound.h"
@@ -68,21 +67,21 @@ void cmd_engine_tv_init(void)
 
 void cmd_engine_tv_help(void)
 {
-  hw_uart_write_string_P(PSTR("> tv - Show if TV is ON or OFF\r\n"));
-  hw_uart_write_string_P(PSTR("> tv-on - Turn the TV on\r\n"));
-  hw_uart_write_string_P(PSTR("> tv-off - Turn the TV off\r\n"));
-  hw_uart_write_string_P(PSTR("> value - Show persistent value\r\n"));
-  hw_uart_write_string_P(PSTR("> value-set <number> - Update persistent value to <number>\r\n"));
-  hw_uart_write_string_P(PSTR("> value-init - Show the current initial value\r\n"));
-  hw_uart_write_string_P(PSTR("> value-init-set <value> - Set the initial value to <value> \r\n"));
+  mprintstrln(PSTR("> tv - Show if TV is ON or OFF"));
+  mprintstrln(PSTR("> tv-on - Turn the TV on"));
+  mprintstrln(PSTR("> tv-off - Turn the TV off"));
+  mprintstrln(PSTR("> value - Show persistent value"));
+  mprintstrln(PSTR("> value-set <number> - Update persistent value to <number>"));
+  mprintstrln(PSTR("> value-init - Show the current initial value"));
+  mprintstrln(PSTR("> value-init-set <value> - Set the initial value to <value>"));
 }
 
 bool cmd_engine_tv_command(const char *args, bool *startCmd)
 {
   if (!strcmp_P(args, PSTR("value"))) {
-    hw_uart_write_string_P(PSTR("Persistent value: "));
-    hw_uart_write_uintd(persist_store_get_value(), 0);
-    hw_uart_write_string_P(PSTR("\r\n"));
+    mprintstr(PSTR("Persistent value: "));
+    mprint_uintd(persist_store_get_value(), 0);
+    mprint(MStringNewLine);
     return true;
   } else if (!strncmp_P(args, PSTR("value-set "), 10)) {
     return cmd_engine_set_value(args + 10, startCmd);
@@ -93,17 +92,17 @@ bool cmd_engine_tv_command(const char *args, bool *startCmd)
     cmd_engine_tv_emulate_ext_request(false);
     return true;
   } else if (!strcmp_P(args, PSTR("value-init"))) {
-    hw_uart_write_string_P(PSTR("Initial value: "));
-    hw_uart_write_uintd(persist_store_get_initial_value(), 0);
-    hw_uart_write_string_P(PSTR("\r\n"));
+    mprintstr(PSTR("Initial value: "));
+    mprint_uintd(persist_store_get_initial_value(), 0);
+    mprint(MStringNewLine);
     return true;
   } else if (!strncmp_P(args, PSTR("value-init-set "), 15)) {
     return cmd_engine_set_ititial_value(args + 15, startCmd);
   } else if (!strcmp_P(args, PSTR("tv"))) {
     if (CmdEngineTvStateOn == TheState) {
-      hw_uart_write_string_P(PSTR("TV is ON\r\n"));
+      mprintstrln(PSTR("TV is ON"));
     } else {
-      hw_uart_write_string_P(PSTR("TV is OFF\r\n"));
+      mprintstrln(PSTR("TV is OFF"));
     }
     return true;
   }
@@ -140,13 +139,13 @@ void cmd_engine_tv_new_day(void)
   const uint16_t initialValue = persist_store_get_initial_value();
   if (persist_store_get_value() == initialValue) {
     /* The current value is already initial, no need to update */
-    hw_uart_write_string_P(PSTR("New day: values match\r\n"));
+    mprintstrln(PSTR("New day: values match"));
     return;
   }
 
   persist_store_set_value(initialValue);
   cmd_engine_handle_new_value(initialValue);
-  hw_uart_write_string_P(PSTR("New day: updated to initial value\r\n"));
+  mprintstrln(PSTR("New day: updated to initial value"));
 
   if (CmdEngineTvStateOn == TheState) {
     TheNextUpdateTime = mtick_count() + 60LU*1000;
@@ -239,7 +238,7 @@ void cmd_engine_tv_set_state(uint8_t state)
     if (!value) {
       /* No more time */
 #if 0
-      hw_uart_write_string_P(PSTR("Error: no more time\r\n"));
+      mprintstrln(PSTR("Error: no more time"));
 #endif
       return;
     }

@@ -28,7 +28,6 @@
 #include "mtick.h"
 #include "utils.h"
 #include "system.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
 
@@ -71,17 +70,17 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     count = count/24;
     const uint32_t days = count;
     mprintstr(PSTR("Uptime: 0x"));
-    hw_uart_write_uint64(tickCount, true);
+    mprint_uint64(tickCount, true);
     mprintstr(PSTR("; days: "));
-    hw_uart_write_uintd(days, 0);
+    mprint_uintd(days, 0);
     mprintstr(PSTR(", hours: "));
-    hw_uart_write_uintd(hours, 0);
+    mprint_uintd(hours, 0);
     mprintstr(PSTR(", minutes: "));
-    hw_uart_write_uintd(minutes, 0);
+    mprint_uintd(minutes, 0);
     mprintstr(PSTR(", seconds: "));
-    hw_uart_write_uintd(seconds, 0);
+    mprint_uintd(seconds, 0);
     mprintstr(PSTR(", milli-seconds: "));
-    hw_uart_write_uintd(milliSeconds, 0);
+    mprint_uintd(milliSeconds, 0);
     mprint(MStringNewLine);
     return true;
   } else if (!strcmp_P(args, PSTR("reboot"))) {
@@ -129,10 +128,10 @@ bool cmd_engine_echo(const char *args, bool *startCmd)
 {
   if (*args) {
     ++args;
-    hw_uart_write_string(args);
+    mprintstr_R(args);
   }
 
-  hw_uart_write_string_P(PSTR("\r\n"));
+  mprint(MStringNewLine);
   return true;
 }
 
@@ -167,7 +166,7 @@ void cmd_engine_call(const char *args, bool *startCmd)
   }
 
   mprintstr(PSTR("Calling program at address: 0x"));
-  hw_uart_write_uint64(address, true);
+  mprint_uint64(address, true);
   mprint(MStringNewLine);
 
   const mcode_tick program = (mcode_tick)address;
