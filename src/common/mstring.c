@@ -162,7 +162,7 @@ void mprintstr_R(const char *string)
 {
   if (string) {
     uint8_t ch;
-    while (0 != (ch = pgm_read_byte(string++))) {
+    while (0 != (ch = (*string++))) {
       mputch(ch);
     }
   }
