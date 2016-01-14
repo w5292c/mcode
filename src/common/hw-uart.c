@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2016 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,6 @@
  */
 
 #include "hw-uart.h"
-
-#include "utils.h"
-#include "mglobal.h"
-#include "mstring.h"
-
-#include <string.h>
 
 #ifndef __linux__
 void hw_uart_deinit(void)

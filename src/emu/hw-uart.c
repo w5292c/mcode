@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2016 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,6 +95,7 @@ void hw_uart_set_callback(hw_uart_char_event aCallback)
 void uart_write_char(char ch)
 {
   putchar(ch);
+  fflush(stdout);
 }
 
 void *emu_hw_uart_thread(void *threadid)
