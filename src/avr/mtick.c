@@ -45,8 +45,10 @@ void mtick_init(void)
 
   /* Reset the Timer2 counter */
   TCNT0 = 0x00U;
-  /* Timer2 compare register: 1001.73913Hz */
-  OCR0 = 114;
+  /* Timer0 compare register (Main clock: 7.3728MHz):
+     - 114: 1001.73913Hz
+     - 115:  993.10345Hz */
+  OCR0 = 115;
   /* Clear OCF2 / clear pending interrupts */
   TIFR  = (1<<OCF0);
   /* Enable Timer2 Compare Interrupt */
