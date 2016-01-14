@@ -97,7 +97,7 @@ int main (void)
   /* Write some 'hello' text */
   mprintstr(PSTR("\r\nmain: ready\r\nTest value: ["));
   mprint_uintd(1234007, 0);
-  mprintstrln(PSTR("]\r\n"));
+  mprintstrln(PSTR("]"));
   cmd_engine_start();
 
   /* start the scheduler, it never exits */
