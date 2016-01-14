@@ -25,7 +25,7 @@
 #include "cmd-engine.h"
 
 #include "hw-lcd.h"
-#include "hw-uart.h"
+#include "mstring.h"
 
 #include <string.h>
 
@@ -34,8 +34,8 @@ static void cmd_test_image_large(void);
 
 void cmd_engine_images_help(void)
 {
-  hw_uart_write_string_P(PSTR("> timg - Load test image\r\n"));
-  hw_uart_write_string_P(PSTR("> tlimg - Load large test image\r\n"));
+  mprintstrln(PSTR("> timg - Load test image"));
+  mprintstrln(PSTR("> tlimg - Load large test image"));
 }
 
 bool cmd_engine_images_command(const char *command, bool *startCmd)

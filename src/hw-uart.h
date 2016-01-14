@@ -41,12 +41,6 @@ void hw_uart_set_callback(hw_uart_char_event aCallback);
 
 void uart_write_char(char ch);
 
-#ifdef __AVR__
-void hw_uart_write_string_P(const char *aString);
-#else /* __AVR__ */
-#define hw_uart_write_string_P hw_uart_write_string
-#endif /* __AVR__ */
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

@@ -25,8 +25,8 @@
 #include "hw-rtc.h"
 
 #include "hw-twi.h"
-#include "hw-uart.h"
 #include "mglobal.h"
+#include "mstring.h"
 
 typedef enum {
   RtcStateNull = 0,
@@ -78,17 +78,17 @@ void mtime_set_time(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done 
 {
   if (RtcStateIdle == TheState) {
     if (hours > 23) {
-      hw_uart_write_string_P(PSTR("Error: set time: wrong hour parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (minutes > 59) {
-      hw_uart_write_string_P(PSTR("Error: set time: wrong minutes parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (seconds > 59) {
-      hw_uart_write_string_P(PSTR("Error: set time: wrong seconds parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
@@ -125,22 +125,22 @@ void mtime_set_date(int16_t year, uint8_t month, uint8_t day, uint8_t dayOfWeek,
 {
   if (RtcStateIdle == TheState) {
     if (year < 1900 || year > 2099) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong year parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (month < 1 || month > 31) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong month parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (day < 1 || day > 31) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong day parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (dayOfWeek < 1 || dayOfWeek > 7) {
-      hw_uart_write_string_P(PSTR("Error: set date: wrong day-of-week parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
@@ -165,17 +165,17 @@ void mtime_set_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done
 {
   if (RtcStateIdle == TheState) {
     if (hours > 23) {
-      hw_uart_write_string_P(PSTR("Error: set alarm: wrong hour parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (minutes > 59) {
-      hw_uart_write_string_P(PSTR("Error: set alarm: wrong minutes parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (seconds > 59) {
-      hw_uart_write_string_P(PSTR("Error: set alarm: wrong seconds parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
@@ -201,12 +201,12 @@ void mtime_set_new_day_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mc
 {
   if (RtcStateIdle == TheState) {
     if (hours > 23) {
-      hw_uart_write_string_P(PSTR("Error: set alarm: wrong hour parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
     if (minutes > 59) {
-      hw_uart_write_string_P(PSTR("Error: set alarm: wrong minutes parameter\r\n"));
+      mprint(MStringWrongArgument);
       (*callback)(false);
       return;
     }
@@ -229,7 +229,7 @@ void mtime_set_new_day_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mc
 void mtime_write_ready(bool success)
 {
   if (!success) {
-    hw_uart_write_string_P(PSTR("RTC: error: failed writing to the TWI interface\r\n"));
+    merror(MStringInternalError);
     (*TheWriteCallback)(false);
     TheState = RtcStateIdle;
     return;
@@ -252,7 +252,7 @@ void mtime_write_ready(bool success)
     (*TheWriteCallback)(true);
     break;
   default:
-    hw_uart_write_string_P(PSTR("RTC: error: wrong state\r\n"));
+    merror(MStringInternalError);
     break;
   }
 }
@@ -260,7 +260,7 @@ void mtime_write_ready(bool success)
 void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
 {
   if (!success) {
-    hw_uart_write_string_P(PSTR("RTC: error: failed reading the TWI interface\r\n"));
+    merror(MStringInternalError);
     (*TheDateCallback)(false, NULL);
     TheState = RtcStateIdle;
     return;
@@ -271,7 +271,7 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
     if (3 == length) {
       mtime_parse_time(data);
     } else {
-      hw_uart_write_string_P(PSTR("RTC: error: wrong data length\r\n"));
+      merror(MStringInternalError);
       (*TheDateCallback)(false, NULL);
       TheState = RtcStateIdle;
     }
@@ -280,13 +280,13 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
     if (4 == length) {
       mtime_parse_date(data);
     } else {
-      hw_uart_write_string_P(PSTR("RTC: error: wrong data length\r\n"));
+      merror(MStringInternalError);
       (*TheDateCallback)(false, NULL);
       TheState = RtcStateIdle;
     }
     break;
   default:
-    hw_uart_write_string_P(PSTR("RTC: error: wrong state\r\n"));
+    merror(MStringInternalError);
     (*TheDateCallback)(false, NULL);
     TheState = RtcStateIdle;
     break;
@@ -296,7 +296,7 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
 void mtime_parse_time(const uint8_t *data)
 {
   if (!TheTimeCallback) {
-    hw_uart_write_string_P(PSTR("RTC: error: no callback\r\n"));
+    merror(MStringInternalError);
     return;
   }
 
@@ -314,7 +314,7 @@ void mtime_parse_time(const uint8_t *data)
 void mtime_parse_date(const uint8_t *data)
 {
   if (!TheDateCallback) {
-    hw_uart_write_string_P(PSTR("RTC: error: no callback\r\n"));
+    merror(MStringInternalError);
     return;
   }
 

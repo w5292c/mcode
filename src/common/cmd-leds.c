@@ -26,7 +26,6 @@
 
 #include "utils.h"
 #include "hw-leds.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
 
@@ -34,7 +33,7 @@ static void cmd_engine_set_led(const char *args);
 
 void cmd_engine_led_help(void)
 {
-  hw_uart_write_string_P(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs\r\n"));
+  mprintstrln(PSTR("> led <IND> <1/0> - Turn ON/OFF the LEDs"));
 }
 
 bool cmd_engine_led_command(const char *command, bool *startCmd)

@@ -78,16 +78,6 @@ void uart_write_char(char ch)
   loop_until_bit_is_set(UCSRA, UDRE);
 }
 
-void hw_uart_write_string_P(const char *aString)
-{
-  if (aString) {
-    uint8_t ch;
-    while (0 != (ch = pgm_read_byte(aString++))) {
-      uart_write_char(ch);
-    }
-  }
-}
-
 static void hw_uart_tick(void)
 {
   if (TheCurrentBuffer) {

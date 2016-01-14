@@ -25,7 +25,7 @@
 #include "cmd-engine.h"
 
 #include "mglobal.h"
-#include "hw-uart.h"
+#include "mstring.h"
 #include "line-editor-uart.h"
 
 #include <string.h>
@@ -100,7 +100,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
   }
   else if (*aString) {
     /* got unrecognized non-empty command */
-    hw_uart_write_string_P(PSTR("ENGINE: unrecognized command. Type 'help'.\r\n"));
+    mprintstrln(PSTR("ENGINE: unrecognized command. Type 'help'."));
   }
 
   if (start_uart_editor) {
@@ -110,7 +110,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
 
 void cmd_engine_show_help(void)
 {
-  hw_uart_write_string_P(PSTR("Supported cmds:\r\n"));
+  mprintstrln(PSTR("Supported cmds:"));
 #ifdef MCODE_TEST_IMAGES
   cmd_engine_images_help();
 #endif /* MCODE_TEST_IMAGES */
@@ -127,8 +127,8 @@ void cmd_engine_show_help(void)
   cmd_engine_ssl_help();
 #endif /* MCODE_SECURITY */
 #ifdef MCODE_COMMAND_MODES
-  hw_uart_write_string_P(PSTR("> su [MODE(1|2|3)] - Set the command engine mode\r\n"));
-  hw_uart_write_string_P(PSTR("> passwd - change the device password\r\n"));
+  mprintstrln(PSTR("> su [MODE(1|2|3)] - Set the command engine mode"));
+  mprintstrln(PSTR("> passwd - change the device password"));
 #endif /* MCODE_COMMAND_MODES */
 #ifdef MCODE_TWI
   cmd_engine_twi_help();

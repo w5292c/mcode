@@ -25,7 +25,7 @@
 #include "hw-rtc.h"
 
 #include "hw-twi.h"
-#include "hw-uart.h"
+#include "mstring.h"
 #include "hw-sound.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
@@ -80,7 +80,7 @@ void rtc_alarm_twi_write_done(bool success)
 {
   if (!success) {
     TheState = RtcAlarmStateIdle;
-    hw_uart_write_string_P(PSTR("Error: failed clearing alarm flag in RTC.\r\n"));
+    mprintstrln(PSTR("Error: failed clearing alarm flag in RTC."));
     return;
   }
 
@@ -94,7 +94,7 @@ void rtc_alarm_twi_write_done(bool success)
     GICR |= (1U<<INT1);
     break;
   default:
-    hw_uart_write_string_P(PSTR("Error: wrong state in alarm management.\r\n"));
+    mprintstrln(PSTR("Error: wrong state in alarm management."));
     break;
   }
 }
@@ -103,7 +103,7 @@ void rtc_alarm_read_ready(bool success, uint8_t length, const uint8_t *data)
 {
   if (!success) {
     TheState = RtcAlarmStateIdle;
-    hw_uart_write_string_P(PSTR("Error: failed reading TWI for RTC alarm management.\r\n"));
+    mprintstrln(PSTR("Error: failed reading TWI for RTC alarm management."));
     return;
   }
 
@@ -112,12 +112,12 @@ void rtc_alarm_read_ready(bool success, uint8_t length, const uint8_t *data)
     if (1 == length) {
       rtc_alarm_check_status(*data);
     } else {
-      hw_uart_write_string_P(PSTR("Error: wrong read package.\r\n"));
+      mprintstrln(PSTR("Error: wrong read package."));
       TheState = RtcAlarmStateIdle;
     }
     break;
   default:
-    hw_uart_write_string_P(PSTR("Error: wrong state in alarm management.\r\n"));
+    mprintstrln(PSTR("Error: wrong state in alarm management."));
     TheState = RtcAlarmStateIdle;
     break;
   }
@@ -127,7 +127,7 @@ void rtc_alarm_check_status(uint8_t status)
 {
   /* First, check the alarm-1 */
   if (status & 0x01u) {
-    hw_uart_write_string_P(PSTR("Alarm1: triggered.\r\n"));
+    mprintstrln(PSTR("Alarm1: triggered."));
     cmd_engine_start();
 #ifdef MCODE_SOUND
     sound_play_note(0x49u, 500);
@@ -139,7 +139,7 @@ void rtc_alarm_check_status(uint8_t status)
   /* Now, check the alarm-2 (new-day alarm) */
   if (status & 0x02u) {
 #ifdef MCODE_TV
-    hw_uart_write_string_P(PSTR("Alarm2: triggered.\r\n"));
+    mprintstrln(PSTR("Alarm2: triggered."));
     cmd_engine_tv_new_day();
 #endif /* MCODE_TV */
   }

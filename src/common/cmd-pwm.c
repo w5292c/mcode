@@ -27,7 +27,6 @@
 #include "utils.h"
 #include "hw-twi.h"
 #include "hw-pwm.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
 
@@ -35,7 +34,7 @@ static void cmd_engine_pwm(const char *args);
 
 void cmd_engine_pwm_help(void)
 {
-  hw_uart_write_string_P(PSTR("> pwm <ind> <value> - Set PWM value\r\n"));
+  mprintstrln(PSTR("> pwm <ind> <value> - Set PWM value\r\n"));
 }
 
 bool cmd_engine_pwm_command(const char *command, bool *startCmd)

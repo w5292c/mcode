@@ -27,7 +27,6 @@
 #include "utils.h"
 #include "hw-lcd.h"
 #include "console.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
 
@@ -97,17 +96,17 @@ static const char TheLongTestText[] PROGMEM =
 
 void cmd_engine_console_help(void)
 {
-  hw_uart_write_string_P(PSTR("> bs - Print <back-space> character\r\n"));
-  hw_uart_write_string_P(PSTR("> tab - Print <tab> character\r\n"));
-  hw_uart_write_string_P(PSTR("> ch - Print a single character\r\n"));
-  hw_uart_write_string_P(PSTR("> line - Print a string with a new-line\r\n"));
-  hw_uart_write_string_P(PSTR("> scroll <xxxx> - Scroll image\r\n"));
-  hw_uart_write_string_P(PSTR("> tstr - Show long string\r\n"));
-  hw_uart_write_string_P(PSTR("> esc-pos - Show positioned test\r\n"));
-  hw_uart_write_string_P(PSTR("> esc-color - Show colored strings\r\n"));
-  hw_uart_write_string_P(PSTR("> color xxxx - set text color\r\n"));
-  hw_uart_write_string_P(PSTR("> bg xxxx - set background color\r\n"));
-  hw_uart_write_string_P(PSTR("> cls - Clear screen\r\n"));
+  mprintstrln(PSTR("> bs - Print <back-space> character"));
+  mprintstrln(PSTR("> tab - Print <tab> character"));
+  mprintstrln(PSTR("> ch - Print a single character"));
+  mprintstrln(PSTR("> line - Print a string with a new-line"));
+  mprintstrln(PSTR("> scroll <xxxx> - Scroll image"));
+  mprintstrln(PSTR("> tstr - Show long string"));
+  mprintstrln(PSTR("> esc-pos - Show positioned test"));
+  mprintstrln(PSTR("> esc-color - Show colored strings"));
+  mprintstrln(PSTR("> color xxxx - set text color"));
+  mprintstrln(PSTR("> bg xxxx - set background color"));
+  mprintstrln(PSTR("> cls - Clear screen"));
 }
 
 bool cmd_engine_console_command(const char *command, bool *startCmd)
