@@ -39,6 +39,7 @@
 #define strncmp_P strncmp
 #define strlen_P strlen
 #define pgm_read_dword(ptr) (*((const uint32_t *)ptr))
+#define pgm_read_byte(ptr) (*((const uint8_t *)ptr))
 #endif /* __AVR__ */
 
 #ifdef __cplusplus

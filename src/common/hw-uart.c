@@ -66,11 +66,6 @@ void hw_uart_write_uintd(uint32_t value, uint8_t minDigits)
   }
 }
 
-void hw_uart_write_uint(uint16_t value)
-{
-  hw_uart_write_uint16(value, false);
-}
-
 void hw_uart_write_uint64(uint64_t value, bool skipZeros)
 {
   const uint32_t upper = (uint32_t)(value>>32);

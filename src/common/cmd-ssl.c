@@ -73,7 +73,7 @@ void cmd_engine_ssl_init(void)
 
 void cmd_engine_ssl_help(void)
 {
-  hw_uart_write_string_P(PSTR("> sha256 <DATA> - calculate SHA256 hash\r\n"));
+  mprintstrln(PSTR("> sha256 <DATA> - calculate SHA256 hash"));
 }
 
 bool cmd_engine_ssl_command(const char *command, bool *startCmd)
@@ -100,11 +100,11 @@ bool cmd_engine_ssl_command(const char *command, bool *startCmd)
 void cmd_engine_sha256(const char *aParams)
 {
   const uint16_t n = strlen(aParams);
-  hw_uart_write_string_P(PSTR("Calculating sha256 hash, string: '"));
-  hw_uart_write_string(aParams);
-  hw_uart_write_string_P(PSTR("', length: 0x"));
-  hw_uart_write_uint(n);
-  hw_uart_write_string_P(PSTR("\r\n"));
+  mprintstr(PSTR("Calculating sha256 hash, string: '"));
+  mprintstr_R(aParams);
+  mprintstr(PSTR("', length: "));
+  mprint_uintd(n, 0);
+  mprint(MStringNewLine);
 
   uint8_t byteResultHash[SHA256_DIGEST_LENGTH];
   SHA256((const unsigned char *)aParams, n, byteResultHash);
@@ -113,9 +113,9 @@ void cmd_engine_sha256(const char *aParams)
   uint8_t *ptr = byteResultHash;
   for (i = 0; i < SHA256_DIGEST_LENGTH; i += 2, ptr += 2) {
     uint16_t data = ((*ptr) << 8) | (*(ptr + 1) << 0);
-    hw_uart_write_uint16(data, false);
+    mprint_uint16(data, false);
   }
-  hw_uart_write_string_P(PSTR("\r\n"));
+  mprint(MStringNewLine);
 }
 
 #ifdef MCODE_COMMAND_MODES
@@ -131,9 +131,9 @@ void cmd_engine_set_mode(CmdMode mode)
     TheMode = mode;
     break;
   default:
-    hw_uart_write_string_P(PSTR("Error: 'cmd_engine_set_mode' - wrong mode: 0x"));
-    hw_uart_write_uint(mode);
-    hw_uart_write_string_P(PSTR("\r\n"));
+    mprintstr(PSTR("Error: 'cmd_engine_set_mode' - wrong mode: "));
+    mprint_uintd(mode, 0);
+    mprint(MStringNewLine);
     break;
   }
 }
@@ -150,7 +150,7 @@ void cmd_engine_set_cmd_mode(const char *args)
   args = string_next_number(args, &value);
   if (!args && value > 0 && value < 4) {
     TheCommandEngineStateRequest = (CmdMode)(value - 1);
-    hw_uart_write_string_P(PSTR("Enter password: "));
+    mprint(MStringEnterPass);
     TheCommandEngineState = CommandEngineStatePass;
     TheModesState = ModesStateEnterPass;
     line_editor_set_echo(false);
@@ -173,7 +173,7 @@ void cmd_engine_handle_pass(const char *pass)
     if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
       cmd_engine_set_mode((CmdMode)TheCommandEngineStateRequest);
     } else {
-      hw_uart_write_string_P(PSTR("Error: something wrong\r\n"));
+      merror(MStringInternalError);
 
       line_editor_set_echo(true);
       TheModesState = ModesStateIdle;
@@ -187,12 +187,12 @@ void cmd_engine_handle_pass(const char *pass)
       TheCommandEngineState = CommandEngineStateCmd;
       cmd_engine_start();
     } else if (ModesStateChangePassEnterCurrent == TheModesState) {
-      hw_uart_write_string_P(PSTR("Enter new password: "));
+      mprintstr(PSTR("Enter new password: "));
       TheModesState = ModesStateChangePassEnterNew;
     }
   } else if (ModesStateChangePassEnterNew == TheModesState) {
     persist_store_save(PersistStoreIdNewHash, passHash, SHA256_DIGEST_LENGTH);
-    hw_uart_write_string_P(PSTR("Confirm new password: "));
+    mprintstr(PSTR("Confirm new password: "));
     TheModesState = ModesStateChangePassConfirmNew;
   } else if (ModesStateChangePassConfirmNew == TheModesState) {
     persist_store_load(PersistStoreIdNewHash, hash, SHA256_DIGEST_LENGTH);
@@ -200,7 +200,7 @@ void cmd_engine_handle_pass(const char *pass)
     if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
       persist_store_save(PersistStoreIdHash, passHash, SHA256_DIGEST_LENGTH);
     } else {
-      hw_uart_write_string_P(PSTR("Error: password missmatch\r\n"));
+      mprintstrln(PSTR("Error: password missmatch"));
     }
 
     line_editor_set_echo(true);
@@ -221,7 +221,7 @@ void cmd_engine_mtick(void)
 
 void cmd_engine_passwd(void)
 {
-  hw_uart_write_string_P(PSTR("Enter current password: "));
+  mprint(MStringEnterPass);
   TheCommandEngineState = CommandEngineStatePass;
   TheModesState = ModesStateChangePassEnterCurrent;
   line_editor_set_echo(false);

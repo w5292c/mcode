@@ -45,9 +45,11 @@ void reboot(void)
   for(;;);
 }
 
+#ifdef MCODE_BOOTLOADER
 void bootloader(void)
 {
   mprintstrln(PSTR("Enter bootloader mode."));
   void (*bl_main)(void) = (void *)MCODE_BOOTLOADER_BASE;
   bl_main();
 }
+#endif /* MCODE_BOOTLOADER */

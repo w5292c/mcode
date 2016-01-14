@@ -28,8 +28,8 @@
 #include "mtick.h"
 #include "hw-i80.h"
 #include "hw-lcd.h"
+#include "mstring.h"
 #include "console.h"
-#include "hw-uart.h"
 #include "customwidget.h"
 
 #define LCD_SET_SCROLL_START UINT8_C(0x37)
@@ -185,9 +185,9 @@ void emu_hw_lcd_s95513_handle_data_byte(uint8_t byte)
     TheEmuState = EmuStateInProg;
   } else if (EmuStateFinished == TheEmuState || EmuStateError == TheEmuState) {
     if (EmuStateFinished == TheEmuState) {
-      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_byte: finished\r\n");
+      mprintstrln("emu_hw_lcd_s95513_handle_data_byte: finished");
     } else {
-      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_byte: error\r\n");
+      mprintstrln("emu_hw_lcd_s95513_handle_data_byte: error");
     }
     return;
   }
@@ -196,7 +196,7 @@ void emu_hw_lcd_s95513_handle_data_byte(uint8_t byte)
     if (TheBufferIndex < KBufferSize) {
       TheBuffer[TheBufferIndex++] = byte;
     } else {
-      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_byte: data buffer overflow\r\n");
+      mprintstrln("emu_hw_lcd_s95513_handle_data_byte: data buffer overflow");
       return;
     }
   }
@@ -225,11 +225,11 @@ void emu_hw_lcd_s95513_handle_data_byte(uint8_t byte)
     }
     break;
   default:
-    hw_uart_write_string("EMU: emu_hw_lcd_s95513_handle_data_byte (cmd: ");
-    hw_uart_write_uint(TheCurrentCommand);
-    hw_uart_write_string(", byte: ");
-    hw_uart_write_uint(byte);
-    hw_uart_write_string(")\r\n");
+    mprintstr(PSTR("EMU: emu_hw_lcd_s95513_handle_data_byte (cmd: "));
+    mprint_uintd(TheCurrentCommand, 0);
+    mprintstr(", byte: ");
+    mprint_uintd(byte, 0);
+    mprint(MStringNewLine);
     break;
   }
 }
@@ -240,9 +240,9 @@ void emu_hw_lcd_s95513_handle_data_word(uint16_t word)
     TheEmuState = EmuStateInProg;
   } else if (EmuStateFinished == TheEmuState || EmuStateError == TheEmuState) {
     if (EmuStateFinished == TheEmuState) {
-      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_word: finished\r\n");
+      mprintstrln(PSTR("emu_hw_lcd_s95513_handle_data_word: finished"));
     } else {
-      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_word: error\r\n");
+      mprintstrln(PSTR("emu_hw_lcd_s95513_handle_data_word: error"));
     }
     return;
   }
@@ -251,7 +251,7 @@ void emu_hw_lcd_s95513_handle_data_word(uint16_t word)
     if (TheBufferIndex < KBufferSize) {
       TheBuffer[TheBufferIndex++] = static_cast<uint8_t>(word);
     } else {
-      hw_uart_write_string("emu_hw_lcd_s95513_handle_data_word: data buffer overflow\r\n");
+      mprintstrln(PSTR("emu_hw_lcd_s95513_handle_data_word: data buffer overflow"));
       return;
     }
   }
@@ -281,11 +281,11 @@ void emu_hw_lcd_s95513_handle_data_word(uint16_t word)
     }
     break;
   default:
-    hw_uart_write_string("EMU: emu_hw_lcd_s95513_handle_data_word (cmd: ");
-    hw_uart_write_uint(TheCurrentCommand);
-    hw_uart_write_string(", word: ");
-    hw_uart_write_uint(word);
-    hw_uart_write_string(")\r\n");
+    mprintstr(PSTR("EMU: emu_hw_lcd_s95513_handle_data_word (cmd: "));
+    mprint_uintd(TheCurrentCommand, 0);
+    mprintstr(PSTR(", word: "));
+    mprint_uintd(word, 0);
+    mprint(MStringNewLine);
     break;
   }
 }
@@ -396,6 +396,6 @@ void emu_hw_lcd_set_scroll_pos()
     const uint scrollPos = (static_cast<uint>(TheBuffer[0]) << 8) | (TheBuffer[1]);
     TheWidget->setScrollPosition(scrollPos);
   } else {
-    hw_uart_write_string("lcd_set_scroll_start: no widget\r\n");
+    mprintstrln(PSTR("lcd_set_scroll_start: no widget"));
   }
 }

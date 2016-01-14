@@ -24,6 +24,9 @@
 
 #include "hw-uart.h"
 
+#include "mglobal.h"
+#include "mstring.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +39,7 @@ static pthread_t TheKeyEventThread = 0;
 static struct termios TheStoredTermIos;
 
 /** The UART emulation thread */
-static void *emu_hw_uart_thread (void *threadid);
+static void *emu_hw_uart_thread(void *threadid);
 
 void hw_uart_init(void)
 {
@@ -49,10 +52,10 @@ void hw_uart_init(void)
     const int failed = pthread_create(&TheKeyEventThread, NULL, emu_hw_uart_thread, (void *)t);
     if (failed) {
       running_request = 0;
-      hw_uart_write_string("Error: cannot create key-event thread, code: ");
-      hw_uart_write_uint(failed);
-      hw_uart_write_string("\r\n");
-      exit (-1);
+      mprintstr(PSTR("Error: cannot create key-event thread, code: "));
+      mprint_uintd(failed, 0);
+      mprint(MStringNewLine);
+      exit(-1);
     }
   }
 }
@@ -62,19 +65,19 @@ void hw_uart_deinit(void)
   if (TheKeyEventThread) {
     int failed = pthread_cancel (TheKeyEventThread);
     if (failed) {
-      hw_uart_write_string("Error: cannot cancel thread, code: ");
-      hw_uart_write_uint(failed);
-      hw_uart_write_string("\r\n");
-      exit (-1);
+      mprintstr(PSTR("Error: cannot cancel thread, code: "));
+      mprint_uintd(failed, 0);
+      mprint(MStringNewLine);
+      exit(-1);
     }
     void *status;
     running_request = 0;
     failed = pthread_join(TheKeyEventThread, &status);
     if (failed) {
-      hw_uart_write_string("Error: cannot join key-event thread, code: ");
-      hw_uart_write_uint(failed);
-      hw_uart_write_string("\r\n");
-      exit (-1);
+      mprintstr(PSTR("Error: cannot join key-event thread, code: "));
+      mprint_uintd(failed, 0);
+      mprint(MStringNewLine);
+      exit(-1);
     }
 
     /* restore the original termios attributes */
@@ -127,9 +130,9 @@ void *emu_hw_uart_thread(void *threadid)
   }
 
   /* terminating thread */
-  hw_uart_write_string("emu_hw_uart_thread, finishing: ");
-  hw_uart_write_uint(1234);
-  hw_uart_write_string("\r\n");
+  mprintstr(PSTR("emu_hw_uart_thread, finishing: "));
+  mprint_uintd(1234, 0);
+  mprint(MStringNewLine);
   pthread_exit(NULL);
   return NULL;
 }

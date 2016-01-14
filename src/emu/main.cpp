@@ -25,6 +25,7 @@
 #include "main.h"
 #include "mtick.h"
 #include "hw-lcd.h"
+#include "mstring.h"
 #include "console.h"
 #include "hw-uart.h"
 #include "hw-leds.h"
@@ -69,7 +70,7 @@ int main(int argc, char **argv)
 
   /* override the signal handler */
   if (SIG_ERR == signal(SIGINT, main_sigint_handler)) {
-    hw_uart_write_string("Error: cannot override signal handler\r\n");
+    mprintstrln(PSTR("Error: cannot override signal handler"));
     return -1;
   }
   atexit(main_at_exit);
@@ -88,9 +89,9 @@ int main(int argc, char **argv)
   console_init();
 
   /* Write some 'hello' text */
-  hw_uart_write_string("main: ready\r\nTest value: [");
-  hw_uart_write_uint(0x12afu);
-  hw_uart_write_string("]\r\n");
+  mprintstr(PSTR("main: ready\r\nTest value: ["));
+  mprint_uintd(0x12afu, 0);
+  mprintstrln(PSTR("]"));
   /* start the command engine, and switch to the scheduler, it never exits */
   cmd_engine_start();
   mcode_scheduler_start();
@@ -113,14 +114,14 @@ static void main_at_exit(void)
 void main_sigint_handler(int signo)
 {
   if (SIGINT == signo) {
-    hw_uart_write_string("MAIN: got exit signal\r\n");
+    mprintstrln(PSTR("MAIN: got exit signal"));
     mcode_scheduler_stop();
   }
 }
 
 void main_request_exit(void)
 {
-  hw_uart_write_string("MAIN: exit request\r\n");
+  mprintstrln(PSTR("MAIN: exit request"));
   mcode_scheduler_stop();
 }
 

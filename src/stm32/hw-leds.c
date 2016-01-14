@@ -24,7 +24,7 @@
 
 #include "hw-leds.h"
 
-#include "hw-uart.h"
+#include "mstring.h"
 
 #include <stm32f10x.h>
 
@@ -70,9 +70,9 @@ void leds_set(int index, int on)
     GPIO_WriteBit(GPIOB, GPIO_Pin_9, value);
     break;
   default:
-    hw_uart_write_string("Undefined LED: ");
-    hw_uart_write_uint(index);
-    hw_uart_write_string("\r\n");
+    mprintstr("Undefined LED: ");
+    mprint_uintd(index, 0);
+    mprint(MStringNewLine);
     break;
   }
 }

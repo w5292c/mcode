@@ -25,6 +25,7 @@
 #include "hw-twi.h"
 
 #include "hw-uart.h"
+#include "mstring.h"
 #include "scheduler.h"
 
 #include <util/twi.h>
@@ -101,11 +102,8 @@ void twi_recv(uint8_t addr, uint8_t length, mcode_read_ready callback)
     TheReadCallback = callback;
     TheTwiState = ETwiStateRdSendStart;
     hw_twi_send_start();
-  }
-  else {
-    hw_uart_write_string_P(PSTR("Error: wrong state: 0x"));
-    hw_uart_write_uint(TheTwiState);
-    hw_uart_write_string_P(PSTR("\r\n"));
+  } else {
+    merror(MStringInternalError);
     if (callback) {
       (*callback)(false, 0, NULL);
     }

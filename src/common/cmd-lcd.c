@@ -40,14 +40,14 @@ static void cmd_engine_write(const char *args, bool *startCmd);
 
 void cmd_engine_lcd_help(void)
 {
-  hw_uart_write_string_P(PSTR("> reset - Reset LCD module\r\n"));
-  hw_uart_write_string_P(PSTR("> on - Turn LCD module ON\r\n"));
-  hw_uart_write_string_P(PSTR("> off - Turn LCD module OFF\r\n"));
-  hw_uart_write_string_P(PSTR("> lcd-id Read the LCD ID\r\n"));
+  mprintstrln(PSTR("> reset - Reset LCD module"));
+  mprintstrln(PSTR("> on - Turn LCD module ON"));
+  mprintstrln(PSTR("> off - Turn LCD module OFF"));
+  mprintstrln(PSTR("> lcd-id Read the LCD ID"));
 
 #ifdef MCODE_HW_I80_ENABLED
-  hw_uart_write_string_P(PSTR("> i80-w <CMD> <DAT> - Write <CMD> with <DAT> to I80\r\n"));
-  hw_uart_write_string_P(PSTR("> i80-r <CMD> <LEN> - Read <LEN> bytes with <CMD> in I80\r\n"));
+  mprintstrln(PSTR("> i80-w <CMD> <DAT> - Write <CMD> with <DAT> to I80"));
+  mprintstrln(PSTR("> i80-r <CMD> <LEN> - Read <LEN> bytes with <CMD> in I80"));
 #endif /* MCODE_HW_I80_ENABLED */
 }
 
@@ -66,9 +66,9 @@ bool cmd_engine_lcd_command(const char *command, bool *startCmd)
     return true;
   } else if (!strcmp_P(command, PSTR("lcd-id"))) {
     const uint32_t id = lcd_read_id();
-    hw_uart_write_string("LCD ID: 0x");
-    hw_uart_write_uint32(id, false);
-    hw_uart_write_string("\r\n");
+    mprintstr(PSTR("LCD ID: 0x"));
+    mprint_uint32(id, false);
+    mprint(MStringNewLine);
     return true;
   }
 #ifdef MCODE_HW_I80_ENABLED
@@ -112,9 +112,9 @@ void cmd_engine_read(const char *args, bool *startCmd)
     hw_i80_read(command, dataLength, buffer);
 
     /* Display the result */
-    hw_uart_write_string_P(PSTR("Got "));
-    hw_uart_write_uint(dataLength);
-    hw_uart_write_string_P(PSTR(" bytes:\r\n"));
+    mprintstr(PSTR("Got "));
+    mprint_uintd(dataLength, 0);
+    mprintstrln(PSTR(" bytes:"));
     hw_uart_dump_buffer(dataLength, buffer, true);
   }
 }
@@ -140,6 +140,6 @@ void cmd_engine_write(const char *args, bool *startCmd)
 
   /* pass the request to the I80 bus */
   hw_i80_write(command, dataLength, buffer);
-  hw_uart_write_string_P(PSTR("Done.\r\n"));
+  mprintstrln(PSTR("Done."));
 }
 #endif /* MCODE_HW_I80_ENABLED */

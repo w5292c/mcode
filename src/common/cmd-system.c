@@ -43,7 +43,9 @@ void cmd_engine_system_help(void)
 {
   mprintstrln(PSTR("> ut - Show uptime"));
   mprintstrln(PSTR("> reboot - Initiate a system reboot"));
+#ifdef MCODE_BOOTLOADER
   mprintstrln(PSTR("> bootloader - Reboot to bootloader mode"));
+#endif /* MCODE_BOOTLOADER */
   mprintstrln(PSTR("> call <addr> - Call a program at <addr>"));
   mprintstrln(PSTR("> echo <string> - Echo <string> to console"));
   mprintstrln(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds"));
@@ -85,6 +87,7 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
   } else if (!strcmp_P(args, PSTR("reboot"))) {
     reboot();
     return true;
+#ifdef MCODE_BOOTLOADER
   } else if (!strcmp_P(args, PSTR("bootloader"))) {
 #ifdef MCODE_COMMAND_MODES
     if (CmdModeRoot != cmd_engine_get_mode()) {
@@ -94,6 +97,7 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
 #endif /* MCODE_COMMAND_MODES */
     bootloader();
     return true;
+#endif /* MCODE_BOOTLOADER */
   } else if (!strcmp_P(args, PSTR("test"))) {
     cmd_engine_system_test(NULL, startCmd);
     return true;

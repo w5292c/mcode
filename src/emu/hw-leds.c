@@ -24,7 +24,8 @@
 
 #include "hw-leds.h"
 
-#include "hw-uart.h"
+#include "mglobal.h"
+#include "mstring.h"
 
 static uint8_t TheLedStates = 0;
 
@@ -42,11 +43,11 @@ void leds_deinit(void)
 
 void leds_set(int index, int on)
 {
-  hw_uart_write_string("Setting LED");
-  hw_uart_write_uint(index);
-  hw_uart_write_string(": ");
-  hw_uart_write_string(on ? "ON" : "OFF");
-  hw_uart_write_string("\r\n");
+  mprintstr(PSTR("Setting LED"));
+  mprint_uintd(index, 0);
+  mprintstr(PSTR(": "));
+  mprintstr(on ? PSTR("ON") : PSTR("OFF"));
+  mprint(MStringNewLine);
 
   if (index >= 0 && index < 8) {
     if (on) {

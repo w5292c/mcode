@@ -24,8 +24,16 @@
 
 #include "mstring.h"
 
+#include "utils.h"
 #include "mglobal.h"
 #include "hw-uart.h"
+
+#include <string.h>
+
+void mputch(char ch)
+{
+  uart_write_char(ch);
+}
 
 void merror(uint8_t id)
 {
@@ -66,6 +74,100 @@ void mprintstr(const char *string)
   }
 }
 
+void mprint_uintd(uint32_t value, uint8_t minDigits)
+{
+  if (!minDigits) {
+    minDigits = 1;
+  }
+  uint8_t temp;
+  for (temp = 10; temp < minDigits; ++temp) {
+    mputch('0');
+  }
+  uint8_t digits = 10;
+  bool keepZeroes = false;
+  uint32_t factor = 1000000000U;
+  while (factor) {
+    temp = value/factor;
+    if (temp || keepZeroes || digits <= minDigits) {
+      mputch((char)temp + '0');
+    }
+    if (temp) {
+      keepZeroes = true;
+      value -= factor*temp;
+    }
+
+    factor /= 10;
+    --digits;
+  }
+}
+
+void mprint_uint64(uint64_t value, bool skipZeros)
+{
+  const uint32_t upper = (uint32_t)(value>>32);
+  if (!skipZeros || 0 != upper) {
+    /* skip upper part if it is empty */
+    mprint_uint32(upper, skipZeros);
+    /* if the upper part is not empty, we cannot skip zeroes any longer */
+    skipZeros = false;
+  }
+  mprint_uint32((uint32_t)value, skipZeros);
+}
+
+void mprint_uint32(uint32_t value, bool skipZeros)
+{
+  const uint16_t upper = (uint16_t)(value>>16);
+  if (!skipZeros || 0 != upper) {
+    /* skip upper part if it is empty */
+    mprint_uint16(upper, skipZeros);
+    /* if the upper part is not empty, we cannot skip zeroes any longer */
+    skipZeros = false;
+  }
+  mprint_uint16((uint16_t)value, skipZeros);
+}
+
+void mprint_uint16(uint16_t value, bool skipZeros)
+{
+  uint8_t i;
+  char buffer[5];
+  buffer[0] = nibble_to_char(0x0FU & (value >> 12));
+  buffer[1] = nibble_to_char(0x0FU & (value >>  8));
+  buffer[2] = nibble_to_char(0x0FU & (value >>  4));
+  buffer[3] = nibble_to_char(0x0FU & value);
+  buffer[4] = 0;
+  if (skipZeros) {
+    for (i = 0; i < 3; ++i) {
+      if ('0' == *buffer) {
+        memmove(buffer, buffer + 1, 4);
+      }
+    }
+  }
+  mprintstr_R(buffer);
+}
+
+void mprint_uint8(uint8_t value, bool skipZeros)
+{
+  char buffer[3];
+  buffer[0] = nibble_to_char(0x0FU & (value >>  4));
+  buffer[1] = nibble_to_char(0x0FU & value);
+  buffer[2] = 0;
+
+  if (skipZeros && '0' == *buffer) {
+    memmove(buffer, buffer + 1, 2);
+  }
+
+  mprintstr_R(buffer);
+}
+
+void mprintstr_R(const char *string)
+{
+  if (string) {
+    uint8_t ch;
+    while (0 != (ch = pgm_read_byte(string++))) {
+      mputch(ch);
+    }
+  }
+}
+
 const char *mstring(uint8_t id)
 {
   switch (id) {
@@ -85,12 +187,9 @@ const char *mstring(uint8_t id)
     return PSTR("only root can do this");
   case MStringErrorLimit:
     return PSTR("limit reached");
+  case MStringEnterPass:
+    return PSTR("Enter password: ");
   default:
     return PSTR("##undefined##");
   }
-}
-
-void mputch(char ch)
-{
-  uart_write_char(ch);
 }

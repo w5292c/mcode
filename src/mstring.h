@@ -26,6 +26,7 @@
 #define MCODE_STRINGS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,9 +41,12 @@ typedef enum {
   MStringWrongArgument,
   MStringWrongMode,
   MStringErrorLimit,
+  MStringEnterPass,
 } MCodeStringId;
 
 const char *mstring(uint8_t id);
+
+void mputch(char ch);
 
 void merror(uint8_t id);
 void mwarning(uint8_t id);
@@ -51,7 +55,13 @@ void mprintln(uint8_t id);
 void mprintstr(const char *string);
 void mprintstrln(const char *string);
 
-void mputch(char ch);
+void mprintstr_R(const char *string);
+
+void mprint_uint8(uint8_t value, bool skipZeros);
+void mprint_uint16(uint16_t value, bool skipZeros);
+void mprint_uint32(uint32_t value, bool skipZeros);
+void mprint_uint64(uint64_t value, bool skipZeros);
+void mprint_uintd(uint32_t value, uint8_t minDigits);
 
 #ifdef __cplusplus
 } /* extern "C" */

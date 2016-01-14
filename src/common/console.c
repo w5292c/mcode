@@ -27,7 +27,7 @@
 #include "utils.h"
 #include "fonts.h"
 #include "hw-lcd.h"
-#include "hw-uart.h"
+#include "mstring.h"
 
 #include <string.h>
 
@@ -351,34 +351,27 @@ uint8_t console_handle_escape_sequence (uint8_t byte)
   } else if (2 == escapeSequence) {
     /**@todo At this point we might have received the closing suffix, probably,
              makes sense to check for it before reporting an error */
-    if (escapeSequenceIndex < sizeof (EscSequenceBuffer) - 1)
-    {
+    if (escapeSequenceIndex < sizeof (EscSequenceBuffer) - 1) {
       console_escape_handler pHandler = NULL;
       EscSequenceBuffer[escapeSequenceIndex++] = byte;
-      if (console_esc_check_for_end (&pHandler))
-      {
-        if (pHandler)
-        {
+      if (console_esc_check_for_end (&pHandler)) {
+        if (pHandler) {
           (*pHandler) ((const char *)EscSequenceBuffer);
         }
         escapeSequence = 0;
       }
-    }
-    else
-    {
+    } else {
       /* detected too-long escape sequence, print debug output to UART */
-      hw_uart_write_string_P (PSTR ("Error: console: too long escape sequence. Hex dump:\r\n> "));
+      mprintstr(PSTR ("Error: console: too long escape sequence. Hex dump:\r\n> "));
       uint8_t i;
-      for (i = 0; i < sizeof (EscSequenceBuffer); ++i)
-      {
-        hw_uart_write_string_P (PSTR (" "));
-        hw_uart_write_uint (EscSequenceBuffer [i]);
-        if (i != (sizeof (EscSequenceBuffer) - 1))
-        {
-          hw_uart_write_string_P (PSTR (","));
+      for (i = 0; i < sizeof (EscSequenceBuffer); ++i) {
+        mprintstr(PSTR (" "));
+        mprint_uint16(EscSequenceBuffer[i], false);
+        if (i != (sizeof (EscSequenceBuffer) - 1)) {
+          mprintstr(PSTR (","));
         }
       }
-      hw_uart_write_string_P (PSTR ("\r\n"));
+      mprint(MStringNewLine);
       escapeSequence = 3;
     }
 
@@ -424,25 +417,21 @@ uint8_t console_esc_check_for_end (console_escape_handler *pHandler)
 
 void console_escape_ignore (const char *pArgs)
 {
-  hw_uart_write_string_P (PSTR ("> Ignore: ["));
-  hw_uart_write_string (pArgs);
-  hw_uart_write_string_P (PSTR ("]\r\n"));
+  mprintstr(PSTR ("> Ignore: ["));
+  mprintstr_R(pArgs);
+  mprintstrln(PSTR("]"));
 }
 
 void console_escape_set_mode (const char *pArgs)
 {
-  if (!(*pArgs))
-  {
+  if (!(*pArgs)) {
     /* empty arguments, reset the console modes */
     TheOnColor = UINT16_C(0xFFFF);
     console_set_bg_color(UINT16_C(0x0000));
     return;
-  }
-  else
-  {
+  } else {
     uint8_t value;
-    while ((pArgs = console_next_num_token (pArgs, &value)))
-    {
+    while ((pArgs = console_next_num_token (pArgs, &value))) {
       if (!value) {
         /* reset text mode */
         TheOnColor = UINT16_C(0xFFFF);
@@ -496,9 +485,9 @@ void console_escape_set_mode (const char *pArgs)
         /* set background color: white */
         console_set_bg_color(UINT16_C(0xFFFF));
       } else {
-        hw_uart_write_string_P(PSTR("DEBUG: console_escape_set_mode: unknown mode: ["));
-        hw_uart_write_string(pArgs);
-        hw_uart_write_string_P(PSTR("]\r\n"));
+        mprintstr(PSTR("DEBUG: console_escape_set_mode: unknown mode: ["));
+        mprintstr_R(pArgs);
+        mprintstrln(PSTR("]"));
       }
     }
   }
@@ -558,14 +547,12 @@ void console_escape_set_cursor_pos (const char *pArgs)
       {
         TheCurrentLine = valueLine;
         TheCurrentColumn = valueColumn;
-      }
-      else
-      {
-        hw_uart_write_string_P (PSTR ("Warning: console_escape_set_cursor_pos: wrong cursor pos: "));
-        hw_uart_write_uint (valueColumn);
-        hw_uart_write_string_P (PSTR (", "));
-        hw_uart_write_uint (valueLine);
-        hw_uart_write_string_P (PSTR ("\r\n"));
+      } else {
+        mprintstr(PSTR ("Warning: console_escape_set_cursor_pos: wrong cursor pos: "));
+        mprint_uintd(valueColumn, 0);
+        mprintstr(PSTR (", "));
+        mprint_uintd(valueLine, 0);
+        mprint(MStringNewLine);
       }
     }
   }
@@ -649,16 +636,16 @@ void console_escape_restore_cursor_pos(const char *pArgs)
     TheCurrentLine -= diffScrollPos;
     if (TheCurrentLine < 0) {
       /*! @todo Check if this is possible to enter here, if yes, impelement proper handling */
-      hw_uart_write_string_P(PSTR("E: console_escape_restore_cursor_pos: wrong line: 0x"));
-      hw_uart_write_uint32(TheCurrentLine, false);
-      hw_uart_write_string_P(PSTR("\r\n"));
+      mprintstr(PSTR("E: console_escape_restore_cursor_pos: wrong line: 0x"));
+      mprint_uint32(TheCurrentLine, false);
+      mprint(MStringNewLine);
       TheCurrentLine = 0;
     }
     if (TheCurrentLine >= TheLineCount) {
       /*! @todo Check if this is possible to enter here, if yes, impelement proper handling */
-      hw_uart_write_string_P(PSTR("E: console_escape_restore_cursor_pos: wrong line: 0x"));
-      hw_uart_write_uint32(TheCurrentLine, false);
-      hw_uart_write_string_P(PSTR("\r\n"));
+      mprintstr(PSTR("E: console_escape_restore_cursor_pos: wrong line: 0x"));
+      mprint_uint32(TheCurrentLine, false);
+      mprint(MStringNewLine);
       TheCurrentLine = TheLineCount - 1;
     }
 

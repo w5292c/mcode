@@ -40,8 +40,8 @@ static uint8_t TheBuffer[BUFFER_LENGTH];
 
 void cmd_engine_twi_help(void)
 {
-  hw_uart_write_string_P(PSTR("> twi-rd <addr> <length> - Read <length> bytes from TWI device at <addr>\r\n"));
-  hw_uart_write_string_P(PSTR("> twi-wr <addr> <hex-data> - Write <hex-data> to TWI device at <addr>\r\n"));
+  mprintstrln(PSTR("> twi-rd <addr> <length> - Read <length> bytes from TWI device at <addr>"));
+  mprintstrln(PSTR("> twi-wr <addr> <hex-data> - Write <hex-data> to TWI device at <addr>"));
 }
 
 bool cmd_engine_twi_command(const char *command, bool *startCmd)
@@ -60,7 +60,7 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
   /* move to the arguments start */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
-    hw_uart_write_string_P(PSTR("Error: 1\r\n"));
+    merror(MStringWrongArgument);
     return true;
   }
   /* Parse the TWI address */
@@ -79,10 +79,10 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
     return true;
   }
 
-  hw_uart_write_string_P(PSTR("Arguments, TWI address: 0x"));
-  hw_uart_write_uint(twi_addr);
-  hw_uart_write_string_P(PSTR(", length: 0x"));
-  hw_uart_write_uint(twi_length);
+  mprintstr(PSTR("Arguments, TWI address: 0x"));
+  mprint_uint16(twi_addr, false);
+  mprintstr(PSTR(", length: 0x"));
+  mprint_uint16(twi_length, false);
   mprint(MStringNewLine);
 
   *startCmd = false;
@@ -109,9 +109,9 @@ bool cmd_engine_twi_write(const char *args, bool *startCmd)
     return true;
   }
 
-  hw_uart_write_string_P(PSTR("TWI write, address: 0x"));
-  hw_uart_write_uint(twi_addr);
-  hw_uart_write_string_P(PSTR(", write data:\r\n"));
+  mprintstr(PSTR("TWI write, address: 0x"));
+  mprint_uint16(twi_addr, false);
+  mprintstrln(PSTR(", write data:"));
   hw_uart_dump_buffer(bufferFilled, TheBuffer, true);
 
   *startCmd = false;
@@ -122,10 +122,10 @@ bool cmd_engine_twi_write(const char *args, bool *startCmd)
 void twi_read_callback(bool result, uint8_t length, const uint8_t *data)
 {
   if (result) {
-    hw_uart_write_string_P(PSTR("TWI read data:\r\n"));
+    mprintstrln(PSTR("TWI read data:"));
     hw_uart_dump_buffer(length, data, true);
   } else {
-    hw_uart_write_string_P(PSTR("TWI read failed.\r\n"));
+    merror(MStringInternalError);
   }
 
   cmd_engine_start();
@@ -134,7 +134,7 @@ void twi_read_callback(bool result, uint8_t length, const uint8_t *data)
 void twi_write_callback(bool result)
 {
   if (!result) {
-    hw_uart_write_string_P(PSTR("TWI write failed.\r\n"));
+    merror(MStringInternalError);
   }
 
   cmd_engine_start();
