@@ -26,7 +26,8 @@
 
 #include "mtick.h"
 #include "hw-spi.h"
-#include "hw-uart.h"
+#include "mstring.h"
+#include "mglobal.h"
 
 #include <stm32f10x.h>
 
@@ -107,11 +108,11 @@ void lcd_set_bl(bool on)
 void lcd_set_size(uint16_t width, uint16_t height)
 {
   if (width != lcd_get_width() || height != lcd_get_height()) {
-    hw_uart_write_string("W: lcd_set_size(0x");
-    hw_uart_write_uint16(width, true);
-    hw_uart_write_string(", 0x");
-    hw_uart_write_uint16(height, true);
-    hw_uart_write_string(")\r\n");
+    mprintstr(PSTR("W: lcd_set_size(0x"));
+    mprint_uint16(width, true);
+    mprintstr(PSTR(", 0x");
+    mprint_uint16(height, true);
+    mprintstrln(PSTR(")"));
   }
 }
 

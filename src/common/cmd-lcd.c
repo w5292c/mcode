@@ -115,7 +115,7 @@ void cmd_engine_read(const char *args, bool *startCmd)
     mprintstr(PSTR("Got "));
     mprint_uintd(dataLength, 0);
     mprintstrln(PSTR(" bytes:"));
-    hw_uart_dump_buffer(dataLength, buffer, true);
+    mprint_dump_buffer(dataLength, buffer, true);
   }
 }
 

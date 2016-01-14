@@ -26,7 +26,6 @@
 
 #include "utils.h"
 #include "hw-twi.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
 
@@ -112,7 +111,7 @@ bool cmd_engine_twi_write(const char *args, bool *startCmd)
   mprintstr(PSTR("TWI write, address: 0x"));
   mprint_uint16(twi_addr, false);
   mprintstrln(PSTR(", write data:"));
-  hw_uart_dump_buffer(bufferFilled, TheBuffer, true);
+  mprint_dump_buffer(bufferFilled, TheBuffer, true);
 
   *startCmd = false;
   twi_send(twi_addr, bufferFilled, TheBuffer, twi_write_callback);
@@ -123,7 +122,7 @@ void twi_read_callback(bool result, uint8_t length, const uint8_t *data)
 {
   if (result) {
     mprintstrln(PSTR("TWI read data:"));
-    hw_uart_dump_buffer(length, data, true);
+    mprint_dump_buffer(length, data, true);
   } else {
     merror(MStringInternalError);
   }

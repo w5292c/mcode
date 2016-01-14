@@ -25,6 +25,7 @@
 #include "line-editor-uart.h"
 
 #include "mglobal.h"
+#include "mstring.h"
 #include "hw-uart.h"
 #include "cmd-engine.h"
 #include "mcode-config.h"
@@ -80,9 +81,9 @@ void line_editor_uart_start (void)
   default:
     break;
   }
-  hw_uart_write_string_P(prompt);
+  mprintstr(prompt);
 #else /* MCODE_COMMAND_MODES */
-  hw_uart_write_string_P(PSTR("# "));
+  mprintstr(PSTR("# "));
 #endif /* MCODE_COMMAND_MODES */
 }
 
@@ -97,12 +98,11 @@ void line_editor_uart_callback(char aChar)
         if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1) {
           line_editor_buffer[line_editor_cursor] = (char)aChar;
           if (TheEchoEnabled) {
-            hw_uart_write_string (&line_editor_buffer[line_editor_cursor]);
+            mprintstr_R(&line_editor_buffer[line_editor_cursor]);
           }
           ++line_editor_cursor;
-        }
-        else {
-          hw_uart_write_string ("\007");
+        } else {
+          mputch('\007');
         }
       }
       else if (127 == aChar || 8 == aChar) {
@@ -110,13 +110,13 @@ void line_editor_uart_callback(char aChar)
         if (line_editor_cursor > 0) {
           --line_editor_cursor;
           line_editor_buffer[line_editor_cursor] = 0;
-          hw_uart_write_string_P (PSTR("\010 \010"));
+          mprintstr(PSTR("\010 \010"));
         }
       }
     }
     else {
       /* 'enter' character */
-      hw_uart_write_string_P (PSTR("\r\n"));
+      mprint(MStringNewLine);
       line_editor_buffer[line_editor_cursor] = 0;
       if (TheCallback) {
         (*TheCallback) (line_editor_buffer);

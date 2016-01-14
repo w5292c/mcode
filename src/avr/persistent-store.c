@@ -24,8 +24,7 @@
 
 #include "persistent-store.h"
 
-#include "mglobal.h"
-#include "hw-uart.h"
+#include "mstring.h"
 
 #include <stdbool.h>
 #include <avr/eeprom.h>
@@ -140,18 +139,18 @@ void persist_store_test(void)
   for (i = 0; i < CYCLIC_STORAGE_LENGTH; ++i) {
     /* Handle the new line */
     if (newLineReported) {
-      hw_uart_write_uint32(i, false);
-      hw_uart_write_string_P(PSTR("  "));
+      mprint_uint32(i, false);
+      mprintstr(PSTR("  "));
       newLineReported = false;
     }
 
     /* Write hex data */
     const uint16_t data = eeprom_read_word(&TheCyclicStorage[i]);
-    hw_uart_write_uint16(data, false);
-    hw_uart_write_string_P(PSTR(" "));
+    mprint_uint16(data, false);
+    mputch(' ');
 
     if ((i & 0x0fu) == 0x0fu) {
-      hw_uart_write_string_P(PSTR("\r\n"));
+      mprint(MStringNewLine);
       newLineReported = true;
     }
   }
@@ -159,7 +158,7 @@ void persist_store_test(void)
   /* Move to the next line,
      if we have some text at the current line */
   if (!newLineReported) {
-    hw_uart_write_string_P(PSTR("\r\n"));
+    mprint(MStringNewLine);
   }
 }
 #endif /* Test code: end */

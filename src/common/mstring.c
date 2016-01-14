@@ -168,6 +168,38 @@ void mprintstr_R(const char *string)
   }
 }
 
+void mprint_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress)
+{
+  uint8_t i;
+  bool newLineReported = true;
+  for (i = 0; i < length; ++i) {
+    /* Handle the new line */
+    if (newLineReported) {
+      if (showAddress) {
+        mprint_uint32(i, false);
+        mprintstr(PSTR("  "));
+      }
+      newLineReported = false;
+    }
+
+    /* Write hex data */
+    mprint_uint8(*data, false);
+    ++data;
+    mputch(' ');
+
+    if ((i & 0x0fu) == 0x0fu) {
+      mprint(MStringNewLine);
+      newLineReported = true;
+    }
+  }
+
+  /* Move to the next line,
+     if we have some text at the current line */
+  if (!newLineReported) {
+    mprint(MStringNewLine);
+  }
+}
+
 const char *mstring(uint8_t id)
 {
   switch (id) {

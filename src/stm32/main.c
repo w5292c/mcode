@@ -27,6 +27,7 @@
 #include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
+#include "mstring.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
 #include "mcode-config.h"
@@ -47,7 +48,7 @@ int main(void)
   hw_uart_init();
   lcd_init(240, 320);
   mtick_add(main_mtick);
-  hw_uart_write_string("ARM variant started.\r\n");
+  mprintstrln(PSTR("ARM variant started."));
 #ifdef MCODE_DEBUG_BLINKING
   mcode_scheduler_add(main_tick);
 #endif /* MCODE_DEBUG_BLINKING */

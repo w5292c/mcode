@@ -24,9 +24,10 @@
 
 #include "system.h"
 
-#include "hw-uart.h"
+#include "mstring.h"
+#include "mglobal.h"
 
 void reboot(void)
 {
-  hw_uart_write_string("\r\nSystem reboot has been requested, but it is not implemented.\r\n");
+  mprintstrln(PSTR("System reboot has been requested, but it is not implemented."));
 }

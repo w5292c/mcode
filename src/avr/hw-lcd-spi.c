@@ -26,7 +26,7 @@
 
 #include "mtick.h"
 #include "hw-spi.h"
-#include "hw-uart.h"
+#include "mstring.h"
 #include "console.h"
 
 #include <avr/io.h>
@@ -95,10 +95,10 @@ void lcd_reset(void)
 void lcd_set_size(uint16_t width, uint16_t height)
 {
   if (lcd_get_width() != width || lcd_get_height() != height) {
-    hw_uart_write_string_P(PSTR("W: lcd_set_size(0x"));
-    hw_uart_write_uint16(width, true);
-    hw_uart_write_string_P(PSTR(", 0x"));
-    hw_uart_write_uint16(height, true);
-    hw_uart_write_string_P(PSTR("): unsupported resolution\r\n"));
+    mprintstr(PSTR("W: lcd_set_size(0x"));
+    mprint_uint16(width, true);
+    mprintstr(PSTR(", 0x"));
+    mprint_uint16(height, true);
+    mprintstrln(PSTR("): unsupported resolution"));
   }
 }
