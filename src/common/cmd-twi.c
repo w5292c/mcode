@@ -28,7 +28,7 @@
 #include "hw-twi.h"
 #include "hw-uart.h"
 #include "mglobal.h"
-#include "strings.h"
+#include "mstring.h"
 
 static void twi_write_callback(bool result);
 static bool cmd_engine_twi_read(const char *args, bool *startCmd);

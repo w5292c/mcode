@@ -26,7 +26,7 @@
 
 #include "mtick.h"
 #include "hw-uart.h"
-#include "strings.h"
+#include "mstring.h"
 #include "mcode-config.h"
 
 #include <stdbool.h>

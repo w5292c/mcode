@@ -30,7 +30,7 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "mglobal.h"
-#include "strings.h"
+#include "mstring.h"
 #include "hw-sound.h"
 #include "scheduler.h"
 #include "persistent-store.h"

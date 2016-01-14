@@ -25,7 +25,7 @@
 #include "cmd-engine.h"
 
 #include "utils.h"
-#include "strings.h"
+#include "mstring.h"
 #include "hw-sound.h"
 
 #include <string.h>

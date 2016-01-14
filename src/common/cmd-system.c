@@ -30,7 +30,7 @@
 #include "system.h"
 #include "hw-uart.h"
 #include "mglobal.h"
-#include "strings.h"
+#include "mstring.h"
 
 #include <string.h>
 

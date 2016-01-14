@@ -28,7 +28,7 @@
 #include "hw-leds.h"
 #include "hw-uart.h"
 #include "mglobal.h"
-#include "strings.h"
+#include "mstring.h"
 
 static void cmd_engine_set_led(const char *args);
 

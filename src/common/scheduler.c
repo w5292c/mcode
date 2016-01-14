@@ -24,7 +24,7 @@
 
 #include "scheduler.h"
 
-#include "strings.h"
+#include "mstring.h"
 
 #ifndef MCODE_TICKS_COUNT
 #define MCODE_TICKS_COUNT (8)
