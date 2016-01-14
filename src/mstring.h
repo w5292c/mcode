@@ -51,6 +51,7 @@ void mprintln(uint8_t id);
 void mprintstr(const char *string);
 void mprintstrln(const char *string);
 
+void mputch(char ch);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -27,8 +27,6 @@
 #include "mglobal.h"
 #include "hw-uart.h"
 
-static void mcode_out(const char *value);
-
 void merror(uint8_t id)
 {
   mprint(MStringError);
@@ -43,7 +41,7 @@ void mwarning(uint8_t id)
 
 void mprint(uint8_t id)
 {
-  mcode_out(mstring(id));
+  mprintstr(mstring(id));
 }
 
 void mprintln(uint8_t id)
@@ -54,18 +52,18 @@ void mprintln(uint8_t id)
 
 void mprintstrln(const char *string)
 {
-  mcode_out(string);
+  mprintstr(string);
   mprint(MStringNewLine);
 }
 
 void mprintstr(const char *string)
 {
-  mcode_out(string);
-}
-
-void mcode_out(const char *value)
-{
-  hw_uart_write_string_P(value);
+  if (string) {
+    uint8_t ch;
+    while (0 != (ch = pgm_read_byte(string++))) {
+      mputch(ch);
+    }
+  }
 }
 
 const char *mstring(uint8_t id)
@@ -90,4 +88,9 @@ const char *mstring(uint8_t id)
   default:
     return PSTR("##undefined##");
   }
+}
+
+void mputch(char ch)
+{
+  uart_write_char(ch);
 }
