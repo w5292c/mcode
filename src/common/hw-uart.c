@@ -35,10 +35,6 @@ void hw_uart_deinit(void)
 }
 #endif /* __linux__ */
 
-void hw_uart_start_read(void)
-{
-}
-
 void hw_uart_write_uint64(uint64_t value, bool skipZeros)
 {
   const uint32_t upper = (uint32_t)(value>>32);
