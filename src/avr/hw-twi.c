@@ -150,6 +150,7 @@ static void hw_twi_sched_tick(void)
     }
     break;
   case ETwiStateRdDoneError:
+    TheTwiState = ETwiStateIdle;
     if (TheReadCallback) {
       (*TheReadCallback)(false, 0, NULL);
     }

@@ -230,8 +230,10 @@ void mtime_write_ready(bool success)
 {
   if (!success) {
     merror(MStringInternalError);
-    (*TheWriteCallback)(false);
     TheState = RtcStateIdle;
+    if (TheWriteCallback) {
+      (*TheWriteCallback)(false);
+    }
     return;
   }
 
@@ -249,7 +251,9 @@ void mtime_write_ready(bool success)
   case RtcStateSetAlarm:
   case RtcStateSetNewDayAlarm:
     TheState = RtcStateIdle;
-    (*TheWriteCallback)(true);
+    if (TheWriteCallback) {
+      (*TheWriteCallback)(true);
+    }
     break;
   default:
     merror(MStringInternalError);
@@ -261,8 +265,10 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
 {
   if (!success) {
     merror(MStringInternalError);
-    (*TheDateCallback)(false, NULL);
     TheState = RtcStateIdle;
+    if (TheDateCallback) {
+      (*TheDateCallback)(false, NULL);
+    }
     return;
   }
 
@@ -272,8 +278,10 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
       mtime_parse_time(data);
     } else {
       merror(MStringInternalError);
-      (*TheDateCallback)(false, NULL);
       TheState = RtcStateIdle;
+      if (TheDateCallback) {
+        (*TheDateCallback)(false, NULL);
+      }
     }
     break;
   case RtcStateReadDate:
@@ -281,25 +289,24 @@ void mtime_read_ready(bool success, uint8_t length, const uint8_t *data)
       mtime_parse_date(data);
     } else {
       merror(MStringInternalError);
-      (*TheDateCallback)(false, NULL);
       TheState = RtcStateIdle;
+      if (TheDateCallback) {
+        (*TheDateCallback)(false, NULL);
+      }
     }
     break;
   default:
     merror(MStringInternalError);
-    (*TheDateCallback)(false, NULL);
     TheState = RtcStateIdle;
+    if (TheDateCallback) {
+      (*TheDateCallback)(false, NULL);
+    }
     break;
   }
 }
 
 void mtime_parse_time(const uint8_t *data)
 {
-  if (!TheTimeCallback) {
-    merror(MStringInternalError);
-    return;
-  }
-
   MTime time;
   const uint8_t seconds = *data++;
   time.seconds = 10*((seconds>>4)&0x07u) + (0x0fu&seconds);
@@ -307,17 +314,14 @@ void mtime_parse_time(const uint8_t *data)
   time.minutes = 10*((minutes>>4)&0x07u) + (0x0fu&minutes);
   const uint8_t hours = *data;
   time.hours = 10*((hours>>4)&0x03u) + (0x0fu&hours);
-  (*TheTimeCallback)(true, &time);
   TheState = RtcStateIdle;
+  if (TheTimeCallback) {
+    (*TheTimeCallback)(true, &time);
+  }
 }
 
 void mtime_parse_date(const uint8_t *data)
 {
-  if (!TheDateCallback) {
-    merror(MStringInternalError);
-    return;
-  }
-
   MDate date;
   const uint8_t dayOfWeek = *data++;
   date.dayOfWeek = dayOfWeek;
@@ -333,6 +337,8 @@ void mtime_parse_date(const uint8_t *data)
     date.year += 2000;
   }
 
-  (*TheDateCallback)(true, &date);
   TheState = RtcStateIdle;
+  if (TheDateCallback) {
+    (*TheDateCallback)(true, &date);
+  }
 }

@@ -51,11 +51,13 @@ static void rtc_alarm_read_ready(bool success, uint8_t length, const uint8_t *da
 void rtc_alarm_init(void)
 {
   /* Configure INT1 pin (PD3) as input */
-  DDRD &= ~(1U << DDD3);
+  DDRD &= ~_BV(DDD3);
   /* Enable pull-up resistor for PD3 */
-  PORTD |= (1U << PD3);
-  MCUCR |= (0U<<ISC00)|(0U<<ISC01);
-  GICR |= (1U<<INT1);
+  PORTD |= _BV(PD3);
+  /* Generate an interrupt on low level of INT1 pin (PD3) */
+  MCUCR |= (0U<<ISC10)|(0U<<ISC11);
+  /* Enable external interrupt request INT1 (PD3) */
+  GICR |= _BV(INT1);
   TheState = RtcAlarmStateIdle;
   mcode_scheduler_add(rtc_alarm_tick);
 }
