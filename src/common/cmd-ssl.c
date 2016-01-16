@@ -60,7 +60,7 @@ static void cmd_engine_mtick(void);
 static void cmd_engine_passwd(void);
 static void cmd_engine_on_pass(const char *string);
 static void cmd_engine_handle_pass(const char *pass);
-static void cmd_engine_set_cmd_mode(const char *params);
+static void cmd_engine_set_cmd_mode(const char *params, bool *startCmd);
 #endif /* MCODE_COMMAND_MODES */
 
 static void cmd_engine_sha256(const char *aParams);
@@ -87,9 +87,7 @@ bool cmd_engine_ssl_command(const char *command, bool *startCmd)
   }
 #ifdef MCODE_COMMAND_MODES
   else if (!strncmp_P(command, PSTR("su "), 3)) {
-    cmd_engine_set_cmd_mode(command + 3);
-    cmd_engine_start();
-    *startCmd = false;
+    cmd_engine_set_cmd_mode(command + 3, startCmd);
     return true;
   } else if (!strcmp_P(command, PSTR("passwd"))) {
     cmd_engine_passwd();
@@ -144,13 +142,21 @@ CmdMode cmd_engine_get_mode(void)
   return (CmdMode)TheMode;
 }
 
-void cmd_engine_set_cmd_mode(const char *args)
+void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
 {
   uint16_t value = 0;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &value);
   if (args || !value || value > 3) {
     merror(MStringWrongArgument);
+    return;
+  }
+
+  /* Convert 'value' to 'CmdMode' */
+  --value;
+  /* For the 'root' mode we need to check password */
+  if (CmdModeRoot != value) {
+    cmd_engine_set_mode((CmdMode)value);
     return;
   }
 
@@ -169,10 +175,14 @@ void cmd_engine_set_cmd_mode(const char *args)
   /* Check the entered password*/
   persist_store_load(PersistStoreIdHash, storedHash, SHA256_DIGEST_LENGTH);
   if (!memcmp(hash, storedHash, SHA256_DIGEST_LENGTH)) {
-    cmd_engine_set_mode((CmdMode)(value - 1));
+    cmd_engine_set_mode((CmdMode)value);
   } else {
     merror(MStringInternalError);
   }
+
+  /* We need to revert line editor to the engine, so, start engine */
+  *startCmd = false;
+  cmd_engine_start();
 }
 
 void cmd_engine_on_pass(const char *string)
