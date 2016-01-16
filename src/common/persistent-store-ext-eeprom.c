@@ -44,6 +44,18 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
     return;
   }
 
+  uint8_t buffer[2];
+  buffer[0] = 0x00u;
+  buffer[1] = 0x00u;
+  TheSuccess = false;
+  twi_send(0xaeu, 2, buffer, persist_store_write_ready);
+  mcode_scheduler_start();
+
+  if (!TheSuccess) {
+    merror(MStringInternalError);
+    return;
+  }
+
   TheSuccess = false;
   TheBuffer = data;
   twi_recv(0xaeu, length, persist_store_read_ready);
