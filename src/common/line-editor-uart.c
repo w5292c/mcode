@@ -42,17 +42,16 @@ static line_editor_uart_ready TheCallback = 0;
 
 static void line_editor_uart_callback(char aChar);
 
-void line_editor_uart_init (void)
+void line_editor_uart_init(void)
 {
   if (!line_editor_initialized) {
     TheEchoEnabled = true;
-    memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
-    hw_uart_set_callback (line_editor_uart_callback);
+    hw_uart_set_callback(line_editor_uart_callback);
     line_editor_initialized = 1;
   }
 }
 
-void line_editor_uart_deinit (void)
+void line_editor_uart_deinit(void)
 {
   if (line_editor_initialized) {
     line_editor_initialized = 0;
@@ -61,12 +60,12 @@ void line_editor_uart_deinit (void)
   }
 }
 
-void line_editor_uart_set_callback (line_editor_uart_ready aCallback)
+void line_editor_uart_set_callback(line_editor_uart_ready aCallback)
 {
   TheCallback = aCallback;
 }
 
-void line_editor_uart_start (void)
+void line_editor_uart_start(void)
 {
 #ifdef MCODE_COMMAND_MODES
   const char *prompt = PSTR("$ ");
@@ -89,49 +88,43 @@ void line_editor_uart_start (void)
 
 void line_editor_uart_callback(char aChar)
 {
-  if (line_editor_cursor >= 0) {
-    /* there is enough space for appending another character */
-    if (10 != aChar && 13 != aChar) {
-      /* non-enter character, check if it is printable and append to the buffer */
-      if (isprint((int)aChar)) {
-        /* we have a alpha-numeric character, append it to the buffer */
-        if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1) {
-          line_editor_buffer[line_editor_cursor] = (char)aChar;
-          if (TheEchoEnabled) {
-            mprintstr_R(&line_editor_buffer[line_editor_cursor]);
-          }
-          ++line_editor_cursor;
-        } else {
-          mputch('\007');
+  /* there is enough space for appending another character */
+  if (10 != aChar && 13 != aChar) {
+    /* non-enter character, check if it is printable and append to the buffer */
+    if (isprint((int)aChar)) {
+      /* we have a alpha-numeric character, append it to the buffer */
+      if (line_editor_cursor < LINE_EDITOR_UART_BUFFER_LENGTH - 1) {
+        line_editor_buffer[line_editor_cursor] = (char)aChar;
+        if (TheEchoEnabled) {
+          mprintstr_R(&line_editor_buffer[line_editor_cursor]);
         }
+        ++line_editor_cursor;
+      } else {
+        mputch('\007');
       }
-      else if (127 == aChar || 8 == aChar) {
-        /* 'delete' character */
-        if (line_editor_cursor > 0) {
-          --line_editor_cursor;
-          line_editor_buffer[line_editor_cursor] = 0;
-          mprintstr(PSTR("\010 \010"));
-        }
+    } else if (127 == aChar || 8 == aChar) {
+      /* 'delete' character */
+      if (line_editor_cursor > 0) {
+        --line_editor_cursor;
+        line_editor_buffer[line_editor_cursor] = 0;
+        mprintstr(PSTR("\010 \010"));
       }
     }
-    else {
-      /* 'enter' character */
-      mprint(MStringNewLine);
-      line_editor_buffer[line_editor_cursor] = 0;
-      if (TheCallback) {
-        (*TheCallback) (line_editor_buffer);
-      }
-      line_editor_cursor = 0;
-      memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
+  } else {
+    /* 'enter' character */
+    mprint(MStringNewLine);
+    line_editor_buffer[line_editor_cursor] = 0;
+    if (TheCallback) {
+      (*TheCallback)(line_editor_buffer);
     }
+    line_editor_reset();
   }
-  else {
-    /* negative index, some errors have been happened, wait for 'enter' in order to reset recording */
-    if (10 == aChar || 13 == aChar) {
-      line_editor_cursor = 0;
-      memset (line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
-    }
-  }
+}
+
+void line_editor_reset(void)
+{
+  line_editor_cursor = 0;
+  memset(line_editor_buffer, 0, LINE_EDITOR_UART_BUFFER_LENGTH);
 }
 
 void line_editor_set_echo(bool enabled)

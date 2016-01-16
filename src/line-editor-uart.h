@@ -38,6 +38,7 @@ void line_editor_uart_deinit (void);
 
 void line_editor_uart_set_callback (line_editor_uart_ready aCallback);
 
+void line_editor_reset(void);
 void line_editor_set_echo(bool enabled);
 
 void line_editor_uart_start (void);

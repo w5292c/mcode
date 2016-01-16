@@ -30,6 +30,7 @@
 #include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
+#include "scheduler.h"
 #include "line-editor-uart.h"
 #include "persistent-store.h"
 
@@ -50,12 +51,14 @@ typedef enum {
 } ModesState;
 
 static uint8_t TheMode;
+static uint8_t *ThePointer;
 static uint8_t TheModesState;
 static uint32_t TheSuperUserTimeout;
 static uint8_t TheCommandEngineState = CommandEngineStateCmd;
 static uint8_t TheCommandEngineStateRequest;
 static void cmd_engine_mtick(void);
 static void cmd_engine_passwd(void);
+static void cmd_engine_on_pass(const char *string);
 static void cmd_engine_handle_pass(const char *pass);
 static void cmd_engine_set_cmd_mode(const char *params);
 #endif /* MCODE_COMMAND_MODES */
@@ -84,7 +87,8 @@ bool cmd_engine_ssl_command(const char *command, bool *startCmd)
   }
 #ifdef MCODE_COMMAND_MODES
   else if (!strncmp_P(command, PSTR("su "), 3)) {
-    cmd_engine_set_cmd_mode(&command[3]);
+    cmd_engine_set_cmd_mode(command + 3);
+    cmd_engine_start();
     *startCmd = false;
     return true;
   } else if (!strcmp_P(command, PSTR("passwd"))) {
@@ -131,9 +135,6 @@ void cmd_engine_set_mode(CmdMode mode)
     TheMode = mode;
     break;
   default:
-    mprintstr(PSTR("Error: 'cmd_engine_set_mode' - wrong mode: "));
-    mprint_uintd(mode, 0);
-    mprint(MStringNewLine);
     break;
   }
 }
@@ -148,16 +149,37 @@ void cmd_engine_set_cmd_mode(const char *args)
   uint16_t value = 0;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &value);
-  if (!args && value > 0 && value < 4) {
-    TheCommandEngineStateRequest = (CmdMode)(value - 1);
-    mprint(MStringEnterPass);
-    TheCommandEngineState = CommandEngineStatePass;
-    TheModesState = ModesStateEnterPass;
-    line_editor_set_echo(false);
-    line_editor_uart_set_callback(cmd_engine_handle_pass);
-  } else {
+  if (args || !value || value > 3) {
     merror(MStringWrongArgument);
+    return;
   }
+
+  uint8_t hash[SHA256_DIGEST_LENGTH];
+  uint8_t storedHash[SHA256_DIGEST_LENGTH];
+  ThePointer = hash;
+
+  /* Enter the password */
+  mprint(MStringEnterPass);
+  line_editor_reset();
+  line_editor_set_echo(false);
+  line_editor_uart_set_callback(cmd_engine_on_pass);
+  mcode_scheduler_start();
+  line_editor_set_echo(true);
+
+  /* Check the entered password*/
+  persist_store_load(PersistStoreIdHash, storedHash, SHA256_DIGEST_LENGTH);
+  if (!memcmp(hash, storedHash, SHA256_DIGEST_LENGTH)) {
+    cmd_engine_set_mode((CmdMode)(value - 1));
+  } else {
+    merror(MStringInternalError);
+  }
+}
+
+void cmd_engine_on_pass(const char *string)
+{
+  const uint8_t length = strlen(string);
+  SHA256((const uint8_t *)string, length, ThePointer);
+  mcode_scheduler_stop();
 }
 
 void cmd_engine_handle_pass(const char *pass)

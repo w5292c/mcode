@@ -92,15 +92,14 @@ static void hw_uart_tick(void)
       UCSRB |= (1<<RXCIE);
 
       /* */
+      const uint8_t length = TheCurrentReadIndex1;
+      TheCurrentReadIndex1 = 0;
       if (TheCallback) {
         uint8_t i;
-        for (i = 0; i < TheCurrentReadIndex1; ++i) {
+        for (i = 0; i < length; ++i) {
           (*TheCallback)(TheReadBuffer1[i]);
         }
       }
-
-      /* we passed the content of the buffer to the client, reset the index */
-      TheCurrentReadIndex1 = 0;
     }
   } else {
     if (TheCurrentReadIndex0) {
@@ -114,15 +113,14 @@ static void hw_uart_tick(void)
       UCSRB |= (1<<RXCIE);
 
       /* */
+      const uint8_t length = TheCurrentReadIndex0;
+      TheCurrentReadIndex0 = 0;
       if (TheCallback) {
         uint8_t i;
-        for (i = 0; i < TheCurrentReadIndex0; ++i) {
+        for (i = 0; i < length; ++i) {
           (*TheCallback)(TheReadBuffer0[i]);
         }
       }
-
-      /* we passed the content of the buffer to the client, reset the index */
-      TheCurrentReadIndex0 = 0;
     }
   }
 }
