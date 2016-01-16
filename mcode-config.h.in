@@ -55,6 +55,9 @@
 /* Enable persistent store */
 #cmakedefine MCODE_PERSIST_STORE
 
+/* Enable persistent store on external EEPROM */
+#cmakedefine MCODE_PERSIST_STORE_EXT_EEPROM
+
 /* Enable TWI support */
 #cmakedefine MCODE_TWI
 

@@ -40,7 +40,6 @@ option ( MCODE_TUNE_TRACK "Show notes for tunes" OFF )
 option ( MCODE_CONSOLE "Enable console support" OFF )
 option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
-option ( MCODE_PERSIST_STORE "Enable persistent store" ON )
 option ( MCODE_COMMAND_MODES "Enable command engine modes" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
@@ -50,6 +49,9 @@ option ( MCODE_RTC_DS3231 "Enable DS3231 RTC" ON )
 
 option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" OFF )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )
+
+option ( MCODE_PERSIST_STORE "Enable persistent store" ON )
+option ( MCODE_PERSIST_STORE_EXT_EEPROM "Enable persistent store on external EEPROM" ON )
 
 option ( MCODE_BOOTLOADER "Include AVR109-based bootloader code" ON )
 
@@ -135,6 +137,11 @@ if ( MCODE_PERSIST_STORE )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/avr/persistent-store.c
   )
+  if ( MCODE_PERSIST_STORE_EXT_EEPROM )
+    set ( SRC_LIST ${SRC_LIST}
+      ${MCODE_TOP}/src/common/persistent-store-ext-eeprom.c
+    )
+  endif (MCODE_PERSIST_STORE_EXT_EEPROM )
 endif ( MCODE_PERSIST_STORE )
 
 if ( MCODE_RTC )
