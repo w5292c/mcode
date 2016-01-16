@@ -37,29 +37,12 @@
 #include <string.h>
 
 #ifdef MCODE_COMMAND_MODES
-typedef enum {
-  CommandEngineStateCmd,
-  CommandEngineStatePass,
-} CommandEngineState;
-
-typedef enum {
-  ModesStateIdle,
-  ModesStateEnterPass,
-  ModesStateChangePassEnterCurrent,
-  ModesStateChangePassEnterNew,
-  ModesStateChangePassConfirmNew
-} ModesState;
-
 static uint8_t TheMode;
 static uint8_t *ThePointer;
-static uint8_t TheModesState;
 static uint32_t TheSuperUserTimeout;
-static uint8_t TheCommandEngineState = CommandEngineStateCmd;
-static uint8_t TheCommandEngineStateRequest;
 static void cmd_engine_mtick(void);
 static void cmd_engine_passwd(void);
 static void cmd_engine_on_pass(const char *string);
-static void cmd_engine_handle_pass(const char *pass);
 static void cmd_engine_set_cmd_mode(const char *params, bool *startCmd);
 #endif /* MCODE_COMMAND_MODES */
 
@@ -91,6 +74,8 @@ bool cmd_engine_ssl_command(const char *command, bool *startCmd)
     return true;
   } else if (!strcmp_P(command, PSTR("passwd"))) {
     cmd_engine_passwd();
+    line_editor_set_echo(true);
+    cmd_engine_start();
     *startCmd = false;
     return true;
   }
@@ -172,7 +157,7 @@ void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
   mcode_scheduler_start();
   line_editor_set_echo(true);
 
-  /* Check the entered password*/
+  /* Check the entered password */
   persist_store_load(PersistStoreIdHash, storedHash, SHA256_DIGEST_LENGTH);
   if (!memcmp(hash, storedHash, SHA256_DIGEST_LENGTH)) {
     cmd_engine_set_mode((CmdMode)value);
@@ -192,56 +177,6 @@ void cmd_engine_on_pass(const char *string)
   mcode_scheduler_stop();
 }
 
-void cmd_engine_handle_pass(const char *pass)
-{
-  const uint16_t n = strlen(pass);
-  uint8_t hash[SHA256_DIGEST_LENGTH];
-  uint8_t passHash[SHA256_DIGEST_LENGTH];
-  SHA256((const uint8_t *)pass, n, passHash);
-  if (ModesStateEnterPass == TheModesState ||
-      ModesStateChangePassEnterCurrent == TheModesState) {
-    persist_store_load(PersistStoreIdHash, hash, SHA256_DIGEST_LENGTH);
-
-    if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
-      cmd_engine_set_mode((CmdMode)TheCommandEngineStateRequest);
-    } else {
-      merror(MStringInternalError);
-
-      line_editor_set_echo(true);
-      TheModesState = ModesStateIdle;
-      TheCommandEngineState = CommandEngineStateCmd;
-      cmd_engine_start();
-    }
-
-    if (ModesStateEnterPass == TheModesState) {
-      line_editor_set_echo(true);
-      TheModesState = ModesStateIdle;
-      TheCommandEngineState = CommandEngineStateCmd;
-      cmd_engine_start();
-    } else if (ModesStateChangePassEnterCurrent == TheModesState) {
-      mprintstr(PSTR("Enter new password: "));
-      TheModesState = ModesStateChangePassEnterNew;
-    }
-  } else if (ModesStateChangePassEnterNew == TheModesState) {
-    persist_store_save(PersistStoreIdNewHash, passHash, SHA256_DIGEST_LENGTH);
-    mprintstr(PSTR("Confirm new password: "));
-    TheModesState = ModesStateChangePassConfirmNew;
-  } else if (ModesStateChangePassConfirmNew == TheModesState) {
-    persist_store_load(PersistStoreIdNewHash, hash, SHA256_DIGEST_LENGTH);
-
-    if (!memcmp(hash, passHash, SHA256_DIGEST_LENGTH)) {
-      persist_store_save(PersistStoreIdHash, passHash, SHA256_DIGEST_LENGTH);
-    } else {
-      mprintstrln(PSTR("Error: password missmatch"));
-    }
-
-    line_editor_set_echo(true);
-    TheModesState = ModesStateIdle;
-    TheCommandEngineState = CommandEngineStateCmd;
-    cmd_engine_start();
-  }
-}
-
 void cmd_engine_mtick(void)
 {
   if (TheSuperUserTimeout && !(--TheSuperUserTimeout)) {
@@ -253,10 +188,41 @@ void cmd_engine_mtick(void)
 
 void cmd_engine_passwd(void)
 {
+  /* First, we need to check the current password */
+  uint8_t hash[SHA256_DIGEST_LENGTH];
+  uint8_t tempHash[SHA256_DIGEST_LENGTH];
+  ThePointer = hash;
+
+  /* Enter the password */
   mprint(MStringEnterPass);
-  TheCommandEngineState = CommandEngineStatePass;
-  TheModesState = ModesStateChangePassEnterCurrent;
+  line_editor_reset();
   line_editor_set_echo(false);
-  line_editor_uart_set_callback(cmd_engine_handle_pass);
+  line_editor_uart_set_callback(cmd_engine_on_pass);
+  mcode_scheduler_start();
+
+  /* Check the entered password */
+  persist_store_load(PersistStoreIdHash, tempHash, SHA256_DIGEST_LENGTH);
+  if (memcmp(hash, tempHash, SHA256_DIGEST_LENGTH)) {
+    merror(MStringInternalError);
+    return;
+  }
+
+  /* Now, enter the new password */
+  mprintstr(PSTR("Enter new password: "));
+  line_editor_reset();
+  mcode_scheduler_start();
+
+  ThePointer = tempHash;
+  mprintstr(PSTR("Confirm new password: "));
+  line_editor_reset();
+  mcode_scheduler_start();
+
+  if (memcmp(hash, tempHash, SHA256_DIGEST_LENGTH)) {
+    /* Passwords do not match */
+    merror(MStringInternalError);
+    return;
+  }
+
+  persist_store_save(PersistStoreIdHash, hash, SHA256_DIGEST_LENGTH);
 }
 #endif /* MCODE_COMMAND_MODES */
