@@ -32,6 +32,18 @@
 #include <string.h>
 #include <stdbool.h>
 
+/**
+ * EEPROM Memory Map:
+ * ===========================================
+ * |  Start | Length | Description           |
+ * |========|========|=======================|
+ * | 0x0000 |   0x20 | Password hash         |
+ * | 0x0020 |   0x40 | Value storage         |
+ * | 0x0060 |   0x02 | Initial value storage |
+ * | 0x0062 |        | Free memory           |
+ * ===========================================
+ */
+
 static void persist_store_write_ready(bool success);
 static void persist_store_read_ready(bool success, uint8_t length, const uint8_t *data);
 
@@ -99,4 +111,50 @@ void persist_store_read_ready(bool success, uint8_t length, const uint8_t *data)
     memcpy(TheBuffer, data, length);
   }
   mcode_scheduler_stop();
+}
+
+uint16_t persist_store_get_initial_value(void)
+{
+  union {
+    uint8_t buffer[2];
+    uint16_t value;
+  } u;
+  u.buffer[0] = 0x00u;
+  u.buffer[1] = 0x60u;
+  TheSuccess = false;
+  twi_send(0xaeu, 2, u.buffer, persist_store_write_ready);
+  mcode_scheduler_start();
+
+  if (!TheSuccess) {
+    merror(MStringInternalError);
+    return 0;
+  }
+
+  TheSuccess = false;
+  TheBuffer = u.buffer;
+  twi_recv(0xaeu, 2, persist_store_read_ready);
+  mcode_scheduler_start();
+
+  if (!TheSuccess) {
+    merror(MStringInternalError);
+    return 0;
+  }
+
+  return u.value;
+}
+
+void persist_store_set_initial_value(uint16_t value)
+{
+  uint8_t buffer[4];
+  buffer[0] = 0x00u;
+  buffer[1] = 0x60u;
+  memcpy(buffer + 2, &value, 2);
+
+  TheSuccess = false;
+  twi_send(0xaeu, 4, buffer, persist_store_write_ready);
+  mcode_scheduler_start();
+
+  if (!TheSuccess) {
+    merror(MStringInternalError);
+  }
 }

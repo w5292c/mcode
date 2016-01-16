@@ -47,7 +47,10 @@ static uint16_t TheCyclicStorage[CYCLIC_STORAGE_LENGTH] EEMEM = {
   0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu,
   0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu,
 };
+
+#ifndef MCODE_PERSIST_STORE_EXT_EEPROM
 static uint16_t TheInitailValue EEMEM = 60;
+#endif /* MCODE_PERSIST_STORE_EXT_EEPROM */
 
 #ifndef MCODE_PERSIST_STORE_EXT_EEPROM
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
@@ -119,6 +122,7 @@ void persist_store_set_value(uint16_t value)
   }
 }
 
+#ifndef MCODE_PERSIST_STORE_EXT_EEPROM
 uint16_t persist_store_get_initial_value(void)
 {
   return eeprom_read_word(&TheInitailValue);
@@ -128,6 +132,7 @@ void persist_store_set_initial_value(uint16_t value)
 {
   eeprom_write_word(&TheInitailValue, value);
 }
+#endif /* MCODE_PERSIST_STORE_EXT_EEPROM */
 
 #if 0 /* Test code: begin */
 void persist_store_test(void)
