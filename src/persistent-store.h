@@ -32,9 +32,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef enum {
-  PersistStoreIdNone,
   PersistStoreIdHash,
-  PersistStoreIdNewHash
 } PersistStoreId;
 
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length);

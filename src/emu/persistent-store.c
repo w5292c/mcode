@@ -33,7 +33,6 @@ uint8_t TheHash[32] = {
   0xe5u, 0x0bu, 0x5bu, 0xd8u, 0xe4u, 0xdau, 0xd7u, 0xa3u,
   0xa7u, 0x25u, 0x00u, 0x0fu, 0xebu, 0x82u, 0xe8u, 0xf1u,
 };
-uint8_t TheNewHash[32];
 
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
 {
@@ -41,9 +40,6 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
   switch (id) {
   case PersistStoreIdHash:
     pointer = TheHash;
-    break;
-  case PersistStoreIdNewHash:
-    pointer = TheNewHash;
     break;
   default:
     return;
@@ -58,9 +54,6 @@ void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
   switch (id) {
   case PersistStoreIdHash:
     pointer = TheHash;
-    break;
-  case PersistStoreIdNewHash:
-    pointer = TheNewHash;
     break;
   default:
     return;
