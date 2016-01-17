@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2016 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,47 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_HW_TWI_H
-#define MCODE_HW_TWI_H
+#include "hw-twi.h"
 
-#include "mcode-config.h"
+#include "scheduler.h"
 
-#include "mglobal.h"
+#include <string.h>
 
-#include <stdint.h>
-#include <stdbool.h>
+static bool TheSuccess;
+static uint8_t *TheBuffer;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static void twi_write_done(bool success);
+static void twi_read_ready(bool success, uint8_t length, const uint8_t *data);
 
-#ifdef MCODE_TWI
+bool twi_recv_sync(uint8_t addr, uint8_t length, uint8_t *data)
+{
+  TheSuccess = false;
+  TheBuffer = data;
+  twi_recv(addr, length, twi_read_ready);
+  mcode_scheduler_start();
 
-void twi_init(void);
-void twi_deinit(void);
+  return TheSuccess;
+}
 
-void twi_recv(uint8_t addr, uint8_t length, mcode_read_ready callback);
-void twi_send(uint8_t addr, uint8_t length, const uint8_t *data, mcode_done callback);
+bool twi_send_sync(uint8_t addr, uint8_t length, const uint8_t *data)
+{
+  TheSuccess = false;
+  twi_send(addr, length, data, twi_write_done);
+  mcode_scheduler_start();
 
-bool twi_recv_sync(uint8_t addr, uint8_t length, uint8_t *data);
-bool twi_send_sync(uint8_t addr, uint8_t length, const uint8_t *data);
+  return TheSuccess;
+}
 
-#endif /* MCODE_TWI */
+void twi_write_done(bool success)
+{
+  TheSuccess = success;
+  mcode_scheduler_stop();
+}
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* MCODE_HW_TWI_H */
+void twi_read_ready(bool success, uint8_t length, const uint8_t *data)
+{
+  TheSuccess = success;
+  memcpy(TheBuffer, data, length);
+  TheBuffer = 0;
+  mcode_scheduler_stop();
+}
