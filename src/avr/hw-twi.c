@@ -25,7 +25,6 @@
 #include "hw-twi.h"
 
 #include "hw-uart.h"
-#include "mstring.h"
 #include "scheduler.h"
 
 #include <util/twi.h>
@@ -101,9 +100,7 @@ void twi_recv(uint8_t addr, uint8_t length, mcode_read_ready callback)
 
     TheReadCallback = callback;
     TheTwiState = ETwiStateRdSendStart;
-    hw_twi_send_start();
   } else {
-    merror(MStringInternalError);
     if (callback) {
       (*callback)(false, 0, NULL);
     }
@@ -119,7 +116,6 @@ void twi_send(uint8_t addr, uint8_t length, const uint8_t *data, mcode_done call
 
     TheWriteCallback = callback;
     TheTwiState = ETwiStateWrSendStart;
-    hw_twi_send_start();
   } else {
     if (callback) {
       (*callback)(false);
@@ -154,6 +150,10 @@ static void hw_twi_sched_tick(void)
     if (TheReadCallback) {
       (*TheReadCallback)(false, 0, NULL);
     }
+    break;
+  case ETwiStateRdSendStart:
+  case ETwiStateWrSendStart:
+    hw_twi_send_start();
     break;
   default:
     break;
@@ -283,6 +283,17 @@ static inline void hw_twi_handle_data_received_nack(void)
   }
 }
 
+static inline void hw_twi_handle_addr_nack_received(void)
+{
+  if (TheTwiState == ETwiStateWrSendSlvAddr) {
+    TheTwiState = ETwiStateWrSendStart;
+    TWCR |= _BV(TWINT);
+  } else {
+    TheTwiState = ETwiStateWrDoneError;
+    TWCR = (1<<TWEN)|(0<<TWIE)|(1<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(1<<TWSTO)|(0<<TWWC);
+  }
+}
+
 ISR(TWI_vect)
 {
   const uint8_t data = TW_STATUS;
@@ -307,6 +318,11 @@ ISR(TWI_vect)
   case TW_SR_DATA_NACK:
   case TW_MR_DATA_NACK:
     hw_twi_handle_data_received_nack();
+    break;
+  case TW_MT_SLA_NACK:
+    hw_twi_handle_addr_nack_received();
+    break;
+  default:
     break;
   }
 }
