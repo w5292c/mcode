@@ -104,12 +104,6 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     cmd_engine_system_test(args + 5, startCmd);
     return true;
   } else if (!strncmp_P(args, PSTR("call "), 5)) {
-#ifdef MCODE_COMMAND_MODES
-    if (CmdModeRoot != cmd_engine_get_mode()) {
-      merror(MStringWrongMode);
-      return true;
-    }
-#endif /* MCODE_COMMAND_MODES */
     cmd_engine_call(args + 5, startCmd);
     return true;
   }
@@ -164,6 +158,15 @@ void cmd_engine_call(const char *args, bool *startCmd)
     merror(MStringWrongArgument);
     return;
   }
+
+#ifdef MCODE_COMMAND_MODES
+  /* Make bootloader address available in non-root mode */
+  if ((CmdModeRoot != cmd_engine_get_mode()) &&
+      (CmdModeUser != cmd_engine_get_mode() || 0x7c00u != address)) {
+    merror(MStringWrongMode);
+    return;
+  }
+#endif /* MCODE_COMMAND_MODES */
 
   mprintstr(PSTR("Calling program at address: 0x"));
   mprint_uint64(address, true);
