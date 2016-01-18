@@ -31,6 +31,8 @@
 #include "mglobal.h"
 #include "mstring.h"
 
+#include "hw-twi.h"
+
 #include <string.h>
 
 static void cmd_engine_call(const char *args, bool *startCmd);
@@ -178,4 +180,25 @@ void cmd_engine_call(const char *args, bool *startCmd)
 
 void cmd_engine_system_test(const char *args, bool *startCmd)
 {
+  uint8_t buffer[18];
+  memset(buffer + 2, 0xffu, 16);
+  buffer[0] = 0x00u;
+  buffer[1] = 0x20u;
+  if (!twi_send_sync(0xaeu, 18, buffer)) {
+    mprintstrln(PSTR("Error 0"));
+    return;
+  }
+
+  buffer[0] = 0x00u;
+  buffer[1] = 0x20u;
+  if (!twi_send_sync(0xaeu, 2, buffer)) {
+    mprintstrln(PSTR("Error 1"));
+    return;
+  }
+
+  if (!twi_recv_sync(0xaeu, 16, buffer)) {
+    mprintstrln(PSTR("Error 2"));
+    return;
+  }
+  mprint_dump_buffer(16, buffer, true);
 }
