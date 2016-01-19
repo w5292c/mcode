@@ -50,6 +50,13 @@ static void persist_store_read_ready(bool success, uint8_t length, const uint8_t
 static bool TheSuccess;
 static uint8_t *TheBuffer;
 
+#ifdef __AVR__
+#include <avr/eeprom.h>
+static uint16_t TheDummyWord EEMEM __attribute__((used)) = 0xffffu;
+#endif /* __AVR__ */
+
+#define CYCLIC_STORAGE_ITEMS_COUNT (32)
+
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
 {
   if (PersistStoreIdHash != id || length != SHA256_DIGEST_LENGTH) {
@@ -111,6 +118,83 @@ void persist_store_read_ready(bool success, uint8_t length, const uint8_t *data)
     memcpy(TheBuffer, data, length);
   }
   mcode_scheduler_stop();
+}
+
+uint16_t persist_store_get_value(void)
+{
+  union {
+    uint8_t buffer[2];
+    uint16_t value;
+  } u;
+  uint8_t i;
+  for (i = 31; i >= 0; --i) {
+    /* Send address */
+    u.buffer[0] = 0x00u;
+    u.buffer[1] = 0x20u + (i<<1);
+    if (!twi_send_sync(0xaeu, 2, u.buffer)) {
+      return 0;
+    }
+    /* Read the value at index 'i' */
+    if (!twi_recv_sync(0xaeu, 2, u.buffer)) {
+      return 0;
+    }
+    if (u.value != 0xffffu) {
+      break;
+    }
+  }
+  return (u.value != 0xffffu) ? u.value : 0x0000u;
+}
+
+void persist_store_set_value(uint16_t value)
+{
+  if (persist_store_get_value() == value) {
+    /* Already up-to-date value */
+    return;
+  }
+
+  uint8_t i;
+  union {
+    uint8_t buffer[4];
+    struct {
+      uint16_t value;
+      uint16_t value2;
+    };
+  } u;
+  bool written = false;
+  for (i = 0; i < CYCLIC_STORAGE_ITEMS_COUNT; ++i) {
+    /* Send address */
+    u.buffer[0] = 0x00u;
+    u.buffer[1] = 0x20u + (i<<1);
+    if (!twi_send_sync(0xaeu, 2, u.buffer)) {
+      return;
+    }
+    /* Read the value at index 'i' */
+    if (!twi_recv_sync(0xaeu, 2, u.buffer)) {
+      return;
+    }
+    if (u.value == 0xffffu) {
+      u.buffer[0] = 0x00u;
+      u.buffer[1] = 0x20u + (i<<1);
+      u.value2 = value;
+      if (!twi_send_sync(0xaeu, 4, u.buffer)) {
+        return;
+      }
+      written = true;
+      break;
+    }
+  }
+
+  /* No free space left, clean the buffer */
+  if (!written) {
+    for (i = 0; i < CYCLIC_STORAGE_ITEMS_COUNT; ++i) {
+      u.buffer[0] = 0x00u;
+      u.buffer[1] = 0x20u + (i<<1);
+      u.value2 = i ? 0xffffu : value;
+      if (!twi_send_sync(0xaeu, 4, u.buffer)) {
+        return;
+      }
+    }
+  }
 }
 
 uint16_t persist_store_get_initial_value(void)

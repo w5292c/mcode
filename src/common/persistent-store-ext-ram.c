@@ -46,6 +46,11 @@
  * ===========================================
  */
 
+#ifdef __AVR__
+#include <avr/eeprom.h>
+static uint16_t TheDummyWord EEMEM __attribute__((used)) = 0xffffu;
+#endif /* __AVR__ */
+
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
 {
   if (PersistStoreIdHash != id || length != SHA256_DIGEST_LENGTH) {

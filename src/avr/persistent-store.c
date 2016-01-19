@@ -30,7 +30,6 @@
 #include <stdbool.h>
 #include <avr/eeprom.h>
 
-#if !defined(MCODE_PERSIST_STORE_EXT_EEPROM) && !defined(MCODE_PERSIST_STORE_EXT_RAM)
 /* hash for the initial passwd: 'pass' */
 static uint8_t TheHash[32] EEMEM = {
   0xd7u, 0x4fu, 0xf0u, 0xeeu, 0x8du, 0xa3u, 0xb9u, 0x80u,
@@ -38,9 +37,7 @@ static uint8_t TheHash[32] EEMEM = {
   0xe5u, 0x0bu, 0x5bu, 0xd8u, 0xe4u, 0xdau, 0xd7u, 0xa3u,
   0xa7u, 0x25u, 0x00u, 0x0fu, 0xebu, 0x82u, 0xe8u, 0xf1u,
 };
-#endif /* !MCODE_PERSIST_STORE_EXT_EEPROM && !MCODE_PERSIST_STORE_EXT_RAM */
 
-#ifndef MCODE_PERSIST_STORE_EXT_RAM
 #define CYCLIC_STORAGE_LENGTH (32)
 static uint16_t TheCyclicStorage[CYCLIC_STORAGE_LENGTH] EEMEM = {
   0x003cu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu,
@@ -48,15 +45,9 @@ static uint16_t TheCyclicStorage[CYCLIC_STORAGE_LENGTH] EEMEM = {
   0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu,
   0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu, 0xffffu,
 };
-#else /* MCODE_PERSIST_STORE_EXT_RAM */
-static uint16_t TheDummyWord EEMEM __attribute__((used)) = 0xffffu;
-#endif /* MCODE_PERSIST_STORE_EXT_RAM */
 
-#if !defined(MCODE_PERSIST_STORE_EXT_EEPROM) && !defined(MCODE_PERSIST_STORE_EXT_RAM)
 static uint16_t TheInitailValue EEMEM = 60;
-#endif /* !MCODE_PERSIST_STORE_EXT_EEPROM && !MCODE_PERSIST_STORE_EXT_RAM */
 
-#if !defined(MCODE_PERSIST_STORE_EXT_EEPROM) && !defined(MCODE_PERSIST_STORE_EXT_RAM)
 void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
 {
   const uint8_t *pointer = NULL;
@@ -84,12 +75,10 @@ void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
 
   eeprom_write_block(data, pointer, length);
 }
-#endif /* !MCODE_PERSIST_STORE_EXT_EEPROM && !MCODE_PERSIST_STORE_EXT_RAM */
 
-#ifndef MCODE_PERSIST_STORE_EXT_RAM
 uint16_t persist_store_get_value(void)
 {
-  uint8_t i;
+  int8_t i;
   uint16_t result = 0;
   for (i = 31; i >= 0; --i) {
     const uint16_t word = eeprom_read_word(&TheCyclicStorage[i]);
@@ -126,9 +115,7 @@ void persist_store_set_value(uint16_t value)
     }
   }
 }
-#endif /* MCODE_PERSIST_STORE_EXT_RAM */
 
-#if !defined(MCODE_PERSIST_STORE_EXT_EEPROM) && !defined(MCODE_PERSIST_STORE_EXT_RAM)
 uint16_t persist_store_get_initial_value(void)
 {
   return eeprom_read_word(&TheInitailValue);
@@ -138,7 +125,6 @@ void persist_store_set_initial_value(uint16_t value)
 {
   eeprom_write_word(&TheInitailValue, value);
 }
-#endif /* !MCODE_PERSIST_STORE_EXT_EEPROM && !MCODE_PERSIST_STORE_EXT_RAM */
 
 #if 0 /* Test code: begin */
 void persist_store_test(void)

@@ -136,19 +136,19 @@ if ( MCODE_SECURITY )
 endif ( MCODE_SECURITY )
 
 if ( MCODE_PERSIST_STORE )
-  set ( SRC_LIST ${SRC_LIST}
-    ${MCODE_TOP}/src/avr/persistent-store.c
-  )
   if ( MCODE_PERSIST_STORE_EXT_EEPROM )
     set ( SRC_LIST ${SRC_LIST}
       ${MCODE_TOP}/src/common/persistent-store-ext-eeprom.c
     )
-  endif (MCODE_PERSIST_STORE_EXT_EEPROM )
-  if ( MCODE_PERSIST_STORE_EXT_RAM )
+  elseif ( MCODE_PERSIST_STORE_EXT_RAM )
     set ( SRC_LIST ${SRC_LIST}
       ${MCODE_TOP}/src/common/persistent-store-ext-ram.c
     )
-  endif ( MCODE_PERSIST_STORE_EXT_RAM )
+  else ( MCODE_PERSIST_STORE_EXT_EEPROM )
+    set ( SRC_LIST ${SRC_LIST}
+      ${MCODE_TOP}/src/avr/persistent-store.c
+    )
+  endif ( MCODE_PERSIST_STORE_EXT_EEPROM )
 endif ( MCODE_PERSIST_STORE )
 
 if ( MCODE_RTC )
