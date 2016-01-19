@@ -25,23 +25,19 @@
 #include "hw-uart.h"
 
 #include "scheduler.h"
-#include "mcode-config.h"
-#include "line-editor-uart.h"
 
-#include <string.h>
-#include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-static hw_uart_char_event TheCallback = NULL;
+static hw_uart_char_event TheCallback;
 
 /**
  * TheCurrentBuffer == 0: reading from UART to TheReadBuffer0, keeping TheReadBuffer1
  * TheCurrentBuffer == 1: reading from UART to TheReadBuffer1, keeping TheReadBuffer0
  */
-#define HW_UART_READ_BUFFER_LENGTH (16)
-volatile static uint8_t TheCurrentBuffer = 0;
-volatile static uint8_t TheCurrentReadIndex0 = 0;
-volatile static uint8_t TheCurrentReadIndex1 = 0;
+#define HW_UART_READ_BUFFER_LENGTH (4)
+volatile static uint8_t TheCurrentBuffer;
+volatile static uint8_t TheCurrentReadIndex0;
+volatile static uint8_t TheCurrentReadIndex1;
 volatile static uint8_t TheReadBuffer0[HW_UART_READ_BUFFER_LENGTH];
 volatile static uint8_t TheReadBuffer1[HW_UART_READ_BUFFER_LENGTH];
 
@@ -49,12 +45,6 @@ static void hw_uart_tick(void);
 
 void hw_uart_init(void)
 {
-  TheCurrentBuffer = 0;
-  TheCurrentReadIndex0 = 0;
-  TheCurrentReadIndex1 = 0;
-  memset((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
-  memset((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
-
   /* Set baud rate: 115200 */
   UBRRH = (unsigned char)0;
   UBRRL = (unsigned char)3;
