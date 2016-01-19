@@ -73,7 +73,7 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
   uint16_t twi_length = 0;
   args = string_skip_whitespace(args);
   args = string_next_number(args, &twi_length);
-  if (args || !twi_length || twi_length > 20) {
+  if (args || !twi_length || twi_length > 32) {
     merror(MStringWrongArgument);
     return true;
   }
