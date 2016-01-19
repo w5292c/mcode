@@ -55,6 +55,9 @@
 /* Enable persistent store */
 #cmakedefine MCODE_PERSIST_STORE
 
+/* Enable persistent store on external NVM-RAM */
+#cmakedefine MCODE_PERSIST_STORE_EXT_RAM
+
 /* Enable persistent store on external EEPROM */
 #cmakedefine MCODE_PERSIST_STORE_EXT_EEPROM
 

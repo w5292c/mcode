@@ -51,6 +51,7 @@ option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" OFF )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )
 
 option ( MCODE_PERSIST_STORE "Enable persistent store" ON )
+option ( MCODE_PERSIST_STORE_EXT_RAM "Enable persistent store on external NVM-RAM" OFF )
 option ( MCODE_PERSIST_STORE_EXT_EEPROM "Enable persistent store on external EEPROM" ON )
 
 option ( MCODE_BOOTLOADER "Include AVR109-based bootloader code" ON )
@@ -143,6 +144,11 @@ if ( MCODE_PERSIST_STORE )
       ${MCODE_TOP}/src/common/persistent-store-ext-eeprom.c
     )
   endif (MCODE_PERSIST_STORE_EXT_EEPROM )
+  if ( MCODE_PERSIST_STORE_EXT_RAM )
+    set ( SRC_LIST ${SRC_LIST}
+      ${MCODE_TOP}/src/common/persistent-store-ext-ram.c
+    )
+  endif ( MCODE_PERSIST_STORE_EXT_RAM )
 endif ( MCODE_PERSIST_STORE )
 
 if ( MCODE_RTC )
