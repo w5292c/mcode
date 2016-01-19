@@ -27,7 +27,6 @@
 #include "sha.h"
 #include "hw-twi.h"
 #include "mstring.h"
-#include "scheduler.h"
 
 #include <string.h>
 #include <stdbool.h>
@@ -43,12 +42,6 @@
  * | 0x0062 |        | Free memory           |
  * ===========================================
  */
-
-static void persist_store_write_ready(bool success);
-static void persist_store_read_ready(bool success, uint8_t length, const uint8_t *data);
-
-static bool TheSuccess;
-static uint8_t *TheBuffer;
 
 #ifdef __AVR__
 #include <avr/eeprom.h>
@@ -66,22 +59,14 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
   uint8_t buffer[2];
   buffer[0] = 0x00u;
   buffer[1] = 0x00u;
-  TheSuccess = false;
-  twi_send(0xaeu, 2, buffer, persist_store_write_ready);
-  mcode_scheduler_start();
-
-  if (!TheSuccess) {
+  if (!twi_send_sync(0xaeu, 2, buffer)) {
     merror(MStringInternalError);
     return;
   }
 
-  TheSuccess = false;
-  TheBuffer = data;
-  twi_recv(0xaeu, length, persist_store_read_ready);
-  mcode_scheduler_start();
-
-  if (!TheSuccess) {
+  if (!twi_recv_sync(0xaeu, length, data)) {
     merror(MStringInternalError);
+    return;
   }
 }
 
@@ -96,28 +81,10 @@ void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
   buffer[1] = 0x00u;
   memcpy(buffer + 2, data, length);
 
-  TheSuccess = false;
-  twi_send(0xaeu, length + 2, buffer, persist_store_write_ready);
-  mcode_scheduler_start();
-
-  if (!TheSuccess) {
+  if (!twi_send_sync(0xaeu, length + 2, buffer)) {
     merror(MStringInternalError);
+    return;
   }
-}
-
-void persist_store_write_ready(bool success)
-{
-  TheSuccess = success;
-  mcode_scheduler_stop();
-}
-
-void persist_store_read_ready(bool success, uint8_t length, const uint8_t *data)
-{
-  TheSuccess = success;
-  if (success) {
-    memcpy(TheBuffer, data, length);
-  }
-  mcode_scheduler_stop();
 }
 
 uint16_t persist_store_get_value(void)
@@ -205,21 +172,12 @@ uint16_t persist_store_get_initial_value(void)
   } u;
   u.buffer[0] = 0x00u;
   u.buffer[1] = 0x60u;
-  TheSuccess = false;
-  twi_send(0xaeu, 2, u.buffer, persist_store_write_ready);
-  mcode_scheduler_start();
-
-  if (!TheSuccess) {
+  if (!twi_send_sync(0xaeu, 2, u.buffer)) {
     merror(MStringInternalError);
     return 0;
   }
 
-  TheSuccess = false;
-  TheBuffer = u.buffer;
-  twi_recv(0xaeu, 2, persist_store_read_ready);
-  mcode_scheduler_start();
-
-  if (!TheSuccess) {
+  if (!twi_recv_sync(0xaeu, 2, u.buffer)) {
     merror(MStringInternalError);
     return 0;
   }
@@ -234,11 +192,8 @@ void persist_store_set_initial_value(uint16_t value)
   buffer[1] = 0x60u;
   memcpy(buffer + 2, &value, 2);
 
-  TheSuccess = false;
-  twi_send(0xaeu, 4, buffer, persist_store_write_ready);
-  mcode_scheduler_start();
-
-  if (!TheSuccess) {
+  if (!twi_send_sync(0xaeu, 4, buffer)) {
     merror(MStringInternalError);
+    return;
   }
 }
