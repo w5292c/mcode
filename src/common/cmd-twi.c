@@ -29,13 +29,8 @@
 #include "mglobal.h"
 #include "mstring.h"
 
-static void twi_write_callback(bool result);
-static bool cmd_engine_twi_read(const char *args, bool *startCmd);
-static bool cmd_engine_twi_write(const char *args, bool *startCmd);
-static void twi_read_callback(bool result, uint8_t length, const uint8_t *data);
-
-#define BUFFER_LENGTH (20)
-static uint8_t TheBuffer[BUFFER_LENGTH];
+static void cmd_engine_twi_read(const char *args);
+static void cmd_engine_twi_write(const char *args);
 
 void cmd_engine_twi_help(void)
 {
@@ -46,28 +41,30 @@ void cmd_engine_twi_help(void)
 bool cmd_engine_twi_command(const char *command, bool *startCmd)
 {
   if (!strncmp_P(command, PSTR("twi-rd "), 7)) {
-    return cmd_engine_twi_read(command + 7, startCmd);
+    cmd_engine_twi_read(command + 7);
+    return true;
   } else if (!strncmp_P(command, PSTR("twi-wr "), 7)) {
-    return cmd_engine_twi_write(command + 7, startCmd);
+    cmd_engine_twi_write(command + 7);
+    return true;
   }
 
   return false;
 }
 
-bool cmd_engine_twi_read(const char *args, bool *startCmd)
+void cmd_engine_twi_read(const char *args)
 {
   /* move to the arguments start */
   args = string_skip_whitespace(args);
   if (!args || !*args) {
     merror(MStringWrongArgument);
-    return true;
+    return;
   }
   /* Parse the TWI address */
   uint16_t twi_addr = 0;
   args = string_next_number(args, &twi_addr);
   if (!args || !twi_addr) {
     merror(MStringWrongArgument);
-    return true;
+    return;
   }
   /* Parse the TWI read request length */
   uint16_t twi_length = 0;
@@ -75,21 +72,20 @@ bool cmd_engine_twi_read(const char *args, bool *startCmd)
   args = string_next_number(args, &twi_length);
   if (args || !twi_length || twi_length > 32) {
     merror(MStringWrongArgument);
-    return true;
+    return;
   }
 
-  mprintstr(PSTR("Arguments, TWI address: 0x"));
-  mprint_uint16(twi_addr, false);
-  mprintstr(PSTR(", length: 0x"));
-  mprint_uint16(twi_length, false);
-  mprint(MStringNewLine);
+  uint8_t buffer[32];
+  if (!twi_recv_sync(twi_addr, twi_length, buffer)) {
+    merror(MStringInternalError);
+    return;
+  }
 
-  *startCmd = false;
-  twi_recv(twi_addr, twi_length, twi_read_callback);
-  return true;
+  mprintstrln(PSTR("TWI read data:"));
+  mprint_dump_buffer(twi_length, buffer, true);
 }
 
-bool cmd_engine_twi_write(const char *args, bool *startCmd)
+void cmd_engine_twi_write(const char *args)
 {
   /* Parse the TWI address */
   uint16_t twi_addr = 0;
@@ -97,44 +93,20 @@ bool cmd_engine_twi_write(const char *args, bool *startCmd)
   args = string_next_number(args, &twi_addr);
   if (!args || !twi_addr) {
     merror(MStringWrongArgument);
-    return true;
+    return;
   }
 
+  uint8_t buffer[32];
   uint8_t bufferFilled = 0;
   args = string_skip_whitespace(args);
-  args = string_to_buffer(args, BUFFER_LENGTH, TheBuffer, &bufferFilled);
+  args = string_to_buffer(args, 32, buffer, &bufferFilled);
   if (args || !bufferFilled) {
     merror(MStringWrongArgument);
-    return true;
+    return;
   }
 
-  mprintstr(PSTR("TWI write, address: 0x"));
-  mprint_uint16(twi_addr, false);
-  mprintstrln(PSTR(", write data:"));
-  mprint_dump_buffer(bufferFilled, TheBuffer, true);
-
-  *startCmd = false;
-  twi_send(twi_addr, bufferFilled, TheBuffer, twi_write_callback);
-  return true;
-}
-
-void twi_read_callback(bool result, uint8_t length, const uint8_t *data)
-{
-  if (result) {
-    mprintstrln(PSTR("TWI read data:"));
-    mprint_dump_buffer(length, data, true);
-  } else {
+  if (!twi_send_sync(twi_addr, bufferFilled, buffer)) {
     merror(MStringInternalError);
+    return;
   }
-
-  cmd_engine_start();
-}
-
-void twi_write_callback(bool result)
-{
-  if (!result) {
-    merror(MStringInternalError);
-  }
-
-  cmd_engine_start();
 }
