@@ -29,6 +29,7 @@
 #include "hw-twi.h"
 #include "hw-rtc.h"
 #include "hw-pwm.h"
+#include "hw-wdt.h"
 #include "mstring.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
@@ -95,9 +96,13 @@ int main (void)
 #endif /* MCODE_LCD */
 
   /* Write some 'hello' text */
-  mprintstr(PSTR("\r\nmain: ready\r\nTest value: ["));
-  mprint_uintd(1234007, 0);
-  mprintstrln(PSTR("]"));
+#ifdef MCODE_WDT
+  mprintstr(PSTR("System started, reason: 0x"));
+  mprint_uint8(wdt_reset_reason(), false);
+  mprint(MStringNewLine);
+#else /* MCODE_WDT */
+  mprintstron(PSTR("System started"));
+#endif /* MCODE_WDT */
   cmd_engine_start();
 
   /* start the scheduler, it never exits */

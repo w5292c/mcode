@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2016 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,15 @@
 
 #include "mtick.h"
 
+#include "hw-wdt.h"
 #include "scheduler.h"
+#include "mcode-config.h"
 
 #include <stdbool.h>
 #include <avr/interrupt.h>
 
 #ifndef MCODE_MTICKS_COUNT
-#define MCODE_MTICKS_COUNT (10)
+#define MCODE_MTICKS_COUNT (2)
 #endif /* MCODE_MTICKS_COUNT */
 
 static volatile uint64_t TheMSecCounter = 0;
@@ -77,8 +79,14 @@ void mtick_add(mcode_tick tick)
 
 void mtick_sleep(uint32_t mticks)
 {
+#ifdef MCODE_WDT
+  wdt_stop();
+#endif /* MCODE_WDT */
   const uint64_t target = TheMSecCounter + mticks + 1;
   while (TheMSecCounter < target);
+#ifdef MCODE_WDT
+  wdt_start();
+#endif /* MCODE_WDT */
 }
 
 uint64_t mtick_count(void)

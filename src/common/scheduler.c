@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014,2015 Alexander Chumakov
+ * Copyright (c) 2014-2016 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,9 @@
 
 #include "scheduler.h"
 
+#include "hw-wdt.h"
 #include "mstring.h"
+#include "mcode-config.h"
 
 #ifndef MCODE_TICKS_COUNT
 #define MCODE_TICKS_COUNT (8)
@@ -37,6 +39,9 @@ static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
 void mcode_scheduler_init(void)
 {
+#ifdef MCODE_WDT
+  wdt_init();
+#endif /* MCODE_WDT */
 }
 
 void mcode_scheduler_deinit(void)

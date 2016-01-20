@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2016 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,41 +22,44 @@
  * SOFTWARE.
  */
 
-#include "system.h"
+#include "hw-wdt.h"
 
 #include "mtick.h"
-#include "hw-wdt.h"
-#include "hw-uart.h"
-#include "mstring.h"
-#include "mcode-config.h"
 
+#include <avr/io.h>
 #include <avr/wdt.h>
-#include <avr/boot.h>
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
 
-void reboot(void)
+static uint8_t TheResetReason;
+
+static void wdt_tick(void);
+
+void wdt_init(void)
 {
-  mprintstrln(PSTR("System reboot has been requested."));
-  /* Disable all interrupts */
-  cli();
-  /* Enable the Watchdog timer with the smallest timeout */
-  wdt_enable(WDTO_15MS);
-  /* Peacefully wait for the system reset */
-  for(;;);
+  TheResetReason = MCUSR;
+  MCUSR = 0;
+  wdt_enable(WDTO_2S);
+  wdt_reset();
+  mtick_add(wdt_tick);
 }
 
-#ifdef MCODE_BOOTLOADER
-void bootloader(void)
+void wdt_start(void)
 {
-  mprintstrln(PSTR("Enter bootloader mode."));
-#ifdef MCODE_WDT
-  wdt_stop();
-#endif /* MCODE_WDT */
-  void (*bl_main)(void) = (void *)MCODE_BOOTLOADER_BASE;
-  bl_main();
-#ifdef MCODE_WDT
-  wdt_start();
-#endif /* MCODE_WDT */
+  wdt_enable(WDTO_2S);
+  wdt_reset();
 }
-#endif /* MCODE_BOOTLOADER */
+
+void wdt_stop(void)
+{
+  wdt_reset();
+  wdt_disable();
+}
+
+uint8_t wdt_reset_reason(void)
+{
+  return TheResetReason;
+}
+
+void wdt_tick(void)
+{
+  wdt_reset();
+}

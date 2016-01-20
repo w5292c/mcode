@@ -27,9 +27,11 @@
 #include "main.h"
 #include "mtick.h"
 #include "utils.h"
+#include "hw-wdt.h"
 #include "system.h"
 #include "mglobal.h"
 #include "mstring.h"
+#include "mcode-config.h"
 
 #include <string.h>
 
@@ -173,7 +175,13 @@ void cmd_engine_call(const char *args, bool *startCmd)
   mprint(MStringNewLine);
 
   const mcode_tick program = (mcode_tick)address;
+#ifdef MCODE_WDT
+  wdt_stop();
+#endif /* MCODE_WDT */
   program();
+#ifdef MCODE_WDT
+  wdt_start();
+#endif /* MCODE_WDT */
 }
 
 void cmd_engine_system_test(const char *args, bool *startCmd)

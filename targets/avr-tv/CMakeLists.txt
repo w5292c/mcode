@@ -34,6 +34,7 @@ option ( MCODE_TWI "Enable TWI support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_PWM "Enable PWM support" OFF )
 option ( MCODE_LCD "Enable LCD support" OFF )
+option ( MCODE_WDT "Enable WDT support" ON )
 option ( MCODE_LEDS "Enable LEDs support" OFF )
 option ( MCODE_SOUND "Enable sound support" ON )
 option ( MCODE_TUNE_TRACK "Show notes for tunes" OFF )
@@ -156,6 +157,12 @@ if ( MCODE_RTC )
     ${MCODE_TOP}/src/common/cmd-rtc.c
   )
 endif ( MCODE_RTC )
+
+if ( MCODE_WDT )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-wdt.c
+  )
+endif ( MCODE_WDT )
 
 if ( MCODE_RTC_DS3231 )
   set ( SRC_LIST ${SRC_LIST}
