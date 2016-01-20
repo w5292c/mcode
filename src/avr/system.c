@@ -38,12 +38,7 @@
 void reboot(void)
 {
   mprintstrln(PSTR("System reboot has been requested."));
-  /* Disable all interrupts */
-  cli();
-  /* Enable the Watchdog timer with the smallest timeout */
-  wdt_enable(WDTO_15MS);
-  /* Peacefully wait for the system reset */
-  for(;;);
+  wdt_reboot();
 }
 
 #ifdef MCODE_BOOTLOADER

@@ -28,15 +28,25 @@
 
 #include <avr/io.h>
 #include <avr/wdt.h>
+#include <avr/interrupt.h>
 
 static uint8_t TheResetReason;
+static uint8_t TheRunTimeStore __attribute__ ((section (".noinit")));
 
 static void wdt_tick(void);
 
 void wdt_init(void)
 {
   TheResetReason = MCUSR;
-  MCUSR = 0;
+  MCUSR = UINT8_C(0);
+  if (TheResetReason != _BV(WDRF)) {
+    TheRunTimeStore = UINT8_C(0);
+  } else {
+    if (TheRunTimeStore == WDT_RESET_REASON_SW_RST) {
+      TheResetReason = TheRunTimeStore;
+    }
+  }
+
   wdt_enable(WDTO_2S);
   wdt_reset();
   mtick_add(wdt_tick);
@@ -57,6 +67,17 @@ void wdt_stop(void)
 uint8_t wdt_reset_reason(void)
 {
   return TheResetReason;
+}
+
+void wdt_reboot(void)
+{
+  /* Disable all interrupts */
+  cli();
+  TheRunTimeStore = WDT_RESET_REASON_SW_RST;
+  /* Enable the Watchdog timer with the smallest timeout */
+  wdt_enable(WDTO_15MS);
+  /* Peacefully wait for the system reset */
+  for(;;);
 }
 
 void wdt_tick(void)

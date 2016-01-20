@@ -31,12 +31,15 @@
 extern "C" {
 #endif
 
+#define WDT_RESET_REASON_SW_RST UINT8_C(0x20)
+
 void wdt_init(void);
 
 uint8_t wdt_reset_reason(void);
 
-void wdt_start(void);
 void wdt_stop(void);
+void wdt_start(void);
+void wdt_reboot(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
