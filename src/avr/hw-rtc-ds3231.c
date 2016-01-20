@@ -57,27 +57,28 @@ void rtc_alarm_deinit(void)
 void rtc_alarm_tick(void)
 {
   if (TheIsrRequest) {
+    TheIsrRequest = false;
     /* Now, check which alarm expired */
     uint8_t buffer;
     buffer = 0x0fu;
     /* Write the address of the status register */
     if (!twi_send_sync(0xd0u, 1, &buffer)) {
       /* Cannot write, try next tick */
+      TheIsrRequest = true;
       return;
     }
     /* Read the status */
     if (!twi_recv_sync(0xd0u, 1, &buffer)) {
       /* Cannot read, try next tick */
+      TheIsrRequest = true;
       return;
     }
     /* Check/handle the status */
     if (!rtc_alarm_check_status(buffer)) {
       /* Cannot handle status, try next tick */
+      TheIsrRequest = true;
       return;
     }
-
-    /* Now, we are ready to clear the ISR flag */
-    TheIsrRequest = false;
   }
 }
 

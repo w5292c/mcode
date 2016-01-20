@@ -27,6 +27,7 @@
 #include "hw-uart.h"
 #include "scheduler.h"
 
+#include <string.h>
 #include <util/twi.h>
 #include <avr/interrupt.h>
 
@@ -59,6 +60,8 @@ typedef enum {
 static mcode_read_ready TheReadCallback;
 static mcode_done TheWriteCallback;
 
+static bool TheSuccess;
+static uint8_t *TheBuffer;
 static uint8_t volatile TheTwiIndex = 0;
 static uint8_t volatile TheTwiState = ETwiStateNull;
 /* The cached client request */
@@ -72,6 +75,8 @@ static uint8_t volatile TheRequestLength;
  * @return TRUE if more work is already available
  */
 static void hw_twi_sched_tick(void);
+static void twi_write_done(bool success);
+static void twi_read_ready(bool success, uint8_t length, const uint8_t *data);
 /**
  * Send 'start' TWI protocol condition
  */
@@ -82,7 +87,8 @@ void twi_init(void)
   TheTwiState = ETwiStateIdle;
   mcode_scheduler_add(hw_twi_sched_tick);
 
-  TWBR = 0x0CU;
+  /* Frequency: 100KHz (99632Hz) */
+  TWBR = 29;
   TWDR = 0xFFU;
   TWCR = (1<<TWEN)|(0<<TWIE)|(0<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
   PORTC |= (1<<PC0) | (1<<PC1);
@@ -158,6 +164,49 @@ static void hw_twi_sched_tick(void)
   default:
     break;
   }
+}
+
+bool twi_recv_sync(uint8_t addr, uint8_t length, uint8_t *data)
+{
+  if (TheTwiState != ETwiStateIdle) {
+    /* Busy, cannot handle request */
+    return false;
+  }
+
+  TheSuccess = false;
+  TheBuffer = data;
+  twi_recv(addr, length, twi_read_ready);
+  mcode_scheduler_start();
+
+  return TheSuccess;
+}
+
+bool twi_send_sync(uint8_t addr, uint8_t length, const uint8_t *data)
+{
+  if (TheTwiState != ETwiStateIdle) {
+    /* Busy, cannot handle request */
+    return false;
+  }
+
+  TheSuccess = false;
+  twi_send(addr, length, data, twi_write_done);
+  mcode_scheduler_start();
+
+  return TheSuccess;
+}
+
+void twi_write_done(bool success)
+{
+  TheSuccess = success;
+  mcode_scheduler_stop();
+}
+
+void twi_read_ready(bool success, uint8_t length, const uint8_t *data)
+{
+  TheSuccess = success;
+  memcpy(TheBuffer, data, length);
+  TheBuffer = 0;
+  mcode_scheduler_stop();
 }
 
 static inline void hw_twi_send_start(void)
@@ -287,7 +336,7 @@ static inline void hw_twi_handle_addr_nack_received(void)
 {
   if (TheTwiState == ETwiStateWrSendSlvAddr) {
     TheTwiState = ETwiStateWrSendStart;
-    TWCR |= _BV(TWINT);
+    TWCR |= _BV(TWINT)|_BV(TWSTO);
   } else {
     TheTwiState = ETwiStateWrDoneError;
     TWCR = (1<<TWEN)|(0<<TWIE)|(1<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(1<<TWSTO)|(0<<TWWC);
