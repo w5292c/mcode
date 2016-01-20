@@ -60,6 +60,11 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
   } else if (!strncmp_P(args, PSTR("echo"), 4)) {
     return cmd_engine_echo(args + 4, startCmd);
   } else if (!strcmp_P(args, PSTR("ut"))) {
+#ifdef MCODE_WDT
+    mprintstr(PSTR("Reset reason: 0x"));
+    mprint_uint8(wdt_reset_reason(), false);
+    mprint(MStringNewLine);
+#endif /* MCODE_WDT */
     const uint64_t tickCount = mtick_count();
     uint64_t count = tickCount;
     const uint32_t milliSeconds = count%1000;
