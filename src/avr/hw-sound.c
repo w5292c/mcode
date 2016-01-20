@@ -134,8 +134,7 @@ void sound_play_note(uint8_t note, uint16_t length)
     }
   } while (false);
 
-  const uint64_t target = mtick_count() + length + 1;
-  while (target > mtick_count()) {}
+  mtick_sleep(length);
 
   /* Turn off the sound */
   TCCR2 = 0;
