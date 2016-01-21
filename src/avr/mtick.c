@@ -29,7 +29,6 @@
 #include "mcode-config.h"
 
 #include <stdbool.h>
-#include <avr/wdt.h>
 #include <avr/interrupt.h>
 
 #ifndef MCODE_MTICKS_COUNT
@@ -88,7 +87,7 @@ void mtick_sleep(uint32_t mticks)
   const uint64_t target = TheMSecCounter + mticks + 1;
   while (TheMSecCounter < target) {
 #ifdef MCODE_WDT
-    wdt_reset();
+    wdt_notify();
 #endif /* MCODE_WDT */
   }
 }
@@ -106,7 +105,7 @@ void mcode_mtick_scheduler_tick(void)
     uint8_t i;
     for (i = 0; i < MCODE_MTICKS_COUNT; ++i) {
 #ifdef MCODE_WDT
-      wdt_reset();
+      wdt_notify();
 #endif /* MCODE_WDT */
       tick = TheTickCallbacks[i];
       if (!tick) {

@@ -40,6 +40,7 @@ uint8_t wdt_reset_reason(void);
 void wdt_stop(void);
 void wdt_start(void);
 void wdt_reboot(void);
+void wdt_notify(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

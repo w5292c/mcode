@@ -61,6 +61,11 @@ uint8_t wdt_reset_reason(void)
   return TheResetReason;
 }
 
+void wdt_notify(void)
+{
+  wdt_reset();
+}
+
 void wdt_reboot(void)
 {
   /* Disable all interrupts */

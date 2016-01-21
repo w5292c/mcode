@@ -25,6 +25,8 @@
 #include "hw-lcd.h"
 
 #include "hw-spi.h"
+#include "hw-wdt.h"
+#include "mcode-config.h"
 
 #ifdef __AVR__
 #include <avr/pgmspace.h>
@@ -36,6 +38,9 @@ void lcd_write_cmd(uint8_t cmd)
   spi_set_cs(true);
   spi_transfer(cmd);
   spi_set_cs(false);
+#ifdef MCODE_WDT
+    wdt_notify();
+#endif /* MCODE_WDT */
 }
 
 void lcd_write_byte(uint8_t data)
@@ -44,6 +49,9 @@ void lcd_write_byte(uint8_t data)
   spi_set_cs(true);
   spi_transfer(data);
   spi_set_cs(false);
+#ifdef MCODE_WDT
+    wdt_notify();
+#endif /* MCODE_WDT */
 }
 
 uint8_t lcd_read_byte(uint8_t cmd)
@@ -55,6 +63,9 @@ uint8_t lcd_read_byte(uint8_t cmd)
   lcd_set_address(true);
   data = spi_transfer(UINT8_C(0xFF));
   spi_set_cs(false);
+#ifdef MCODE_WDT
+    wdt_notify();
+#endif /* MCODE_WDT */
   return data;
 }
 
