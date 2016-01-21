@@ -24,16 +24,12 @@
 
 #include "hw-wdt.h"
 
-#include "mtick.h"
-
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 
 static uint8_t TheResetReason;
 static uint8_t TheRunTimeStore __attribute__ ((section (".noinit")));
-
-static void wdt_tick(void);
 
 void wdt_init(void)
 {
@@ -46,10 +42,6 @@ void wdt_init(void)
       TheResetReason = TheRunTimeStore;
     }
   }
-
-  wdt_enable(WDTO_2S);
-  wdt_reset();
-  mtick_add(wdt_tick);
 }
 
 void wdt_start(void)
@@ -78,9 +70,4 @@ void wdt_reboot(void)
   wdt_enable(WDTO_15MS);
   /* Peacefully wait for the system reset */
   for(;;);
-}
-
-void wdt_tick(void)
-{
-  wdt_reset();
 }

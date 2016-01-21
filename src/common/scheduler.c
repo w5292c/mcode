@@ -24,7 +24,6 @@
 
 #include "scheduler.h"
 
-#include "hw-wdt.h"
 #include "mstring.h"
 #include "mcode-config.h"
 
@@ -39,9 +38,6 @@ static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
 void mcode_scheduler_init(void)
 {
-#ifdef MCODE_WDT
-  wdt_init();
-#endif /* MCODE_WDT */
 }
 
 void mcode_scheduler_deinit(void)

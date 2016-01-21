@@ -29,10 +29,11 @@
 #include "mcode-config.h"
 
 #include <stdbool.h>
+#include <avr/wdt.h>
 #include <avr/interrupt.h>
 
 #ifndef MCODE_MTICKS_COUNT
-#define MCODE_MTICKS_COUNT (2)
+#define MCODE_MTICKS_COUNT UINT8_C(2)
 #endif /* MCODE_MTICKS_COUNT */
 
 static volatile uint64_t TheMSecCounter = 0;
@@ -60,6 +61,11 @@ void mtick_init(void)
     (1<<WGM01)|(0<<WGM00)| /*< Mode: CTC */
     (0<<COM01)|(0<<COM01)| /*< No port output */
     (0<<CS02)|(1<<CS01)|(1<<CS00); /* Prescaler: 64 */
+
+#ifdef MCODE_WDT
+  wdt_init();
+  wdt_start();
+#endif /* MCODE_WDT */
 }
 
 void mtick_deinit(void)
@@ -68,7 +74,7 @@ void mtick_deinit(void)
 
 void mtick_add(mcode_tick tick)
 {
-  int i;
+  uint8_t i;
   for (i = 0; i < MCODE_MTICKS_COUNT; ++i) {
     if (!TheTickCallbacks[i]) {
       TheTickCallbacks[i] = tick;
@@ -79,14 +85,12 @@ void mtick_add(mcode_tick tick)
 
 void mtick_sleep(uint32_t mticks)
 {
-#ifdef MCODE_WDT
-  wdt_stop();
-#endif /* MCODE_WDT */
   const uint64_t target = TheMSecCounter + mticks + 1;
-  while (TheMSecCounter < target);
+  while (TheMSecCounter < target) {
 #ifdef MCODE_WDT
-  wdt_start();
+    wdt_reset();
 #endif /* MCODE_WDT */
+  }
 }
 
 uint64_t mtick_count(void)
@@ -99,8 +103,11 @@ void mcode_mtick_scheduler_tick(void)
   if (TheSceduledFlag) {
     TheSceduledFlag = false;
     mcode_tick tick;
-    int i;
+    uint8_t i;
     for (i = 0; i < MCODE_MTICKS_COUNT; ++i) {
+#ifdef MCODE_WDT
+      wdt_reset();
+#endif /* MCODE_WDT */
       tick = TheTickCallbacks[i];
       if (!tick) {
         break;
