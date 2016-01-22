@@ -233,6 +233,7 @@ void cmd_engine_tv_set_state(uint8_t state)
   }
 
   if (CmdEngineTvStateOn == state) {
+    cmd_engine_turn_tv_on();
     /* Requested ON state, check we we still have enough time */
     const uint16_t value = persist_store_get_value();
     if (!value) {
@@ -240,6 +241,7 @@ void cmd_engine_tv_set_state(uint8_t state)
 #if 0
       mprintstrln(PSTR("Error: no more time"));
 #endif
+      cmd_engine_turn_tv_off();
       return;
     }
 
