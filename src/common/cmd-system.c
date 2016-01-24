@@ -25,6 +25,7 @@
 #include "cmd-engine.h"
 
 #include "main.h"
+#include "hw-ir.h"
 #include "mtick.h"
 #include "utils.h"
 #include "hw-wdt.h"
@@ -191,4 +192,9 @@ void cmd_engine_call(const char *args, bool *startCmd)
 
 void cmd_engine_system_test(const char *args, bool *startCmd)
 {
+  const uint32_t count = ir_get();
+  mprintstr(PSTR("Count: "));
+  mprint_uintd(count, 0);
+  mprint(MStringNewLine);
+  ir_dump();
 }

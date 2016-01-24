@@ -30,6 +30,7 @@ set (SRC_LIST
 )
 
 option ( MCODE_TV "Enable TV control" ON )
+option ( MCODE_IR "Enable IR support" OFF )
 option ( MCODE_TWI "Enable TWI support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_PWM "Enable PWM support" OFF )
@@ -177,6 +178,12 @@ if ( MCODE_TV )
     ${MCODE_TOP}/src/common/cmd-tv.c
   )
 endif ( MCODE_TV )
+
+if ( MCODE_IR )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/avr/hw-ir.c
+  )
+endif ( MCODE_IR )
 
 if ( MCODE_SOUND )
   set ( SRC_LIST ${SRC_LIST}

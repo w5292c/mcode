@@ -25,6 +25,7 @@
 #include "mcode-config.h"
 
 #include "mtick.h"
+#include "hw-ir.h"
 #include "hw-lcd.h"
 #include "hw-twi.h"
 #include "hw-rtc.h"
@@ -86,6 +87,10 @@ int main (void)
 #ifdef MCODE_SECURITY
   cmd_engine_ssl_init();
 #endif /* MCODE_SECURITY */
+
+#ifdef MCODE_IR
+  ir_init();
+#endif /* MCODE_IR */
 
   /* now, enable the interrupts */
   sei();

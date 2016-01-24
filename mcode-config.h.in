@@ -73,6 +73,9 @@
 /* Enable TV control */
 #cmakedefine MCODE_TV
 
+/* Enable IR support */
+#cmakedefine MCODE_IR
+
 /* Include AVR109-based bootloader code */
 #cmakedefine MCODE_BOOTLOADER
 
