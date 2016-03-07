@@ -17,9 +17,14 @@ TV connector
 4) Power: +5V (brown);
 5) Power: GND (blue);
 
-Cristal
+Crystal
 =======
 Frequency: 7.3728MHz
+
+Setup target to  work with external crystal (7.3728MHz)
+=======================================================
+$ avrdude -b 115200 -c jtagmki -p m32 -P /dev/ttyUSB0 -U lfuse:w:0xef:m
+$ avrdude -b 115200 -c jtagmki -p m32 -P /dev/ttyUSB0 -U lfuse:r:1.txt:h
 
 Flashing target
 ===============
