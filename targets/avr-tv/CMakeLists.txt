@@ -29,32 +29,32 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/hw-uart.c
 )
 
-option ( MCODE_TV "Enable TV control" ON )
+option ( MCODE_TV "Enable TV control" OFF )
 option ( MCODE_IR "Enable IR support" OFF )
-option ( MCODE_TWI "Enable TWI support" ON )
-option ( MCODE_RTC "Enable RTC support" ON )
+option ( MCODE_TWI "Enable TWI support" OFF )
+option ( MCODE_RTC "Enable RTC support" OFF )
 option ( MCODE_PWM "Enable PWM support" OFF )
 option ( MCODE_LCD "Enable LCD support" OFF )
 option ( MCODE_WDT "Enable WDT support" ON )
-option ( MCODE_LEDS "Enable LEDs support" OFF )
-option ( MCODE_SOUND "Enable sound support" ON )
+option ( MCODE_LEDS "Enable LEDs support" ON )
+option ( MCODE_SOUND "Enable sound support" OFF )
 option ( MCODE_TUNE_TRACK "Show notes for tunes" OFF )
 option ( MCODE_CONSOLE "Enable console support" OFF )
-option ( MCODE_SECURITY "Enable security support" ON )
+option ( MCODE_SECURITY "Enable security support" OFF )
 option ( MCODE_AVR_FUSE "Enable FUSE configuration" OFF )
-option ( MCODE_COMMAND_MODES "Enable command engine modes" ON )
+option ( MCODE_COMMAND_MODES "Enable command engine modes" OFF )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" OFF )
 
-option ( MCODE_RTC_DS3231 "Enable DS3231 RTC" ON )
+option ( MCODE_RTC_DS3231 "Enable DS3231 RTC" OFF )
 
 option ( MCODE_LCD_ILI9341 "Configure the lib for ILI9341 LCD" OFF )
 option ( MCODE_LCD_ILI9481 "Configure the lib for ILI9481 LCD" OFF )
 
-option ( MCODE_PERSIST_STORE "Enable persistent store" ON )
+option ( MCODE_PERSIST_STORE "Enable persistent store" OFF )
 option ( MCODE_PERSIST_STORE_EXT_RAM "Enable persistent store on external NVM-RAM" OFF )
-option ( MCODE_PERSIST_STORE_EXT_EEPROM "Enable persistent store on external EEPROM" ON )
+option ( MCODE_PERSIST_STORE_EXT_EEPROM "Enable persistent store on external EEPROM" OFF )
 
 option ( MCODE_BOOTLOADER "Include AVR109-based bootloader code" ON )
 

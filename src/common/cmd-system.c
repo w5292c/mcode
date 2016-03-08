@@ -30,6 +30,7 @@
 #include "utils.h"
 #include "hw-wdt.h"
 #include "system.h"
+#include "hw-leds.h"
 #include "mglobal.h"
 #include "mstring.h"
 #include "mcode-config.h"
@@ -192,4 +193,34 @@ void cmd_engine_call(const char *args, bool *startCmd)
 
 void cmd_engine_system_test(const char *args, bool *startCmd)
 {
+  uint16_t i;
+  const uint16_t steps = 1024;
+  for (i = 0; i < steps; ++i) {
+    leds_set(0, 1);
+    leds_set(1, 0);
+    leds_set(2, 1);
+    leds_set(3, 0);
+    mtick_sleep(5);
+    leds_set(0, 0);
+    leds_set(1, 1);
+    leds_set(2, 1);
+    leds_set(3, 0);
+    mtick_sleep(5);
+    leds_set(0, 0);
+    leds_set(1, 1);
+    leds_set(2, 0);
+    leds_set(3, 1);
+    mtick_sleep(5);
+    leds_set(0, 1);
+    leds_set(1, 0);
+    leds_set(2, 0);
+    leds_set(3, 1);
+    mtick_sleep(5);
+    mprintstr(PSTR("."));
+  }
+  leds_set(0, 0);
+  leds_set(1, 0);
+  leds_set(2, 0);
+  leds_set(3, 0);
+  mprintstrln(PSTR("done."));
 }

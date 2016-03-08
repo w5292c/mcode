@@ -29,17 +29,35 @@
 #include <avr/io.h>
 
 inline static uint8_t
-leds_get_led_bit(int index) { return (index == 0) ? (1U << PD4) : (1U << PD5); }
+leds_get_led_bit(int index)
+{
+  index = 3 - index;
+  switch (index) {
+  case 0:
+    return _BV(PA4);
+  case 1:
+    return _BV(PA5);
+  case 2:
+    return _BV(PA6);
+  default:
+  case 3:
+    return _BV(PA7);
+  }
+}
 
 /*
  * Test code that manages 2 test LEDs connected to PB2, PB3
  */
 void leds_init(void)
 {
+#if 0
   /* configure PB2, PB3 as outputs */
   DDRD |= ((1U << DDD4)|(1U << DDD5));
   /* turn both LEDs OFF */
   PORTD &= ~((1U << PD4)|(1U << PD5));
+#else
+  DDRA |= _BV(DDA4)|_BV(DDA5)|_BV(DDA6)|_BV(DDA7);
+#endif
 }
 
 void leds_deinit(void)
@@ -50,14 +68,14 @@ void leds_set(int index, int on)
 {
   const uint8_t ledBit = leds_get_led_bit(index);
   if (on) {
-    PORTD |= ledBit;
+    PORTA |= ledBit;
   } else {
-    PORTD &= ~ledBit;
+    PORTA &= ~ledBit;
   }
 }
 
 int leds_get(int index)
 {
   const uint8_t ledBit = leds_get_led_bit(index);
-  return (PORTD & ledBit) ? 1 : 0;
+  return (PORTA & ledBit) ? 1 : 0;
 }
