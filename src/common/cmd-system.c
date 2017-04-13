@@ -36,7 +36,11 @@
 
 #include <string.h>
 
+#ifdef __AVR__
+/** @todo move to AVR-specific code */
 static void cmd_engine_call(const char *args, bool *startCmd);
+#endif /* __AVR__ */
+
 static bool cmd_engine_echo(const char *args, bool *startCmd);
 static bool cmd_engine_sleep(const char *args, bool *startCmd);
 static void cmd_engine_system_test(const char *args, bool *startCmd);
@@ -48,7 +52,9 @@ void cmd_engine_system_help(void)
 #ifdef MCODE_BOOTLOADER
   mprintstrln(PSTR("> bootloader - Reboot to bootloader mode"));
 #endif /* MCODE_BOOTLOADER */
+#ifdef __AVR__
   mprintstrln(PSTR("> call <addr> - Call a program at <addr>"));
+#endif /* __AVR__ */
   mprintstrln(PSTR("> echo <string> - Echo <string> to console"));
   mprintstrln(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds"));
   mprintstrln(PSTR("> test [<args>] - Usually empty placeholder for temparary experiments"));
@@ -111,10 +117,13 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
   } else if (!strncmp_P(args, PSTR("test "), 5)) {
     cmd_engine_system_test(args + 5, startCmd);
     return true;
-  } else if (!strncmp_P(args, PSTR("call "), 5)) {
+  }
+#ifdef __AVR__
+  else if (!strncmp_P(args, PSTR("call "), 5)) {
     cmd_engine_call(args + 5, startCmd);
     return true;
   }
+#endif /* __AVR__ */
 #ifdef __linux__
   else if (!strcmp_P(args, PSTR("quit")) || !strcmp_P(args, PSTR("exit"))) {
     main_request_exit();
@@ -153,6 +162,7 @@ bool cmd_engine_sleep(const char *args, bool *startCmd)
   return true;
 }
 
+#ifdef __AVR__
 void cmd_engine_call(const char *args, bool *startCmd)
 {
   uint16_t address = 0x0000u;
@@ -189,6 +199,7 @@ void cmd_engine_call(const char *args, bool *startCmd)
   wdt_start();
 #endif /* MCODE_WDT */
 }
+#endif /* __AVR__ */
 
 void cmd_engine_system_test(const char *args, bool *startCmd)
 {

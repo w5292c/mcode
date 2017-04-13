@@ -5,6 +5,7 @@ Building for HHCSTM32F100V2.0 (STM32F103VE based) DevBoard
 $ export STM32_CMAKE_PATH=<path-to-the-root-of-stm32-cmake>
 $ cmake -DCMAKE_MODULE_PATH=${STM32_CMAKE_PATH}/cmake/Modules -DSTM32_CHIP=STM32F103VE \
 -DCMAKE_TOOLCHAIN_FILE=${STM32_CMAKE_PATH}/gcc_stm32.cmake -DCMAKE_BUILD_TYPE=Release ../targets/stm32/
+Also, possible chip: -DSTM32_CHIP=STM32F103C8T6
 3) Building HEX file:
 $ make console-test.hex
 4) Flashing the target:

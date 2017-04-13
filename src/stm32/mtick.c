@@ -49,7 +49,13 @@ void mtick_init(void)
 
   /* Enable the TIM6 global Interrupt */
   NVIC_InitTypeDef nvicConfig;
+#ifdef STM32F10X_MD
+  nvicConfig.NVIC_IRQChannel = TIM4_IRQn;
+#elif defined (STM32F10X_HD)
   nvicConfig.NVIC_IRQChannel = TIM6_IRQn;
+#else
+#error "Unknown device family: cannot configure timer"
+#endif /* STM32F10X_HD || STM32F10X_HD */
   nvicConfig.NVIC_IRQChannelPreemptionPriority = 0;
   nvicConfig.NVIC_IRQChannelSubPriority = 1;
   nvicConfig.NVIC_IRQChannelCmd = ENABLE;

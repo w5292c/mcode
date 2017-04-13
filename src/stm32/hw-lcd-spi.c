@@ -110,7 +110,7 @@ void lcd_set_size(uint16_t width, uint16_t height)
   if (width != lcd_get_width() || height != lcd_get_height()) {
     mprintstr(PSTR("W: lcd_set_size(0x"));
     mprint_uint16(width, true);
-    mprintstr(PSTR(", 0x");
+    mprintstr(PSTR(", 0x"));
     mprint_uint16(height, true);
     mprintstrln(PSTR(")"));
   }
