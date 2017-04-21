@@ -37,6 +37,7 @@ SPI1_MISO (IN): PA6;
 SPI1_MOSI (OUT): PA7;
 PB6;
 PB7;
+Details are here: src/stm32/hw-lcd-spi.c
 
 LCD TFT SOI 240x320
 ===================
