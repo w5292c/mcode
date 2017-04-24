@@ -42,7 +42,7 @@ void leds_init(void)
 #ifdef STM32F10X_HD
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 #elif defined (STM32F10X_MD)
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
 #endif /* STM32F10X_HD || STM32F10X_MD */
 
   /* Configure the pins */
@@ -65,7 +65,7 @@ void leds_init(void)
   GPIO_Config.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Config.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOC, &GPIO_Config);
-  GPIO_WriteBit(GPIOC, GPIO_Pin_13, Bit_RESET);
+  GPIO_WriteBit(GPIOC, GPIO_Pin_13, Bit_SET);
 #endif /* STM32F10X_HD || STM32F10X_MD */
 }
 
@@ -75,7 +75,12 @@ void leds_deinit(void)
 
 void leds_set(int index, int on)
 {
+#ifdef STM32F10X_HD
   const BitAction value = on ? Bit_SET : Bit_RESET;
+#elif defined (STM32F10X_MD)
+  const BitAction value = on ? Bit_RESET : Bit_SET;
+#endif /* STM32F10X_HD || STM32F10X_MD */
+
   switch (index) {
   case 1:
 #ifdef STM32F10X_HD

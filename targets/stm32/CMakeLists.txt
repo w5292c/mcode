@@ -43,7 +43,7 @@ set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )
 
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
-option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
+option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" ON )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 

@@ -117,8 +117,11 @@ void lcd_reset(void)
 #endif /* STM32F10X_HD || STM32F10X_MD */
   mtick_sleep(10);
 
+#ifdef STM32F10X_HD
   /* wait for LCD ready */
+  /**@todo check why this does not work for STM32F10X_MD */
   while (0x00009341 != lcd_read_id());
+#endif /* STM32F10X_HD */
 
   /* initialize the LCD module */
   lcd_device_init();

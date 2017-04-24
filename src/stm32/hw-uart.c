@@ -56,7 +56,7 @@ void hw_uart_init (void)
   memset((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
   memset((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
 
-#ifdef STM32F10X_HD
+#if defined (STM32F10X_HD) || defined (STM32F10X_MD)
   /* Init clocks */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1 | RCC_APB2Periph_AFIO, ENABLE);
 
@@ -84,7 +84,7 @@ void hw_uart_init (void)
 
   /* Start the device */
   USART_Cmd(USART1, ENABLE);
-#endif /* STM32F10X_HD */
+#endif /* STM32F10X_HD || STM32F10X_MD */
 
   mcode_scheduler_add (hw_uart_tick);
 }
