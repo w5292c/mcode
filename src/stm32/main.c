@@ -80,18 +80,24 @@ void main_tick(void)
   switch (TheCase) {
   case 0:
     leds_set(1, 1);
+#ifdef STM32F10X_HD
     leds_set(2, 0);
     leds_set(3, 0);
+#endif /* STM32F10X_HD */
     break;
   case 1:
     leds_set(1, 0);
+#ifdef STM32F10X_HD
     leds_set(2, 1);
     leds_set(3, 0);
+#endif /* STM32F10X_HD */
     break;
   case 2:
     leds_set(1, 0);
+#ifdef STM32F10X_HD
     leds_set(2, 0);
     leds_set(3, 1);
+#endif /* STM32F10X_HD */
     break;
   default:
     break;

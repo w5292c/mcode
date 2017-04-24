@@ -48,8 +48,6 @@
 #error "Unsupported device"
 #endif /* !STM32F10X_HD && !STM32F10X_MD */
 
-#define INLINE_BYTES(str) ((const uint8 *)str)
-
 void lcd_init(uint16_t width, uint16_t height)
 {
   /* Initialize SPI first */
@@ -60,6 +58,8 @@ void lcd_init(uint16_t width, uint16_t height)
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 #ifdef STM32F10X_HD
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
+#elif defined (STM32F10X_MD)
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 #endif /* STM32F10X_HD */
 
   /* Configure the pins */
