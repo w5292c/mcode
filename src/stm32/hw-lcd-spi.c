@@ -33,9 +33,9 @@
 
 /*
  * SPI LCD HW configuration:
- * 4. RESET;    GPIO;      PD5;
+ * 4. RESET;    GPIO;      PD5; PA4 (STM32F103C8);
  * 5. D/C;      GPIO;      PB7;
- * 8. LED;      GPIO/NONE; PD4;
+ * 8. LED;      GPIO/NONE; PD4; NONE (STM32F103C8);
  * 3. SPI_CS;   GPIO;      PB6;
  * 6. SPI_MOSI; SPI;       PA7;
  * 7. SPI_SCK;  SPI;       PA5;
@@ -43,6 +43,10 @@
  * 1. Vcc (+3.3V);
  * 2. GND;
  */
+
+#if !defined (STM32F10X_HD) && !defined (STM32F10X_MD)
+#error "Unsupported device"
+#endif /* !STM32F10X_HD && !STM32F10X_MD */
 
 #define INLINE_BYTES(str) ((const uint8 *)str)
 
@@ -54,21 +58,33 @@ void lcd_init(uint16_t width, uint16_t height)
   /* GPIO configuration */
   /* Enable clocks */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+#ifdef STM32F10X_HD
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
+#endif /* STM32F10X_HD */
 
   /* Configure the pins */
   GPIO_InitTypeDef pinConfig;
-  /* Configure PD4 pin (LED) */
+#ifdef STM32F10X_HD
+  /* Configure PD4 pin (LED), HD-devices only for now */
   pinConfig.GPIO_Pin =  GPIO_Pin_4;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_OD;
   pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOD, &pinConfig);
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, Bit_RESET);
-  /* Configure PD5 pin (RESET) */
+#endif /* STM32F10X_HD */
+#ifdef STM32F10X_HD
+  /* Configure PD5 pin (RESET) for high-density devices */
   pinConfig.GPIO_Pin = GPIO_Pin_5;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOD, &pinConfig);
   GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_SET);
+#elif defined (STM32F10X_MD)
+  /* Configure RESET pin (PA4) for medium-density devices */
+  pinConfig.GPIO_Pin = GPIO_Pin_4;
+  pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
+  GPIO_Init(GPIOA, &pinConfig);
+  GPIO_WriteBit(GPIOA, GPIO_Pin_4, Bit_SET);
+#endif /* STM32F10X_HD || STM32F10X_MD */
   /* Configure PB7 pin (D/C) */
   pinConfig.GPIO_Pin = GPIO_Pin_7;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -88,9 +104,17 @@ void lcd_deinit(void)
 void lcd_reset(void)
 {
   /* HW reset */
+#ifdef STM32F10X_HD
   GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_RESET);
+#elif defined (STM32F10X_MD)
+  GPIO_WriteBit(GPIOA, GPIO_Pin_4, Bit_RESET);
+#endif /* STM32F10X_HD || STM32F10X_MD */
   mtick_sleep(10);
+#ifdef STM32F10X_HD
   GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_SET);
+#elif defined (STM32F10X_MD)
+  GPIO_WriteBit(GPIOA, GPIO_Pin_4, Bit_SET);
+#endif /* STM32F10X_HD || STM32F10X_MD */
   mtick_sleep(10);
 
   /* wait for LCD ready */
@@ -102,7 +126,9 @@ void lcd_reset(void)
 
 void lcd_set_bl(bool on)
 {
+#ifdef STM32F10X_HD
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, on ? Bit_RESET : Bit_SET);
+#endif /* STM32F10X_HD */
 }
 
 void lcd_set_size(uint16_t width, uint16_t height)
