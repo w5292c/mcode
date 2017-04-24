@@ -10,6 +10,8 @@ Also, possible chip: -DSTM32_CHIP=STM32F103C8T6
 $ make console-test.hex
 4) Flashing the target:
 $ openocd -f interface/jlink.cfg -f target/stm32f1x.cfg -c "program console-test.hex verify reset"
+For MD devices, the command line shold be like this:
+$ sudo openocd -f interface/stlink-v2.cfg -f target/stm32f1x_stlink.cfg -c "program console-test.hex verify reset"
 
 HW specs
 ========
