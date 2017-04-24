@@ -1,0 +1,4 @@
+Building stm32-cmake
+====================
+Use the script in this directory to build 'stm32-cmake', like this:
+$ GITHUB_ROOT=<path-to-your-project-directory> ./build-stm32-cmake.sh
