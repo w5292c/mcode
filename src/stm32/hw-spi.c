@@ -54,7 +54,11 @@ void spi_init(void)
   spiConfig.SPI_CPOL = SPI_CPOL_High;
   spiConfig.SPI_CPHA = SPI_CPHA_2Edge;
   spiConfig.SPI_NSS = SPI_NSS_Soft;
+#ifdef STM32F10X_HD
   spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
+#elif defined (STM32F10X_MD)
+  spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+#endif /* STM32F10X_HD || STM32F10X_MD */
   spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
   spiConfig.SPI_CRCPolynomial = 7;
   SPI_Init(SPI1, &spiConfig);
