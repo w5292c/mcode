@@ -33,17 +33,15 @@
 #define MCODE_MTICKS_COUNT (10)
 #endif /* MCODE_MTICKS_COUNT */
 
+#ifndef MCODE_MTICKS_PER_SECOND
+#define MCODE_MTICKS_PER_SECOND (1000)
+#endif /* MCODE_MTICKS_PER_SECOND */
+
 static volatile uint64_t TheMSecCounter = 0;
 static volatile bool TheSceduledFlag = false;
 static mcode_tick TheTickCallbacks[MCODE_MTICKS_COUNT];
 
 static void mcode_mtick_scheduler_tick(void);
-
-#ifdef STM32F10X_HD
-#define MTICK_TIM TIM6
-#elif defined (STM32F10X_MD)
-#define MTICK_TIM TIM4
-#endif /* STM32F10X_HD || STM32F10X_MD */
 
 void mtick_init(void)
 {
@@ -53,43 +51,10 @@ void mtick_init(void)
     TheTickCallbacks[i] = 0;
   }
 
-  /* Enable the TIM6 global Interrupt */
-  NVIC_InitTypeDef nvicConfig;
-#ifdef STM32F10X_MD
-  nvicConfig.NVIC_IRQChannel = TIM4_IRQn;
-#elif defined (STM32F10X_HD)
-  nvicConfig.NVIC_IRQChannel = TIM6_IRQn;
-#else
-#error "Unknown device family: cannot configure timer"
-#endif /* STM32F10X_HD || STM32F10X_MD */
-  nvicConfig.NVIC_IRQChannelPreemptionPriority = 0;
-  nvicConfig.NVIC_IRQChannelSubPriority = 1;
-  nvicConfig.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&nvicConfig);
+  /* Configure/start the System Tick timer */
+  SysTick_Config(SystemCoreClock / MCODE_MTICKS_PER_SECOND);
 
-  /* Define PCLK1 clock: HCLK/1 = 72MHz */
-  RCC_PCLK1Config(RCC_HCLK_Div1);
-  /* Enable the TIM6 clock */
-#ifdef STM32F10X_HD
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
-#elif defined (STM32F10X_MD)
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-#endif /* STM32F10X_HD || STM32F10X_MD */
-
-  /* Configure the TIM6 timer to generate a 1ms interrupt */
-  TIM_TimeBaseInitTypeDef tim6Config;
-  tim6Config.TIM_Prescaler = 3;
-  tim6Config.TIM_CounterMode = TIM_CounterMode_Up;
-  tim6Config.TIM_Period = 17999;
-  tim6Config.TIM_ClockDivision = 0;
-  tim6Config.TIM_RepetitionCounter = 0;
-  TIM_TimeBaseInit(MTICK_TIM, &tim6Config);
-  /* Enable the 'update' interrupt */
-  TIM_ITConfig(MTICK_TIM, TIM_IT_Update, ENABLE);
-
-  /* Start counting */
-  TIM_Cmd(MTICK_TIM, ENABLE);
-
+  /* Add the user-context tick handler */
   mcode_scheduler_add(mcode_mtick_scheduler_tick);
 }
 
@@ -119,28 +84,19 @@ uint64_t mtick_count(void)
   return TheMSecCounter;
 }
 
-#ifdef STM32F10X_HD
-void TIM6_IRQHandler(void)
-#elif defined (STM32F10X_MD)
-void TIM4_IRQHandler(void)
-#endif /* STM32F10X_HD || STM32F10X_MD */
+void SysTick_Handler(void)
 {
-  if (TIM_GetITStatus(MTICK_TIM, TIM_IT_Update) != RESET)
-  {
-    TIM_ClearITPendingBit(MTICK_TIM, TIM_IT_Update);
-
-    /* update the state */
-    TheSceduledFlag = true;
-    ++TheMSecCounter;
-  }
+  /* update the state */
+  TheSceduledFlag = true;
+  ++TheMSecCounter;
 }
 
 void mcode_mtick_scheduler_tick(void)
 {
-  TIM_ITConfig(MTICK_TIM, TIM_IT_Update, DISABLE);
+  /* Check/reset the sceduler flag */
   if (TheSceduledFlag) {
     TheSceduledFlag = false;
-    TIM_ITConfig(MTICK_TIM, TIM_IT_Update, ENABLE);
+
     int i;
     mcode_tick tick;
     for (i = 0; i < MCODE_MTICKS_COUNT; ++i) {
@@ -152,8 +108,5 @@ void mcode_mtick_scheduler_tick(void)
       /* Invoke the tick */
       (*tick)();
     }
-  }
-  else {
-    TIM_ITConfig(MTICK_TIM, TIM_IT_Update, ENABLE);
   }
 }
