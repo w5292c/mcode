@@ -34,14 +34,22 @@
 #include <string.h>
 
 #define MCODE_GSM_RSP_BUFFER_MAX_LENGTH (80)
+#define MCODE_GSM_PHONE_NUMBER_MAX_LENGTH (16)
 
 static uint32_t TheTimeout = 0;
 static size_t TheRspBufferLength = 0;
+static bool TheWaitingForGsmFlag = false;
+static char TheMsgBuffer[140] = {0};
 static char TheRspBuffer[MCODE_GSM_RSP_BUFFER_MAX_LENGTH] = {0};
+static char TheNumberBuffer[MCODE_GSM_PHONE_NUMBER_MAX_LENGTH] = {0};
 
 static void cmd_gsm_mtick(void);
 static void cmd_gsm_handle_rsp(char ch);
+static void cmd_gsm_show_phone_number(void);
+static void cmd_gsm_send_sms(const char *body);
+static void cmd_gsm_send_string(const char *str);
 static void cmd_engine_send_at_command(const char *args);
+static void cmd_gsm_store_phone_number(const char *number);
 
 void cmd_engine_gsm_init(void)
 {
@@ -57,12 +65,24 @@ void cmd_engine_gsm_deinit(void)
 void cmd_engine_gsm_help(void)
 {
   mprintstrln(PSTR("> at <AT-COMMAND> - Send generic AT-command to GSM module"));
+  mprintstrln(PSTR("> send-sms <MSG-BODY> - Send SMS with <MSG-BODY> text"));
+  mprintstrln(PSTR("> phone - Show the current phone number for sending SMSes"));
+  mprintstrln(PSTR("> phone-set <PHONE-NUMBER> - Store the phone number for sending SMS"));
 }
 
 bool cmd_engine_gsm_command(const char *command, bool *startCmd)
 {
   if (!strncmp_P(command, PSTR("at "), 3)) {
     cmd_engine_send_at_command(command + 3);
+    return true;
+  } else if (!strncmp_P(command, PSTR("send-sms "), 9)) {
+    cmd_gsm_send_sms(command + 9);
+    return true;
+  } else if (!strncmp_P(command, PSTR("phone-set "), 10)) {
+    cmd_gsm_store_phone_number(command + 10);
+    return true;
+  } else if (!strcmp_P(command, PSTR("phone"))) {
+    cmd_gsm_show_phone_number();
     return true;
   }
 
@@ -74,11 +94,44 @@ void cmd_engine_send_at_command(const char *args)
   mprintstr(PSTR("\r\nSending command: \""));
   mprintstr_R(args);
   mprintstr(PSTR("\"\r\n"));
-  char ch;
-  while ((ch = *args++)) {
-    uart2_write_char(ch);
-  }
+  cmd_gsm_send_string(args);
   uart2_write_char('\r');
+}
+
+void cmd_gsm_send_sms(const char *body)
+{
+  const size_t length = strlen(body);
+  if (length > sizeof (TheMsgBuffer) - 1) {
+    mprintstrln(PSTR("Error: the message body is too long"));
+    return;
+  }
+  if (!strlen(TheNumberBuffer)) {
+    mprintstrln(PSTR("Error: no phone number, use 'phone-set' first"));
+    return;
+  }
+
+  memcpy(TheMsgBuffer, body, length);
+  cmd_gsm_send_string("AT+CMGS=\"");
+  cmd_gsm_send_string(TheNumberBuffer);
+  cmd_gsm_send_string(PSTR("\"\r"));
+  TheWaitingForGsmFlag = true;
+}
+
+void cmd_gsm_store_phone_number(const char *number)
+{
+  const size_t length = strlen(number);
+  if (length > MCODE_GSM_PHONE_NUMBER_MAX_LENGTH - 1) {
+    mprintstrln(PSTR("Error: phone number is too long"));
+    return;
+  }
+  strcpy(TheNumberBuffer, number);
+}
+
+void cmd_gsm_show_phone_number(void)
+{
+  mprintstr(PSTR("Current phone number: \""));
+  mprintstr_R(TheNumberBuffer);
+  mprintstrln(PSTR("\""));
 }
 
 void cmd_gsm_handle_rsp(char ch)
@@ -99,6 +152,14 @@ void cmd_gsm_mtick(void)
     return;
   }
 
+  if (TheWaitingForGsmFlag) {
+    TheWaitingForGsmFlag = false;
+    cmd_gsm_send_string(TheMsgBuffer);
+    uart2_write_char(0x1a);
+    uart2_write_char('\r');
+    return;
+  }
+
   mprintstr(PSTR("\r>>> GSM "));
   mprintstr(PSTR("response: \""));
   mprintbytes(TheRspBuffer, TheRspBufferLength);
@@ -106,4 +167,12 @@ void cmd_gsm_mtick(void)
   line_editor_uart_start();
   memset(TheRspBuffer, 0, sizeof (TheRspBuffer));
   TheRspBufferLength = 0;
+}
+
+void cmd_gsm_send_string(const char *str)
+{
+  char ch;
+  while ((ch = *str++)) {
+    uart2_write_char(ch);
+  }
 }
