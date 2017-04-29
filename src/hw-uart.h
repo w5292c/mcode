@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2016 Alexander Chumakov
+ * Copyright (c) 2014-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,7 @@
 #ifndef MCODE_HW_UART_H
 #define MCODE_HW_UART_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "mcode-config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +39,19 @@ void hw_uart_deinit(void);
 void hw_uart_set_callback(hw_uart_char_event aCallback);
 
 void uart_write_char(char ch);
+
+#ifdef MCODE_UART2
+/**
+ * Set the callback for receiving data from UART2
+ */
+void hw_uart2_set_callback(hw_uart_char_event cb);
+
+/**
+ * Send 'ch' to UART2
+ * @param[in] ch The character to be sent
+ */
+void uart2_write_char(char ch);
+#endif /* MCODE_UART2 */
 
 #ifdef __cplusplus
 } /* extern "C" */

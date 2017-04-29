@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014,2015 Alexander Chumakov
+ * Copyright (c) 2014-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,6 +113,13 @@ bool cmd_engine_led_command(const char *command, bool *startCmd);
 void cmd_engine_led_help(void);
 bool cmd_engine_led_command(const char *command, bool *startCmd);
 #endif /* MCODE_SOUND */
+
+#ifdef MCODE_CMD_GSM
+void cmd_engine_gsm_init(void);
+void cmd_engine_gsm_deinit(void);
+void cmd_engine_gsm_help(void);
+bool cmd_engine_gsm_command(const char *cmd, bool *startCmd);
+#endif /* MCODE_CMD_GSM */
 
 #ifdef __cplusplus
 } /* extern "C" */

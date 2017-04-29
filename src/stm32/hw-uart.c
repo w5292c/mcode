@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +24,19 @@
 
 #include "hw-uart.h"
 
-#include "utils.h"
 #include "scheduler.h"
-#include "mcode-config.h"
-#include "line-editor-uart.h"
 
-#include <string.h>
-#include <stdint.h>
 #include <stm32f10x.h>
 
 static hw_uart_char_event TheCallback = NULL;
-
-/**
- * TheCurrentBuffer == 0: reading from UART to TheReadBuffer0, keeping TheReadBuffer1
- * TheCurrentBuffer == 1: reading from UART to TheReadBuffer1, keeping TheReadBuffer0
- */
-#define HW_UART_READ_BUFFER_LENGTH (16)
-volatile static uint8_t TheCurrentBuffer = 0;
-volatile static uint8_t TheCurrentReadIndex0 = 0;
-volatile static uint8_t TheCurrentReadIndex1 = 0;
-volatile static uint8_t TheReadBuffer0[HW_UART_READ_BUFFER_LENGTH];
-volatile static uint8_t TheReadBuffer1[HW_UART_READ_BUFFER_LENGTH];
+#ifdef MCODE_UART2
+static hw_uart_char_event TheUart2Callback = NULL;
+#endif /* MCODE_UART2 */
 
 static void hw_uart_tick (void);
 
 void hw_uart_init (void)
 {
-  TheCurrentBuffer = 0;
-  TheCurrentReadIndex0 = 0;
-  TheCurrentReadIndex1 = 0;
-  memset((void *)TheReadBuffer0, 0, HW_UART_READ_BUFFER_LENGTH);
-  memset((void *)TheReadBuffer1, 0, HW_UART_READ_BUFFER_LENGTH);
-
 #if defined (STM32F10X_HD) || defined (STM32F10X_MD)
   /* Init clocks */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1 | RCC_APB2Periph_AFIO, ENABLE);
@@ -84,6 +65,28 @@ void hw_uart_init (void)
 
   /* Start the device */
   USART_Cmd(USART1, ENABLE);
+
+#ifdef MCODE_UART2
+    /* Init USART2 clocks */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+
+  /* Init USART2 pins */
+  /* USART2_RX (in): PA3: IN_FLOATING */
+  pinConfig.GPIO_Pin = GPIO_Pin_3;
+  pinConfig.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+  GPIO_Init(GPIOA, &pinConfig);
+  /* USART2_TX (OUT): PA2: Alt_PP */
+  pinConfig.GPIO_Pin = GPIO_Pin_2;
+  pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
+  GPIO_Init(GPIOA, &pinConfig);
+
+  /* Init USART2 similar to USART1 */
+  USART_Init(USART2, &initData);
+
+  /* Start USART2 */
+  USART_Cmd(USART2, ENABLE);
+#endif /* MCODE_UART2 */
+
 #endif /* STM32F10X_HD || STM32F10X_MD */
 
   mcode_scheduler_add (hw_uart_tick);
@@ -101,6 +104,21 @@ void uart_write_char(char ch)
   USART_SendData(USART1, ch);
 }
 
+#ifdef MCODE_UART2
+void hw_uart2_set_callback(hw_uart_char_event cb)
+{
+  TheUart2Callback = cb;
+}
+
+void uart2_write_char(char ch)
+{
+  /* Wait until USART1 DR register is empty */
+  while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
+  USART_SendData(USART2, ch);
+}
+#endif /* MCODE_UART2 */
+
+
 static void hw_uart_tick(void)
 {
   /* Check if we have any received data */
@@ -110,4 +128,14 @@ static void hw_uart_tick(void)
       (*TheCallback)(data);
     }
   }
+
+#ifdef MCODE_UART2
+  /* Check if we have any received data on USART2 */
+  if (USART_GetFlagStatus(USART2, USART_FLAG_RXNE) != RESET) {
+    const uint16_t data = USART_ReceiveData(USART2);
+    if (TheUart2Callback) {
+      (TheUart2Callback)((char)data);
+    }
+  }
+#endif /* MCODE_UART2 */
 }

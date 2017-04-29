@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #ifndef MCODE_STRINGS_H
 #define MCODE_STRINGS_H
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -54,6 +55,8 @@ void mprint(uint8_t id);
 void mprintln(uint8_t id);
 void mprintstr(const char *string);
 void mprintstrln(const char *string);
+void mprintbytes(const char *str, size_t length);
+void mprintbytesln(const char *str, size_t length);
 
 void mprintstr_R(const char *string);
 

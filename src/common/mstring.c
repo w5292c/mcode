@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015,2016 Alexander Chumakov
+ * Copyright (c) 2015-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,14 +64,26 @@ void mprintstrln(const char *string)
   mprint(MStringNewLine);
 }
 
-void mprintstr(const char *string)
+void mprintstr(const char *str)
+{
+  mprintbytes(str, -1);
+}
+
+void mprintbytes(const char *string, size_t length)
 {
   if (string) {
     uint8_t ch;
-    while (0 != (ch = pgm_read_byte(string++))) {
+    size_t bytes = 0;
+    while (0 != (ch = pgm_read_byte(string++)) && (length == -1 || bytes++ < length)) {
       mputch(ch);
     }
   }
+}
+
+void mprintbytesln(const char *str, size_t length)
+{
+  mprintbytes(str, length);
+  mprint(MStringNewLine);
 }
 
 void mprint_uintd(uint32_t value, uint8_t minDigits)
