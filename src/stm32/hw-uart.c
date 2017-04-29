@@ -80,7 +80,8 @@ void hw_uart_init (void)
   pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_Init(GPIOA, &pinConfig);
 
-  /* Init USART2 similar to USART1 */
+  /* Init USART2 similar to USART1, with lower baudrate */
+  initData.USART_BaudRate = 9600;
   USART_Init(USART2, &initData);
 
   /* Start USART2 */

@@ -66,3 +66,10 @@ SD Card slot:
 2' SD_MOSI;
 3' SD_MISO;
 4' SD_SCK;
+
+GSM module 1-time configuration
+===============================
+Set UART baud rate:
+>>> AT+IPR=9600
+Same the new setting:
+>>> AT&W
