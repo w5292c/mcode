@@ -41,8 +41,8 @@ set ( SRC_LIST
 
 set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )
 
+option ( MCODE_GSM "Enable GSM engine" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
-option ( MCODE_CMD_GSM "Enable GSM commands" ON )
 option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" ON )
@@ -61,11 +61,12 @@ if ( MCODE_CONSOLE_ENABLED )
   )
 endif ( MCODE_CONSOLE_ENABLED )
 
-if ( MCODE_CMD_GSM )
+if ( MCODE_GSM )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/common/cmd-gsm.c
+    ${MCODE_TOP}/src/common/gsm-engine-uart2.c
   )
-endif ( MCODE_CMD_GSM )
+endif ( MCODE_GSM )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

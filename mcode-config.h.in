@@ -88,8 +88,8 @@
 /* Show notes for tunes */
 #cmakedefine MCODE_TUNE_TRACK
 
-/* Enable GSM commands */
-#cmakedefine MCODE_CMD_GSM
+/* Enable GSM engine */
+#cmakedefine MCODE_GSM
 
 /* Base address for the bootloader code */
 #define MCODE_BOOTLOADER_BASE ( @MCODE_BOOTLOADER_BASE@ )

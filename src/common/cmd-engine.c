@@ -37,16 +37,16 @@ void cmd_engine_init(void)
 {
   line_editor_uart_init();
 
-#ifdef MCODE_CMD_GSM
+#ifdef MCODE_GSM
   cmd_engine_gsm_init();
-#endif /* MCODE_CMD_GSM */
+#endif /* MCODE_GSM */
 }
 
 void cmd_engine_deinit(void)
 {
-#ifdef MCODE_CMD_GSM
+#ifdef MCODE_GSM
   cmd_engine_gsm_deinit();
-#endif /* MCODE_CMD_GSM */
+#endif /* MCODE_GSM */
 
   line_editor_uart_deinit();
 }
@@ -104,10 +104,10 @@ void cmd_engine_on_cmd_ready(const char *aString)
   else if (cmd_engine_led_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_SOUND */
-#ifdef MCODE_CMD_GSM
+#ifdef MCODE_GSM
   else if (cmd_engine_gsm_command(aString, &start_uart_editor)) {
   }
-#endif /* MCODE_CMD_GSM */
+#endif /* MCODE_GSM */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
   }
   else if (*aString) {
@@ -158,7 +158,7 @@ void cmd_engine_show_help(void)
 #ifdef MCODE_SOUND
   cmd_engine_led_help();
 #endif /* MCODE_SOUND */
-#ifdef MCODE_CMD_GSM
+#ifdef MCODE_GSM
   cmd_engine_gsm_help();
-#endif /* MCODE_CMD_GSM */
+#endif /* MCODE_GSM */
 }

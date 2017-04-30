@@ -114,12 +114,12 @@ void cmd_engine_led_help(void);
 bool cmd_engine_led_command(const char *command, bool *startCmd);
 #endif /* MCODE_SOUND */
 
-#ifdef MCODE_CMD_GSM
+#ifdef MCODE_GSM
 void cmd_engine_gsm_init(void);
 void cmd_engine_gsm_deinit(void);
 void cmd_engine_gsm_help(void);
 bool cmd_engine_gsm_command(const char *cmd, bool *startCmd);
-#endif /* MCODE_CMD_GSM */
+#endif /* MCODE_GSM */
 
 #ifdef __cplusplus
 } /* extern "C" */
