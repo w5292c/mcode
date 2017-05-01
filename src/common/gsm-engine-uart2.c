@@ -41,12 +41,54 @@ typedef enum {
   EGsmStateSendingSmsAddress,
 } TGsmState;
 
+typedef enum {
+  EGsmStateFlagNone = 0,
+  EGsmStateFlagAtReady = 1,
+  EGsmStateFlagSmsReady = 2,
+  EGsmStateFlagCallReady = 4,
+  EGsmStateFlagPinReady = 8,
+  EGsmStateFlagAllReady = 15,
+} TGsmStateFlags;
+
+typedef enum {
+  EAtCmdIdUnknown = -1,
+  EAtCmdIdNull = 0,
+  EAtCmdIdOk,
+  EAtCmdIdError,
+  EAtCmdIdEmpty,
+  EAtCmdIdReady,
+  EAtCmdIdSmsReady,
+  EAtCmdIdPinReady,
+  EAtCmdIdCallReady,
+  EAtCmdIdSmsReadyForBody,
+} TAtCmdId;
+
+typedef struct {
+  const char *rspBase;
+  TAtCmdId cmdId;
+} TGsmResponses;
+
+static const TGsmResponses TheGsmResponses[] = {
+  { "", EAtCmdIdEmpty },
+  { "OK", EAtCmdIdOk },
+  { "ERROR", EAtCmdIdError },
+  { "RDY", EAtCmdIdReady },
+  { "SMS Ready", EAtCmdIdSmsReady },
+  { "Call Ready", EAtCmdIdCallReady },
+  { "+CPIN: READY", EAtCmdIdPinReady },
+  { "> ", EAtCmdIdSmsReadyForBody },
+  { NULL, EAtCmdIdNull },
+};
+
 static gsm_callback TheGsmCallback = NULL;
 static TGsmState TheGsmState = EGsmStateNull;
 static char TheMsgBuffer[MCODE_SMS_MAX_LENGTH] = {0};
+static TGsmStateFlags TheGsmFlags = EGsmStateFlagNone;
 
+static void gsm_sms_send_body(void);
 static void gsm_send_string(const char *str);
 static void gsm_uart2_handler(char *data, size_t length);
+static const char *gsm_parse_response(const char *rsp, TAtCmdId *id);
 
 void gsm_init(void)
 {
@@ -84,7 +126,10 @@ void gsm_send_cmd(const char *cmd)
 
 bool gsm_send_sms(const char *address, const char *body)
 {
-  if (EGsmStateIdle != TheGsmState) {
+  if (EGsmStateIdle != TheGsmState ||
+      0 == (TheGsmFlags & EGsmStateFlagAtReady) ||
+      0 == (TheGsmFlags & EGsmStateFlagSmsReady) ||
+      0 == (TheGsmFlags & EGsmStateFlagPinReady)) {
     /* GSM engine is not ready */
     return false;
   }
@@ -108,19 +153,67 @@ bool gsm_send_sms(const char *address, const char *body)
 
 void gsm_uart2_handler(char *data, size_t length)
 {
-  if (EGsmStateSendingSmsAddress == TheGsmState) {
-    TheGsmState = EGsmStateIdle;
-    gsm_send_string(TheMsgBuffer);
-    uart2_write_char(0x1a);
-    uart2_write_char('\r');
-    return;
-  }
+  TAtCmdId id;
+  const char *next = data;
+  const char *curr = data;
+  while (next) {
+    next = gsm_parse_response(next, &id);
+    switch (id) {
+    case EAtCmdIdNull:
+    case EAtCmdIdEmpty:
+      break;
+    case EAtCmdIdOk:
+      mprintstrln(PSTR("\r- OK event"));
+      break;
+    case EAtCmdIdError:
+      mprintstrln(PSTR("\r- ERROR event"));
+      break;
+    case EAtCmdIdReady:
+      TheGsmFlags |= EGsmStateFlagAtReady;
+      mprintstrln(PSTR("\r- READY event"));
+      break;
+    case EAtCmdIdSmsReady:
+      TheGsmFlags |= EGsmStateFlagSmsReady;
+      mprintstrln(PSTR("\r- SMS-READY event"));
+      break;
+    case EAtCmdIdCallReady:
+      TheGsmFlags |= EGsmStateFlagCallReady;
+      mprintstrln(PSTR("\r- Call-READY event"));
+      break;
+    case EAtCmdIdPinReady:
+      TheGsmFlags |= EGsmStateFlagPinReady;
+      mprintstrln(PSTR("\r- PIN-READY event"));
+      break;
+    case EAtCmdIdSmsReadyForBody:
+      if (EGsmStateSendingSmsAddress == TheGsmState) {
+        mprintstrln(PSTR("\r- SMS: ready for body event"));
+        gsm_sms_send_body();
+        TheGsmState = EGsmStateIdle;
+      } else {
+        mprintstrln(PSTR("\r- Error: unexpected ready for body event"));
+      }
+      break;
+    default:
+    case EAtCmdIdUnknown:
+      mprintstr(PSTR("\r- Unknown event: \""));
+      mprintbytes(curr, next - curr - 1);
+      mprintstrln(PSTR("\""));
+      break;
+    }
+    curr = next;
+  };
 
-  mprintstr(PSTR("\r>>> GSM "));
-  mprintstr(PSTR("response: \""));
-  mprintbytes(data, length);
-  mprintstrln(PSTR("\""));
+  mprintstr(PSTR("\r"));
   line_editor_uart_start();
+}
+
+void gsm_sms_send_body(void)
+{
+  TheGsmState = EGsmStateIdle;
+  gsm_send_string(TheMsgBuffer);
+  memset(TheMsgBuffer, 0, sizeof (TheMsgBuffer));
+  uart2_write_char(0x1a);
+  uart2_write_char('\r');
 }
 
 void gsm_send_string(const char *str)
@@ -129,4 +222,45 @@ void gsm_send_string(const char *str)
   while ((ch = *str++)) {
     uart2_write_char(ch);
   }
+}
+
+const char *gsm_parse_response(const char *rsp, TAtCmdId *id)
+{
+  if (!rsp) {
+    *id = EAtCmdIdNull;
+    return NULL;
+  }
+
+  const char *nextLine = rsp;
+  do {
+    const char ch = *nextLine++;
+    if (!ch) {
+      nextLine = NULL;
+      break;
+    }
+    if ('\n' == ch || '\r' == ch) {
+      break;
+    }
+  } while (true);
+
+  const size_t lineLength = nextLine ? (nextLine - rsp - 1) : strlen(rsp);
+
+  TAtCmdId itemId = EAtCmdIdUnknown;
+  const TGsmResponses *response = TheGsmResponses;
+  while (response->rspBase) {
+    /* First, try the full match */
+    const size_t itemLength = strlen(response->rspBase);
+    if (lineLength == itemLength && !strncmp(response->rspBase, rsp, lineLength)) {
+      itemId = response->cmdId;
+      break;
+    }
+
+    /* Now, try partial match, like '+CMGS: <any>', @todo implement */
+
+    /* Try the next item */
+    ++response;
+  }
+
+  *id = itemId;
+  return nextLine;
 }

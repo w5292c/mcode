@@ -181,7 +181,8 @@ void uart_mtick(void)
   /* We come here, when 'TheUartTimer' was 1 before this tick */
   if (TheUart2Callback) {
     const size_t n = activeBuffer ? TheReadBuffer1Length : TheReadBuffer0Length;
-    volatile const uint8_t *buffer = activeBuffer ? TheReadBuffer1 : TheReadBuffer0;
+    volatile uint8_t *buffer = activeBuffer ? TheReadBuffer1 : TheReadBuffer0;
+    buffer[n] = 0;
     (*TheUart2Callback)((char *)buffer, n);
   }
 }
