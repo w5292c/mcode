@@ -57,9 +57,11 @@ typedef enum {
   EAtCmdIdError,
   EAtCmdIdEmpty,
   EAtCmdIdReady,
+  EAtCmdIdFullFunc,
   EAtCmdIdSmsReady,
   EAtCmdIdPinReady,
   EAtCmdIdCallReady,
+  EAtCmdIdBatteryLevel,
   EAtCmdIdSmsReadyForBody,
 } TAtCmdId;
 
@@ -76,6 +78,8 @@ static const TGsmResponses TheGsmResponses[] = {
   { "SMS Ready", EAtCmdIdSmsReady },
   { "Call Ready", EAtCmdIdCallReady },
   { "+CPIN: READY", EAtCmdIdPinReady },
+  { "+CFUN: 1", EAtCmdIdFullFunc },
+  { "+CBC", EAtCmdIdBatteryLevel },
   { "> ", EAtCmdIdSmsReadyForBody },
   { NULL, EAtCmdIdNull },
 };
@@ -88,7 +92,7 @@ static TGsmStateFlags TheGsmFlags = EGsmStateFlagNone;
 static void gsm_sms_send_body(void);
 static void gsm_send_string(const char *str);
 static void gsm_uart2_handler(char *data, size_t length);
-static const char *gsm_parse_response(const char *rsp, TAtCmdId *id);
+static const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args);
 
 void gsm_init(void)
 {
@@ -154,10 +158,11 @@ bool gsm_send_sms(const char *address, const char *body)
 void gsm_uart2_handler(char *data, size_t length)
 {
   TAtCmdId id;
+  const char *args = NULL;
   const char *next = data;
   const char *curr = data;
   while (next) {
-    next = gsm_parse_response(next, &id);
+    next = gsm_parse_response(next, &id, &args);
     switch (id) {
     case EAtCmdIdNull:
     case EAtCmdIdEmpty:
@@ -183,6 +188,19 @@ void gsm_uart2_handler(char *data, size_t length)
     case EAtCmdIdPinReady:
       TheGsmFlags |= EGsmStateFlagPinReady;
       mprintstrln(PSTR("\r- PIN-READY event"));
+      break;
+    case EAtCmdIdFullFunc:
+      mprintstrln(PSTR("\r- Full-functionality event"));
+      break;
+    case EAtCmdIdBatteryLevel:
+      mprintstr(PSTR("\r- Battery level event, args: "));
+      if (args) {
+        mprintstr(PSTR("\""));
+        mprintbytes(args, next - args - 1);
+        mprintstrln(PSTR("\""));
+      } else {
+        mprintstrln(PSTR("<null>"));
+      }
       break;
     case EAtCmdIdSmsReadyForBody:
       if (EGsmStateSendingSmsAddress == TheGsmState) {
@@ -224,7 +242,7 @@ void gsm_send_string(const char *str)
   }
 }
 
-const char *gsm_parse_response(const char *rsp, TAtCmdId *id)
+const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args)
 {
   if (!rsp) {
     *id = EAtCmdIdNull;
@@ -245,6 +263,7 @@ const char *gsm_parse_response(const char *rsp, TAtCmdId *id)
 
   const size_t lineLength = nextLine ? (nextLine - rsp - 1) : strlen(rsp);
 
+  const char *itemArgs = NULL;
   TAtCmdId itemId = EAtCmdIdUnknown;
   const TGsmResponses *response = TheGsmResponses;
   while (response->rspBase) {
@@ -256,11 +275,23 @@ const char *gsm_parse_response(const char *rsp, TAtCmdId *id)
     }
 
     /* Now, try partial match, like '+CMGS: <any>', @todo implement */
+    if ('+' == *response->rspBase && !strchr(response->rspBase, ':')) {
+      const char *marker = (const char *)memchr(rsp, ':', lineLength);
+      if (marker) {
+        const size_t tokenLength = marker - rsp;
+        if (tokenLength == itemLength && !strncmp(response->rspBase, rsp, itemLength)) {
+          itemId = response->cmdId;
+          itemArgs = rsp + tokenLength + 2;
+          break;
+        }
+      }
+    }
 
     /* Try the next item */
     ++response;
   }
 
+  *args = itemArgs;
   *id = itemId;
   return nextLine;
 }
