@@ -57,6 +57,7 @@ typedef enum {
   EAtCmdIdError,
   EAtCmdIdEmpty,
   EAtCmdIdReady,
+  EAtCmdIdSmsSent,
   EAtCmdIdFullFunc,
   EAtCmdIdSmsReady,
   EAtCmdIdPinReady,
@@ -80,6 +81,7 @@ static const TGsmResponses TheGsmResponses[] = {
   { "+CPIN: READY", EAtCmdIdPinReady },
   { "+CFUN: 1", EAtCmdIdFullFunc },
   { "+CBC", EAtCmdIdBatteryLevel },
+  { "+CMGS", EAtCmdIdSmsSent },
   { "> ", EAtCmdIdSmsReadyForBody },
   { NULL, EAtCmdIdNull },
 };
@@ -194,6 +196,16 @@ void gsm_uart2_handler(char *data, size_t length)
       break;
     case EAtCmdIdBatteryLevel:
       mprintstr(PSTR("\r- Battery level event, args: "));
+      if (args) {
+        mprintstr(PSTR("\""));
+        mprintbytes(args, next - args - 1);
+        mprintstrln(PSTR("\""));
+      } else {
+        mprintstrln(PSTR("<null>"));
+      }
+      break;
+    case EAtCmdIdSmsSent:
+      mprintstr(PSTR("\r- SMS sent event, args: "));
       if (args) {
         mprintstr(PSTR("\""));
         mprintbytes(args, next - args - 1);
