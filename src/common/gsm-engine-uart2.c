@@ -38,6 +38,7 @@
 typedef enum {
   EGsmStateNull = 0,
   EGsmStateIdle,
+  EGsmStateSendingAtCmd,
   EGsmStateSendingSmsAddress,
 } TGsmState;
 
@@ -124,10 +125,20 @@ void gsm_set_callback(gsm_callback callback)
   TheGsmCallback = callback;
 }
 
-void gsm_send_cmd(const char *cmd)
+bool gsm_send_cmd(const char *cmd)
 {
+  if (EGsmStateIdle != TheGsmState ||
+      0 == (TheGsmFlags & EGsmStateFlagAtReady)) {
+    /* GSM engine is not ready */
+    return false;
+  }
+
+  TheGsmState = EGsmStateSendingAtCmd;
+
   gsm_send_string(cmd);
   uart2_write_char('\r');
+
+  return true;
 }
 
 bool gsm_send_sms(const char *address, const char *body)
@@ -171,9 +182,15 @@ void gsm_uart2_handler(char *data, size_t length)
       break;
     case EAtCmdIdOk:
       mprintstrln(PSTR("\r- OK event"));
+      if (EGsmStateSendingAtCmd == TheGsmState) {
+        TheGsmState = EGsmStateIdle;
+      }
       break;
     case EAtCmdIdError:
       mprintstrln(PSTR("\r- ERROR event"));
+      if (EGsmStateSendingAtCmd == TheGsmState) {
+        TheGsmState = EGsmStateIdle;
+      }
       break;
     case EAtCmdIdReady:
       TheGsmFlags |= EGsmStateFlagAtReady;
@@ -218,7 +235,7 @@ void gsm_uart2_handler(char *data, size_t length)
       if (EGsmStateSendingSmsAddress == TheGsmState) {
         mprintstrln(PSTR("\r- SMS: ready for body event"));
         gsm_sms_send_body();
-        TheGsmState = EGsmStateIdle;
+        TheGsmState = EGsmStateSendingAtCmd;
       } else {
         mprintstrln(PSTR("\r- Error: unexpected ready for body event"));
       }

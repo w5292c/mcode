@@ -81,10 +81,11 @@ bool cmd_engine_gsm_command(const char *command, bool *startCmd)
 
 void cmd_engine_send_at_command(const char *args)
 {
-  mprintstr(PSTR("\r\nSending command: \""));
-  mprintstr_R(args);
-  mprintstr(PSTR("\"\r\n"));
-  gsm_send_cmd(args);
+  if (!gsm_send_cmd(args)) {
+    mprintstr(PSTR("Error: failed sanding AT command: \""));
+    mprintstr_R(args);
+    mprintstrln(PSTR("\""));
+  }
 }
 
 void cmd_gsm_send_sms(const char *body)
