@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,25 @@
 #ifndef MCODE_SYSTEM_H
 #define MCODE_SYSTEM_H
 
+/**
+ * Initialize the system
+ */
+void system_init(void);
+
+/**
+ * Deinitialize the system
+ */
+void system_deinit(void);
+
 /*!
  * Request the system reboot
  */
 void reboot(void);
+
+/**
+ * Power off the system
+ */
+void poweroff(void);
 
 /*!
  * Request to launch the bootloader code

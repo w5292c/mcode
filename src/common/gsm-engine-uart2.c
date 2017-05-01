@@ -61,7 +61,9 @@ typedef enum {
   EAtCmdIdSmsSent,
   EAtCmdIdFullFunc,
   EAtCmdIdSmsReady,
+  EAtCmdIdSmsIndication,
   EAtCmdIdPinReady,
+  EAtCmdIdPinNotReady,
   EAtCmdIdCallReady,
   EAtCmdIdBatteryLevel,
   EAtCmdIdSmsReadyForBody,
@@ -80,9 +82,11 @@ static const TGsmResponses TheGsmResponses[] = {
   { "SMS Ready", EAtCmdIdSmsReady },
   { "Call Ready", EAtCmdIdCallReady },
   { "+CPIN: READY", EAtCmdIdPinReady },
+  { "+CPIN: NOT READY", EAtCmdIdPinNotReady},
   { "+CFUN: 1", EAtCmdIdFullFunc },
   { "+CBC", EAtCmdIdBatteryLevel },
   { "+CMGS", EAtCmdIdSmsSent },
+  { "+CMTI", EAtCmdIdSmsIndication },
   { "> ", EAtCmdIdSmsReadyForBody },
   { NULL, EAtCmdIdNull },
 };
@@ -95,6 +99,7 @@ static TGsmStateFlags TheGsmFlags = EGsmStateFlagNone;
 static void gsm_sms_send_body(void);
 static void gsm_send_string(const char *str);
 static void gsm_uart2_handler(char *data, size_t length);
+static void gsm_handle_new_sms(const char *args, size_t length);
 static const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args);
 
 void gsm_init(void)
@@ -208,6 +213,10 @@ void gsm_uart2_handler(char *data, size_t length)
       TheGsmFlags |= EGsmStateFlagPinReady;
       mprintstrln(PSTR("\r- PIN-READY event"));
       break;
+    case EAtCmdIdPinNotReady:
+      TheGsmFlags = EGsmStateFlagAtReady;
+      mprintstrln(PSTR("\r- PIN-NOT-READY event"));
+      break;
     case EAtCmdIdFullFunc:
       mprintstrln(PSTR("\r- Full-functionality event"));
       break;
@@ -239,6 +248,9 @@ void gsm_uart2_handler(char *data, size_t length)
       } else {
         mprintstrln(PSTR("\r- Error: unexpected ready for body event"));
       }
+      break;
+    case EAtCmdIdSmsIndication:
+      gsm_handle_new_sms(args, next - args - 1);
       break;
     default:
     case EAtCmdIdUnknown:
@@ -323,4 +335,16 @@ const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args)
   *args = itemArgs;
   *id = itemId;
   return nextLine;
+}
+
+void gsm_handle_new_sms(const char *args, size_t length)
+{
+  mprintstr(PSTR("\r- New SMS event, args: "));
+  if (args) {
+    mprintstr(PSTR("\""));
+    mprintbytes(args, length);
+    mprintstrln(PSTR("\""));
+  } else {
+    mprintstrln(PSTR("<null>"));
+  }
 }

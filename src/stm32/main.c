@@ -24,6 +24,7 @@
 
 #include "mtick.h"
 #include "hw-lcd.h"
+#include "system.h"
 #include "console.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
@@ -44,6 +45,7 @@ int main(void)
   /* first, init the scheduler */
   mcode_scheduler_init();
   mtick_init();
+  system_init();
   leds_init();
   hw_uart_init();
   lcd_init(240, 320);
@@ -68,8 +70,10 @@ int main(void)
   cmd_engine_deinit();
   lcd_deinit();
   leds_deinit();
+  system_deinit();
   mtick_deinit();
   mcode_scheduler_deinit();
+  poweroff();
   return 0;
 }
 
