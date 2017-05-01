@@ -38,7 +38,6 @@
 #ifdef MCODE_DEBUG_BLINKING
 static void main_tick(void);
 #endif /* MCODE_DEBUG_BLINKING */
-static void main_mtick(void);
 
 int main(void)
 {
@@ -48,7 +47,6 @@ int main(void)
   leds_init();
   hw_uart_init();
   lcd_init(240, 320);
-  mtick_add(main_mtick);
   mprintstrln(PSTR("ARM variant started."));
 #ifdef MCODE_DEBUG_BLINKING
   mcode_scheduler_add(main_tick);
@@ -114,16 +112,3 @@ void main_tick(void)
   if (++TheCase > 2) TheCase = 0;
 }
 #endif /* MCODE_DEBUG_BLINKING */
-
-void main_mtick(void)
-{
-  static int n = 0;
-  if (++n != 1000) {
-    return;
-  } else {
-    n = 0;
-  }
-
-  static bool on = false;
-  on = !on;
-}

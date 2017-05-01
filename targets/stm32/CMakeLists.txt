@@ -45,7 +45,7 @@ option ( MCODE_GSM "Enable GSM engine" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
-option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" ON )
+option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
 option ( MCODE_CONSOLE_ENABLED "Concole implementation exists" ON )
 
