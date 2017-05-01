@@ -25,14 +25,28 @@
 
 #include "gsm-engine.h"
 
-#include <stdlib.h>
+#include "hw-uart.h"
+#include "mglobal.h"
+#include "mstring.h"
+#include "line-editor-uart.h"
+
+#include <stddef.h>
+#include <string.h>
+
+#define MCODE_SMS_MAX_LENGTH (140)
 
 typedef enum {
   EGsmStateNull = 0,
+  EGsmStateIdle,
+  EGsmStateSendingSmsAddress,
 } TGsmState;
 
 static gsm_callback TheGsmCallback = NULL;
 static TGsmState TheGsmState = EGsmStateNull;
+static char TheMsgBuffer[MCODE_SMS_MAX_LENGTH] = {0};
+
+static void gsm_send_string(const char *str);
+static void gsm_uart2_handler(char *data, size_t length);
 
 void gsm_init(void)
 {
@@ -40,6 +54,11 @@ void gsm_init(void)
     /* Already initialized */
     return;
   }
+
+  /** @todo Wait for 'RDY' before going to idle */
+  TheGsmState = EGsmStateIdle;
+
+  hw_uart2_set_callback(gsm_uart2_handler);
 }
 
 void gsm_deinit(void)
@@ -48,6 +67,8 @@ void gsm_deinit(void)
     /* Nothing to deinitialize */
     return;
   }
+
+  hw_uart2_set_callback(NULL);
 }
 
 void gsm_set_callback(gsm_callback callback)
@@ -55,12 +76,57 @@ void gsm_set_callback(gsm_callback callback)
   TheGsmCallback = callback;
 }
 
-bool gsm_answer_call(void)
+void gsm_send_cmd(const char *cmd)
 {
-  return true;
+  gsm_send_string(cmd);
+  uart2_write_char('\r');
 }
 
 bool gsm_send_sms(const char *address, const char *body)
 {
+  if (EGsmStateIdle != TheGsmState) {
+    /* GSM engine is not ready */
+    return false;
+  }
+
+  /* Now, check/store the SMS body */
+  size_t length = strlen(body);
+  if (length > sizeof (TheMsgBuffer) - 1) {
+    length = sizeof (TheMsgBuffer) - 1;
+  }
+  memcpy(TheMsgBuffer, body, length);
+  TheMsgBuffer[length] = 0;
+
+  /* Send first line of '+CMGS' command */
+  gsm_send_string("AT+CMGS=\"");
+  gsm_send_string(address);
+  gsm_send_string(PSTR("\"\r"));
+  TheGsmState = EGsmStateSendingSmsAddress;
+
   return true;
+}
+
+void gsm_uart2_handler(char *data, size_t length)
+{
+  if (EGsmStateSendingSmsAddress == TheGsmState) {
+    TheGsmState = EGsmStateIdle;
+    gsm_send_string(TheMsgBuffer);
+    uart2_write_char(0x1a);
+    uart2_write_char('\r');
+    return;
+  }
+
+  mprintstr(PSTR("\r>>> GSM "));
+  mprintstr(PSTR("response: \""));
+  mprintbytes(data, length);
+  mprintstrln(PSTR("\""));
+  line_editor_uart_start();
+}
+
+void gsm_send_string(const char *str)
+{
+  char ch;
+  while ((ch = *str++)) {
+    uart2_write_char(ch);
+  }
 }

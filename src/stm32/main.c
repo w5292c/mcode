@@ -30,6 +30,7 @@
 #include "mstring.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
+#include "gsm-engine.h"
 #include "mcode-config.h"
 
 #include <stm32f10x.h>
@@ -56,9 +57,16 @@ int main(void)
   cmd_engine_init();
 
   cmd_engine_start();
+#ifdef MCODE_GSM
+  gsm_init();
+#endif /* MCODE_GSM */
+
   mcode_scheduler_start();
 
   /* Clean-up */
+#ifdef MCODE_GSM
+  gsm_deinit();
+#endif /* MCODE_GSM */
   cmd_engine_deinit();
   lcd_deinit();
   leds_deinit();

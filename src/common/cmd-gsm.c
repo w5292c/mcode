@@ -24,11 +24,9 @@
 
 #include "cmd-engine.h"
 
-#include "utils.h"
-#include "mtick.h"
-#include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
+#include "gsm-engine.h"
 #include "line-editor-uart.h"
 
 #include <string.h>
@@ -36,30 +34,22 @@
 #define MCODE_GSM_RSP_BUFFER_MAX_LENGTH (80)
 #define MCODE_GSM_PHONE_NUMBER_MAX_LENGTH (16)
 
-static uint32_t TheTimeout = 0;
-static size_t TheRspBufferLength = 0;
-static bool TheWaitingForGsmFlag = false;
-static char TheMsgBuffer[140] = {0};
-static char TheRspBuffer[MCODE_GSM_RSP_BUFFER_MAX_LENGTH] = {0};
 static char TheNumberBuffer[MCODE_GSM_PHONE_NUMBER_MAX_LENGTH] = {0};
 
-static void cmd_gsm_mtick(void);
-static void cmd_gsm_handle_rsp(char ch);
 static void cmd_gsm_show_phone_number(void);
 static void cmd_gsm_send_sms(const char *body);
-static void cmd_gsm_send_string(const char *str);
 static void cmd_engine_send_at_command(const char *args);
 static void cmd_gsm_store_phone_number(const char *number);
+static void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *body);
 
 void cmd_engine_gsm_init(void)
 {
-  hw_uart2_set_callback(cmd_gsm_handle_rsp);
-  mtick_add(cmd_gsm_mtick);
+  gsm_set_callback(cmd_gsm_event_handler);
 }
 
 void cmd_engine_gsm_deinit(void)
 {
-  hw_uart2_set_callback(NULL);
+  gsm_set_callback(NULL);
 }
 
 void cmd_engine_gsm_help(void)
@@ -94,27 +84,19 @@ void cmd_engine_send_at_command(const char *args)
   mprintstr(PSTR("\r\nSending command: \""));
   mprintstr_R(args);
   mprintstr(PSTR("\"\r\n"));
-  cmd_gsm_send_string(args);
-  uart2_write_char('\r');
+  gsm_send_cmd(args);
 }
 
 void cmd_gsm_send_sms(const char *body)
 {
-  const size_t length = strlen(body);
-  if (length > sizeof (TheMsgBuffer) - 1) {
-    mprintstrln(PSTR("Error: the message body is too long"));
-    return;
-  }
   if (!strlen(TheNumberBuffer)) {
     mprintstrln(PSTR("Error: no phone number, use 'phone-set' first"));
     return;
   }
 
-  memcpy(TheMsgBuffer, body, length);
-  cmd_gsm_send_string("AT+CMGS=\"");
-  cmd_gsm_send_string(TheNumberBuffer);
-  cmd_gsm_send_string(PSTR("\"\r"));
-  TheWaitingForGsmFlag = true;
+  if (!gsm_send_sms(TheNumberBuffer, body)) {
+    mprintstrln(PSTR("Error: failed sanding SMS"));
+  }
 }
 
 void cmd_gsm_store_phone_number(const char *number)
@@ -134,45 +116,21 @@ void cmd_gsm_show_phone_number(void)
   mprintstrln(PSTR("\""));
 }
 
-void cmd_gsm_handle_rsp(char ch)
+void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *body)
 {
-  if (MCODE_GSM_RSP_BUFFER_MAX_LENGTH == TheRspBufferLength) {
-    /* Response is too long */
-    /** @todo implement handling this case */
-    return;
+  mprintstr(PSTR("\r>>> GSM event ("));
+  mprintstr(PSTR(")"));
+  if (from && strlen(from)) {
+    mprintstr(PSTR(", from: \""));
+    mprintstr_R(from);
+    mprintstr(PSTR("\", "));
   }
-
-  TheRspBuffer[TheRspBufferLength++] = ch;
-  TheTimeout = 100;
-}
-
-void cmd_gsm_mtick(void)
-{
-  if (!TheTimeout || --TheTimeout) {
-    return;
+  mprintstr(PSTR("body:\r\n"));
+  if (body) {
+    mprintstr_R(body);
+  } else {
+    mprintstr(PSTR("<empty>"));
   }
-
-  if (TheWaitingForGsmFlag) {
-    TheWaitingForGsmFlag = false;
-    cmd_gsm_send_string(TheMsgBuffer);
-    uart2_write_char(0x1a);
-    uart2_write_char('\r');
-    return;
-  }
-
-  mprintstr(PSTR("\r>>> GSM "));
-  mprintstr(PSTR("response: \""));
-  mprintbytes(TheRspBuffer, TheRspBufferLength);
-  mprintstrln(PSTR("\""));
+  mprint(MStringNewLine);
   line_editor_uart_start();
-  memset(TheRspBuffer, 0, sizeof (TheRspBuffer));
-  TheRspBufferLength = 0;
-}
-
-void cmd_gsm_send_string(const char *str)
-{
-  char ch;
-  while ((ch = *str++)) {
-    uart2_write_char(ch);
-  }
 }

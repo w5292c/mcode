@@ -27,11 +27,14 @@
 
 #include "mcode-config.h"
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef void (*hw_uart_char_event)(char aChar);
+typedef void (*hw_uart_handler)(char *data, size_t length);
 
 void hw_uart_init(void);
 void hw_uart_deinit(void);
@@ -44,7 +47,7 @@ void uart_write_char(char ch);
 /**
  * Set the callback for receiving data from UART2
  */
-void hw_uart2_set_callback(hw_uart_char_event cb);
+void hw_uart2_set_callback(hw_uart_handler cb);
 
 /**
  * Send 'ch' to UART2

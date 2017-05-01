@@ -39,7 +39,7 @@ static hw_uart_char_event TheCallback = NULL;
 #define MCODE_UART_READ_TIMEOUT (100) /*< 100ms */
 #define MCODE_UART2_READ_BUFFER_LENGTH (256)
 
-static hw_uart_char_event TheUart2Callback = NULL;
+static hw_uart_handler TheUart2Callback = NULL;
 
 volatile static uint32_t TheUartTimer = 0;
 volatile static bool TheActiveBuffer = false;
@@ -134,7 +134,7 @@ void uart_write_char(char ch)
 }
 
 #ifdef MCODE_UART2
-void hw_uart2_set_callback(hw_uart_char_event cb)
+void hw_uart2_set_callback(hw_uart_handler cb)
 {
   TheUart2Callback = cb;
 }
@@ -180,12 +180,9 @@ void uart_mtick(void)
 
   /* We come here, when 'TheUartTimer' was 1 before this tick */
   if (TheUart2Callback) {
-    size_t i;
     const size_t n = activeBuffer ? TheReadBuffer1Length : TheReadBuffer0Length;
     volatile const uint8_t *buffer = activeBuffer ? TheReadBuffer1 : TheReadBuffer0;
-    for (i = 0; i < n; ++i, ++buffer) {
-      (*TheUart2Callback)(*buffer);
-    }
+    (*TheUart2Callback)((char *)buffer, n);
   }
 }
 

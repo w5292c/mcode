@@ -61,9 +61,10 @@ void gsm_deinit(void);
 void gsm_set_callback(gsm_callback callback);
 
 /**
- * Answer an incoming call
+ * Send AT-command to the GSM module
+ * @param[in] cmd The AT command to be sent
  */
-bool gsm_answer_call(void);
+void gsm_send_cmd(const char *cmd);
 
 /**
  * Send an SMS with 'body' to 'address'
