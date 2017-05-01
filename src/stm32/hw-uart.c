@@ -24,20 +24,37 @@
 
 #include "hw-uart.h"
 
+#include "mtick.h"
 #include "scheduler.h"
 
+#include <stddef.h>
 #include <stm32f10x.h>
+
+#if !defined (STM32F10X_MD) && !defined (STM32F10X_HD)
+#error Unsupported device
+#endif /* STM32F10X_MD || STM32F10X_HD */
 
 static hw_uart_char_event TheCallback = NULL;
 #ifdef MCODE_UART2
+#define MCODE_UART_READ_TIMEOUT (100) /*< 100ms */
+#define MCODE_UART2_READ_BUFFER_LENGTH (256)
+
 static hw_uart_char_event TheUart2Callback = NULL;
+
+volatile static uint32_t TheUartTimer = 0;
+volatile static bool TheActiveBuffer = false;
+volatile static size_t TheReadBuffer0Length = 0;
+volatile static size_t TheReadBuffer1Length = 0;
+volatile static uint8_t TheReadBuffer0[MCODE_UART2_READ_BUFFER_LENGTH] = {0};
+volatile static uint8_t TheReadBuffer1[MCODE_UART2_READ_BUFFER_LENGTH] = {0};
+
+static void uart_mtick(void);
 #endif /* MCODE_UART2 */
 
 static void hw_uart_tick (void);
 
 void hw_uart_init (void)
 {
-#if defined (STM32F10X_HD) || defined (STM32F10X_MD)
   /* Init clocks */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1 | RCC_APB2Periph_AFIO, ENABLE);
 
@@ -86,11 +103,22 @@ void hw_uart_init (void)
 
   /* Start USART2 */
   USART_Cmd(USART2, ENABLE);
+
+  /* Enable the USART2 Interrupt */
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+  NVIC_InitTypeDef nvicConfig;
+  nvicConfig.NVIC_IRQChannel = USART2_IRQn;
+  nvicConfig.NVIC_IRQChannelSubPriority = 0;
+  nvicConfig.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&nvicConfig);
+
+  USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 #endif /* MCODE_UART2 */
 
-#endif /* STM32F10X_HD || STM32F10X_MD */
-
   mcode_scheduler_add (hw_uart_tick);
+#ifdef MCODE_UART2
+  mtick_add(uart_mtick);
+#endif /* MCODE_UART2 */
 }
 
 void hw_uart_set_callback(hw_uart_char_event aCallback)
@@ -101,7 +129,7 @@ void hw_uart_set_callback(hw_uart_char_event aCallback)
 void uart_write_char(char ch)
 {
   /* Wait until USART1 DR register is empty */
-  while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+  while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
   USART_SendData(USART1, ch);
 }
 
@@ -114,7 +142,7 @@ void hw_uart2_set_callback(hw_uart_char_event cb)
 void uart2_write_char(char ch)
 {
   /* Wait until USART1 DR register is empty */
-  while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
+  while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
   USART_SendData(USART2, ch);
 }
 #endif /* MCODE_UART2 */
@@ -129,14 +157,60 @@ static void hw_uart_tick(void)
       (*TheCallback)(data);
     }
   }
+}
 
 #ifdef MCODE_UART2
-  /* Check if we have any received data on USART2 */
-  if (USART_GetFlagStatus(USART2, USART_FLAG_RXNE) != RESET) {
-    const uint16_t data = USART_ReceiveData(USART2);
-    if (TheUart2Callback) {
-      (TheUart2Callback)((char)data);
+void uart_mtick(void)
+{
+  if (!TheUartTimer || --TheUartTimer) {
+    return;
+  }
+
+  USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+  /* Switch the active buffer, IRQ must be disabled here */
+  const bool activeBuffer = TheActiveBuffer;
+  TheActiveBuffer = !activeBuffer;
+  if (activeBuffer) {
+    TheReadBuffer0Length = 0;
+  } else {
+    TheReadBuffer1Length = 0;
+  }
+  /* Ready to fill the other buffer */
+  USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+
+  /* We come here, when 'TheUartTimer' was 1 before this tick */
+  if (TheUart2Callback) {
+    size_t i;
+    const size_t n = activeBuffer ? TheReadBuffer1Length : TheReadBuffer0Length;
+    volatile const uint8_t *buffer = activeBuffer ? TheReadBuffer1 : TheReadBuffer0;
+    for (i = 0; i < n; ++i, ++buffer) {
+      (*TheUart2Callback)(*buffer);
     }
   }
-#endif /* MCODE_UART2 */
 }
+
+/* USART2 IRQ handler */
+void USART2_IRQHandler(void)
+{
+  if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
+    const uint16_t data = USART_ReceiveData(USART2);
+    if (TheActiveBuffer) {
+      if (MCODE_UART2_READ_BUFFER_LENGTH > TheReadBuffer1Length) {
+        TheReadBuffer1[TheReadBuffer1Length++] = data;
+        TheUartTimer = MCODE_UART_READ_TIMEOUT;
+      } else {
+        /* No more room for incoming bytes, ingnore for now,
+           @todo check what can be done here */
+      }
+    } else {
+      if (MCODE_UART2_READ_BUFFER_LENGTH > TheReadBuffer0Length) {
+        TheReadBuffer0[TheReadBuffer0Length++] = data;
+        TheUartTimer = MCODE_UART_READ_TIMEOUT;
+      } else {
+        /* No more room for incoming bytes, ingnore for now,
+           @todo check what can be done here */
+      }
+    }
+  }
+}
+#endif /* MCODE_UART2 */

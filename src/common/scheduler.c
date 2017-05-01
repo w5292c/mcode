@@ -85,5 +85,6 @@ void mcode_scheduler_add(mcode_tick tick)
     TheApplicationTicks[ClientsNumber++] = tick;
   } else {
     /*! @todo add assert(false) here */
+    mprintstrln(PSTR("Error: no room for scheduler handler"));
   }
 }

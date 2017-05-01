@@ -24,6 +24,7 @@
 
 #include "mtick.h"
 
+#include "mstring.h"
 #include "scheduler.h"
 
 #include <stdbool.h>
@@ -65,11 +66,17 @@ void mtick_deinit(void)
 void mtick_add(mcode_tick tick)
 {
   int i;
+  bool noRoom = true;
   for (i = 0; i < MCODE_MTICKS_COUNT; ++i) {
     if (!TheTickCallbacks[i]) {
       TheTickCallbacks[i] = tick;
+      noRoom = false;
       break;
     }
+  }
+
+  if (noRoom) {
+    mprintstrln(PSTR("Error: no room for mtick handler"));
   }
 }
 
