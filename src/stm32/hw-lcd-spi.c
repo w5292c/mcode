@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,9 @@
 /*
  * SPI LCD HW configuration:
  * 4. RESET;    GPIO;      PD5; PA4 (STM32F103C8);
- * 5. D/C;      GPIO;      PB7;
+ * 5. D/C;      GPIO;      PA1;
  * 8. LED;      GPIO/NONE; PD4; NONE (STM32F103C8);
- * 3. SPI_CS;   GPIO;      PB6;
+ * 3. SPI_CS;   GPIO;      PA0;
  * 6. SPI_MOSI; SPI;       PA7;
  * 7. SPI_SCK;  SPI;       PA5;
  * 9. SPI_MISO; SPI;       PA6;
@@ -47,6 +47,12 @@
 #if !defined (STM32F10X_HD) && !defined (STM32F10X_MD)
 #error "Unsupported device"
 #endif /* !STM32F10X_HD && !STM32F10X_MD */
+
+/**
+ * Connect LCD_DC pin to PA1
+ */
+#define MCODE_LCD_DC_PORT GPIOA
+#define MCODE_LCD_DC_PIN GPIO_Pin_1
 
 void lcd_init(uint16_t width, uint16_t height)
 {
@@ -85,11 +91,11 @@ void lcd_init(uint16_t width, uint16_t height)
   GPIO_Init(GPIOA, &pinConfig);
   GPIO_WriteBit(GPIOA, GPIO_Pin_4, Bit_SET);
 #endif /* STM32F10X_HD || STM32F10X_MD */
-  /* Configure PB7 pin (D/C) */
-  pinConfig.GPIO_Pin = GPIO_Pin_7;
+  /* Configure PA1 pin (D/C) */
+  pinConfig.GPIO_Pin = MCODE_LCD_DC_PIN;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
-  GPIO_Init(GPIOB, &pinConfig);
-  GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_RESET);
+  GPIO_Init(MCODE_LCD_DC_PORT, &pinConfig);
+  GPIO_WriteBit(MCODE_LCD_DC_PORT, MCODE_LCD_DC_PIN, Bit_RESET);
 
   /* Handle the current LCD size */
   lcd_set_size(width, height);
@@ -144,5 +150,5 @@ void lcd_set_size(uint16_t width, uint16_t height)
 
 void lcd_set_address(bool a0)
 {
-  GPIO_WriteBit(GPIOB, GPIO_Pin_7, a0 ? Bit_SET : Bit_RESET);
+  GPIO_WriteBit(MCODE_LCD_DC_PORT, MCODE_LCD_DC_PIN, a0 ? Bit_SET : Bit_RESET);
 }

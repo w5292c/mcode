@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,21 @@
 /*
  * SPI LCD HW configuration:
  * 4. RESET;    GPIO;      PD5;
- * 5. D/C;      GPIO;      PB7;
+ * 5. D/C;      GPIO;      PA1;
  * 8. LED;      GPIO/NONE; PD4;
- * 3. SPI_CS;   GPIO;      PB6;
+ * 3. SPI_CS;   GPIO;      PA0;
  * 6. SPI_MOSI; SPI;       PA7;
  * 7. SPI_SCK;  SPI;       PA5;
  * 9. SPI_MISO; SPI;       PA6;
  * 1. Vcc (+3.3V);
  * 2. GND;
  */
+
+/**
+ * Connect SPI_CS pin to PA0
+ */
+#define MCODE_SPI_CS_PORT GPIOA
+#define MCODE_SPI_CS_PIN GPIO_Pin_0
 
 void spi_init(void)
 {
@@ -66,8 +72,8 @@ void spi_init(void)
   /* Configure the pins */
   GPIO_InitTypeDef pinConfig;
   pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
-  /* Configure PB6 pin (SPI_CS) */
-  pinConfig.GPIO_Pin = GPIO_Pin_6;
+  /* Configure PA0 pin (SPI_CS) */
+  pinConfig.GPIO_Pin = MCODE_SPI_CS_PIN;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &pinConfig);
   /* Configure PA7 pin (SPI_MOSI) */
@@ -92,7 +98,7 @@ void spi_deinit(void)
 
 void spi_set_cs(bool selected)
 {
-  GPIO_WriteBit(GPIOB, GPIO_Pin_6, selected ? Bit_RESET : Bit_SET);
+  GPIO_WriteBit(MCODE_SPI_CS_PORT, MCODE_SPI_CS_PIN, selected ? Bit_RESET : Bit_SET);
 }
 
 uint8_t spi_transfer(uint8_t data)
