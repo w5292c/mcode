@@ -32,6 +32,7 @@
 #include "system.h"
 #include "mglobal.h"
 #include "mstring.h"
+#include "scheduler.h"
 #include "mcode-config.h"
 
 #include <string.h>
