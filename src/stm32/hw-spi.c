@@ -75,7 +75,7 @@ void spi_init(void)
   /* Configure PA0 pin (SPI_CS) */
   pinConfig.GPIO_Pin = MCODE_SPI_CS_PIN;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_PP;
-  GPIO_Init(GPIOB, &pinConfig);
+  GPIO_Init(MCODE_SPI_CS_PORT, &pinConfig);
   /* Configure PA7 pin (SPI_MOSI) */
   pinConfig.GPIO_Pin = GPIO_Pin_7;
   pinConfig.GPIO_Mode = GPIO_Mode_AF_PP;
