@@ -43,23 +43,24 @@ SPI1 (Master)
 SPI1_SCK: PA5;
 SPI1_MISO (IN): PA6;
 SPI1_MOSI (OUT): PA7;
-PB6;
-PB7;
+SPI1_NCS (GPIO-OUT): PA0
 Details are here: src/stm32/hw-lcd-spi.c
 
 LCD TFT SOI 240x320
 ===================
 LCD TFT slot:
 -------------
-1) Vcc (+3.3V);
-2) GND;
-3) CS;
-4) RESET;
-5) D/C;
-6) SDI (MOSI);
-7) SCK;
-8) LED;
-9) SDO (MISO);
+_______________________
+1) Vcc (+3.3V); | Vcc |
+2) GND;         | GND |
+3) CS;          | PA0 |
+4) RESET;       | PA4 |
+5) D/C;         | PA1 |
+6) SDI (MOSI);  | PA7 |
+7) SCK;         | PA5 |
+8) LED;         |     |
+9) SDO (MISO);  | PA6 |
+-----------------------
 SD Card slot:
 -------------
 1' SD_CS;
@@ -71,5 +72,5 @@ GSM module 1-time configuration
 ===============================
 Set UART baud rate:
 >>> AT+IPR=9600
-Same the new setting:
+Save the new setting:
 >>> AT&W
