@@ -27,7 +27,12 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <string.h>
 #include <stdbool.h>
+
+static inline bool mparser_is_punct(char ch);
+static inline bool mparser_is_number(char ch);
+static inline bool mparser_is_whitespace(char ch);
 
 void mparser_parse(const char *str, size_t length, mparser_event_handler *handler)
 {
@@ -40,7 +45,7 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler *handle
   } parsingState = EParsingStateInitial;
 
   /* Report parsing-start */
-  const char *ret = (*handler)(EParserEventBegin, str, length);
+  const char *ret = (*handler)(EParserEventBegin, str, length, 0);
   if (ret) {
     const size_t consumed = (ret - str);
     assert(consumed > 0 && consumed <= length);
@@ -48,6 +53,7 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler *handle
     length -= consumed;
   }
 
+  int32_t number = 0;
   const char *ptr = str;
   while (str && length) {
     const char ch = *str;
@@ -56,10 +62,19 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler *handle
     case EParsingStateInitial:
       if ('"' == ch) {
         parsingState = EParsingStateString;
-        ptr = str;
-      } else if (char_is_whitespace(ch)) {
+        ptr = ++str; --length;
+      } else if (mparser_is_whitespace(ch)) {
         parsingState = EParsingStateWhitespace;
-        ptr = str;
+        ptr = str++;
+      } else if (mparser_is_punct(ch)) {
+        /* Ignore the return value for now */
+        /** @todo check if need to handle the return value here */
+        (*handler)(EParserEventPunct, NULL, 0, ch);
+        ++str; --length;
+      } else if (mparser_is_number(ch)) {
+        number = ch - '0';
+        parsingState = EParsingStateNumber;
+        ptr = str++;
       }
       break;
     case EParsingStateToken:
@@ -67,7 +82,7 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler *handle
     case EParsingStateString:
       if ('"' == ch) {
         const size_t stringLength = (str - ptr);
-        ret = (*handler)(EParserEventString, ptr, stringLength);
+        ret = (*handler)(EParserEventString, ptr, stringLength, 0);
         if (ret) {
           str = ret;
         }
@@ -75,16 +90,23 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler *handle
       }
       break;
     case EParsingStateNumber:
+      if (mparser_is_number(ch)) {
+        number *= 10;
+        number += ch - '0';
+        ++str; --length;
+      } else {
+        (*handler)(EParserEventNumber, NULL, 0, number);
+        parsingState = EParsingStateInitial;
+      }
       break;
     case EParsingStateWhitespace:
-      if (!char_is_whitespace(ch)) {
+      if (mparser_is_whitespace(ch)) {
+        ++str; --length;
+      } else {
         const size_t whitespaceLength = (str - ptr);
-        ret = (*handler)(EParserEventSepWhitespace, ptr, whitespaceLength);
+        ret = (*handler)(EParserEventSepWhitespace, ptr, whitespaceLength, 0);
         if (ret) {
           str = ret;
-        } else {
-          /* Let this character be handled again */
-          --str;
         }
         parsingState = EParsingStateInitial;
       }
@@ -93,10 +115,34 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler *handle
       assert(false);
       break;
     }
-
-    ++str;
   }
 
   /* Report parsing end, ingore return value */
-  (*handler)(EParserEventEnd, str, length);
+  (*handler)(EParserEventEnd, str, length, 0);
+}
+
+int mparser_strcmp(const char *str, size_t length, const char *str2)
+{
+  const size_t length2 = strlen(str2);
+  if (length == length2) {
+    return memcmp(str, str2, length);
+  } else {
+    /* No more/less for now */
+    return 1;
+  }
+}
+
+bool mparser_is_punct(char ch)
+{
+  return ',' == ch || ';' == ch || ':' == ch;
+}
+
+bool mparser_is_number(char ch)
+{
+  return '0' >= ch && '9' >= ch;
+}
+
+bool mparser_is_whitespace(char ch)
+{
+  return ' ' == ch || '\t' == ch;
 }

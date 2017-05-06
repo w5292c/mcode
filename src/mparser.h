@@ -38,17 +38,36 @@ typedef enum {
   EParserEventToken,
   EParserEventString,
   EParserEventNumber,
-  EParserEventSepComma,
-  EParserEventSepColon,
-  EParserEventSepSemicolon,
-  EParserEventSepWhitespace,
-  EParserEventSepEndOfLine,
+  EParserEventPunct,         /**< Punctuation mark, like ',', ';', ':' */
+  EParserEventSepWhitespace, /**< Whitespace, like ' ' or '\t' */
+  EParserEventSepEndOfLine,  /**< New lines, like '\n' or '\r' */
   EParserEventEnd,
 } MParserEvent;
 
-typedef const char *(*mparser_event_handler)(MParserEvent event, const char *str, size_t length);
+/**
+ * Handler for parser events
+ * @param[in] event The parser event ID
+ * @param[in] str The (optional) pointer to the current (or next)
+ *            parsing element/event
+ * @param[in] length The length of the current parsing element/event
+ * @param[in] value Optional value for the current parsing event
+ * @return Optional pointer to the location in the parsing buffer,
+ *         from which parsing should be continued
+ */
+typedef const char *(*mparser_event_handler)(MParserEvent event,
+                                             const char *str, size_t length,
+                                             int32_t value);
 
 void mparser_parse(const char *str, size_t length, mparser_event_handler *handler);
+
+/**
+ * Compare strings, first argument may not end with '\0'
+ * @param[in] str The 1st string
+ * @param[in] length The length of the 1st string
+ * @param[in] str2 The 2nd string
+ * @return 0 if 2 strings are equal, or something else if not
+ */
+int mparser_strcmp(const char *str, size_t length, const char *str2);
 
 #ifdef __cplusplus
 } /* extern "C" */
