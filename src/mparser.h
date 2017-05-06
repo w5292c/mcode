@@ -58,7 +58,7 @@ typedef const char *(*mparser_event_handler)(MParserEvent event,
                                              const char *str, size_t length,
                                              int32_t value);
 
-void mparser_parse(const char *str, size_t length, mparser_event_handler *handler);
+void mparser_parse(const char *str, size_t length, mparser_event_handler handler);
 
 /**
  * Compare strings, first argument may not end with '\0'

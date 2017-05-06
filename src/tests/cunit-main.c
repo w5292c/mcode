@@ -24,11 +24,16 @@
 
 #include "mparser.h"
 
+#include <stdio.h>
 #include <CUnit/Basic.h>
 #include <CUnit/Automated.h>
 
+static uint32_t TheCounter = 0;
+
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
+
+static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
 
 int main(void)
 {
@@ -51,7 +56,7 @@ int main(void)
     CU_cleanup_registry();
     return CU_get_error();
   }
-  if (!CU_add_test(pSuite, "", mcode_parser_string_tests)) {
+  if (!CU_add_test(pSuite, "MCODE parser string utility test cases", mcode_parser_string_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -76,6 +81,15 @@ int main(void)
 
 void mcode_parser_parser_tests(void)
 {
+  const char *TestString = "AT\r\n";
+  TheCounter = 0;
+  mparser_parse(TestString, strlen(TestString), &mcode_handler_simple);
+  CU_ASSERT_EQUAL(TheCounter, 5);
+
+  TestString = "+CMGR: 1,\"+70001112233\",,10\r";
+  TheCounter = 0;
+  mparser_parse(TestString, strlen(TestString), &mcode_handler_simple);
+  CU_ASSERT_EQUAL(TheCounter, 12);
 }
 
 void mcode_parser_string_tests(void)
@@ -84,4 +98,53 @@ void mcode_parser_string_tests(void)
   CU_ASSERT_NOT_EQUAL(mparser_strcmp("abc", 3, "abd"), 0);
   CU_ASSERT_EQUAL(mparser_strcmp("abc123", 3, "abc"), 0);
   CU_ASSERT_NOT_EQUAL(mparser_strcmp("abc123", 3, "abd"), 0);
+}
+
+const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value)
+{
+  ++TheCounter;
+
+  switch (event) {
+  case EParserEventNull:
+    fprintf(stdout, ">>> null\n");
+    break;
+  case EParserEventBegin:
+    fprintf(stdout, ">>> begin\n");
+    break;
+  case EParserEventToken: {
+    char *str1 = strndup(str, length);
+    fprintf(stdout, ">>> token: \"%s\"\n", str1);
+    free(str1);
+    }
+    break;
+  case EParserEventString: {
+    char *str1 = strndup(str, length);
+    fprintf(stdout, ">>> string(%d): \"%s\"\n", length, str1);
+    free(str1);
+    }
+    break;
+  case EParserEventNumber: {
+    char *str1 = strndup(str, length);
+    fprintf(stdout, ">>> number: \"%s\" - [%d]\n", str1, value);
+    free(str1);
+    }
+    break;
+  case EParserEventPunct:
+    fprintf(stdout, ">>> punct: %d-[%c]\n", value, value);
+    break;
+  case EParserEventSepWhitespace:
+    fprintf(stdout, ">>> whitespace: %d\n", length);
+    break;
+  case EParserEventSepEndOfLine:
+    fprintf(stdout, ">>> new-line: %d-[%d]\n", length, value);
+    break;
+  case EParserEventEnd:
+    fprintf(stdout, ">>> end\n");
+    break;
+  default:
+    fprintf(stdout, ">>> Unknown event\n");
+    break;
+  }
+
+  return NULL;
 }
