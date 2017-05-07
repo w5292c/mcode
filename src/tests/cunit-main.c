@@ -25,15 +25,19 @@
 #include "mparser.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <CUnit/Basic.h>
 #include <CUnit/Automated.h>
 
 static uint32_t TheCounter = 0;
+static bool TheFinished = false;
 
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
+static const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t length, int32_t value);
 
 int main(void)
 {
@@ -90,6 +94,12 @@ void mcode_parser_parser_tests(void)
   TheCounter = 0;
   mparser_parse(TestString, strlen(TestString), &mcode_handler_simple);
   CU_ASSERT_EQUAL(TheCounter, 12);
+
+  TheFinished = false;
+  TestString = "+CMGR: 12,\"+70001234567\",,12\rline 1\rline 2\rline 3\r\rOK\r";
+  TheCounter = 0;
+  mparser_parse(TestString, strlen(TestString), &mcode_handler_read_sms);
+  CU_ASSERT_EQUAL(TheCounter, 18);
 }
 
 void mcode_parser_string_tests(void)
@@ -137,6 +147,75 @@ const char *mcode_handler_simple(MParserEvent event, const char *str, size_t len
     break;
   case EParserEventSepEndOfLine:
     fprintf(stdout, ">>> new-line: %d-[%d]\n", length, value);
+    break;
+  case EParserEventEnd:
+    fprintf(stdout, ">>> end\n");
+    break;
+  default:
+    fprintf(stdout, ">>> Unknown event\n");
+    break;
+  }
+
+  return NULL;
+}
+
+const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t length, int32_t value)
+{
+  ++TheCounter;
+
+  switch (event) {
+  case EParserEventNull:
+    fprintf(stdout, ">>> null\n");
+    break;
+  case EParserEventBegin:
+    fprintf(stdout, ">>> begin\n");
+    break;
+  case EParserEventToken: {
+    char *str1 = strndup(str, length);
+    fprintf(stdout, ">>> token: \"%s\"\n", str1);
+    free(str1);
+    }
+    break;
+  case EParserEventString: {
+    char *str1 = strndup(str, length);
+    fprintf(stdout, ">>> string(%d): \"%s\"\n", length, str1);
+    free(str1);
+    }
+    break;
+  case EParserEventNumber: {
+    char *str1 = strndup(str, length);
+    fprintf(stdout, ">>> number: \"%s\" - [%d]\n", str1, value);
+    free(str1);
+    }
+    break;
+  case EParserEventPunct:
+    fprintf(stdout, ">>> punct: %d-[%c]\n", value, value);
+    break;
+  case EParserEventSepWhitespace:
+    fprintf(stdout, ">>> whitespace: %d\n", length);
+    break;
+  case EParserEventSepEndOfLine: {
+    if (!TheFinished) {
+    const char *ch = memchr(str, '\r', length);
+    if (ch) {
+      const size_t lineSz = (ch - str);
+      CU_ASSERT(lineSz < length);
+      char *line = strndup(str, lineSz);
+      fprintf(stdout, ">>> new-line: chars-left: %d, value: %d, line: \"%s\"\n", length, value, line);
+      free(line);
+      if (!lineSz) {
+        ch = NULL;
+        TheFinished = true;
+      }
+    } else {
+      fprintf(stdout, ">>> new-line: chars-left: %d, value: %d\n", length, value);
+    }
+    return ch;
+    } else {
+      fprintf(stdout, ">>> new-line: chars-left: %d, value: %d\n", length, value);
+      return NULL;
+    }
+    }
     break;
   case EParserEventEnd:
     fprintf(stdout, ">>> end\n");

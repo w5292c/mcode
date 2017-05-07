@@ -79,8 +79,14 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler handler
         parsingState = EParsingStateNumber;
         ptr = str++;
       } else if ('\n' == ch || '\r' == ch) {
-        (*handler)(EParserEventSepEndOfLine, str, 1, ch);
-        ++str; --length;
+        ret = (*handler)(EParserEventSepEndOfLine, str + 1, length - 1, ch);
+        if (ret) {
+          const size_t ln = (ret - str);
+          str = ret;
+          length -= ln;
+        } else {
+          ++str; --length;
+        }
       } else {
         parsingState = EParsingStateToken;
         ptr = str++;
