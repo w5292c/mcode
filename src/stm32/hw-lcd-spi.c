@@ -68,16 +68,26 @@ void lcd_init(uint16_t width, uint16_t height)
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 #endif /* STM32F10X_HD */
 
+#ifdef STM32F10X_MD
+  /* Keep SWJ enabled, but disable JTAG interface */
+  GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
+#endif /* STM32F10X_MD */
+
   /* Configure the pins */
   GPIO_InitTypeDef pinConfig;
 #ifdef STM32F10X_HD
-  /* Configure PD4 pin (LED), HD-devices only for now */
+  /* Configure the LCD-BACKLIGHT pin */
   pinConfig.GPIO_Pin =  GPIO_Pin_4;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_OD;
   pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOD, &pinConfig);
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, Bit_RESET);
-#endif /* STM32F10X_HD */
+#elif defined (STM32F10X_MD)
+  pinConfig.GPIO_Pin =  GPIO_Pin_15;
+  pinConfig.GPIO_Mode = GPIO_Mode_Out_OD;
+  GPIO_Init(GPIOA, &pinConfig);
+  GPIO_WriteBit(GPIOA, GPIO_Pin_15, Bit_RESET);
+#endif /* STM32F10X_HD || STM32F10X_MD */
 #ifdef STM32F10X_HD
   /* Configure PD5 pin (RESET) for high-density devices */
   pinConfig.GPIO_Pin = GPIO_Pin_5;
@@ -134,7 +144,9 @@ void lcd_set_bl(bool on)
 {
 #ifdef STM32F10X_HD
   GPIO_WriteBit(GPIOD, GPIO_Pin_4, on ? Bit_RESET : Bit_SET);
-#endif /* STM32F10X_HD */
+#elif defined (STM32F10X_MD)
+  GPIO_WriteBit(GPIOA, GPIO_Pin_15, on ? Bit_RESET : Bit_SET);
+#endif /* STM32F10X_HD || STM32F10X_MD */
 }
 
 void lcd_set_size(uint16_t width, uint16_t height)
