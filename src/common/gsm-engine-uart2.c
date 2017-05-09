@@ -109,8 +109,9 @@ void gsm_init(void)
     return;
   }
 
-  /** @todo Wait for 'RDY' before going to idle */
-  TheGsmState = EGsmStateIdle;
+  hw_gsm_init();
+
+  TheGsmState = EGsmStateNull;
 
   hw_uart2_set_callback(gsm_uart2_handler);
 }
@@ -128,6 +129,11 @@ void gsm_deinit(void)
 void gsm_set_callback(gsm_callback callback)
 {
   TheGsmCallback = callback;
+}
+
+void gsm_power(bool on)
+{
+  hw_gsm_power(on);
 }
 
 bool gsm_send_cmd(const char *cmd)
@@ -200,6 +206,9 @@ void gsm_uart2_handler(char *data, size_t length)
     case EAtCmdIdReady:
       TheGsmFlags |= EGsmStateFlagAtReady;
       mprintstrln(PSTR("\r- READY event"));
+      if (EGsmStateNull == TheGsmState) {
+        TheGsmState = EGsmStateIdle;
+      }
       break;
     case EAtCmdIdSmsReady:
       TheGsmFlags |= EGsmStateFlagSmsReady;

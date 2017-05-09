@@ -50,15 +50,37 @@ typedef void (*gsm_callback)(MGsmEvent type, const char *from, const char *body)
  */
 void gsm_init(void);
 /**
+ * Initialize harware-specific GSM engine part
+ */
+void hw_gsm_init(void);
+/**
  * Deinitialize the GSM engine
  */
 void gsm_deinit(void);
+/**
+ * Deinitialize harware-specific GSM engine part
+ */
+void hw_gsm_deinit(void);
+
+/**
+ * Power on/off the GSM module
+ */
+void gsm_power(bool on);
+/**
+ * Hardware-specific power on/off the GSM module
+ */
+void hw_gsm_power(bool on);
 
 /**
  * Set the GSM callback
  * @param[in] callback The callback for receiving GSM events
  */
 void gsm_set_callback(gsm_callback callback);
+
+/**
+ * Power on/off the GSM module
+ */
+void gsm_power(bool on);
 
 /**
  * Send AT-command to the GSM module

@@ -66,6 +66,7 @@ if ( MCODE_GSM )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/common/cmd-gsm.c
     ${MCODE_TOP}/src/common/gsm-engine-uart2.c
+    ${MCODE_TOP}/src/stm32/gsm-engine-uart2.c
   )
 endif ( MCODE_GSM )
 

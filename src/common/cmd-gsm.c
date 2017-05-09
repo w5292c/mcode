@@ -37,6 +37,7 @@
 static char TheNumberBuffer[MCODE_GSM_PHONE_NUMBER_MAX_LENGTH] = {0};
 
 static void cmd_gsm_show_phone_number(void);
+static void cmd_gsm_power(const char *args);
 static void cmd_gsm_send_sms(const char *body);
 static void cmd_engine_send_at_command(const char *args);
 static void cmd_gsm_store_phone_number(const char *number);
@@ -54,6 +55,7 @@ void cmd_engine_gsm_deinit(void)
 
 void cmd_engine_gsm_help(void)
 {
+  mprintstrln(PSTR("> gsm-power <on/off> - Turn GSM power ON/OFF"));
   mprintstrln(PSTR("> at <AT-COMMAND> - Send generic AT-command to GSM module"));
   mprintstrln(PSTR("> send-sms <MSG-BODY> - Send SMS with <MSG-BODY> text"));
   mprintstrln(PSTR("> phone - Show the current phone number for sending SMSes"));
@@ -73,6 +75,9 @@ bool cmd_engine_gsm_command(const char *command, bool *startCmd)
     return true;
   } else if (!strcmp_P(command, PSTR("phone"))) {
     cmd_gsm_show_phone_number();
+    return true;
+  } else if (!strncmp_P(command, PSTR("gsm-power "), 10)) {
+    cmd_gsm_power(command + 10);
     return true;
   }
 
@@ -134,4 +139,13 @@ void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *body)
   }
   mprint(MStringNewLine);
   line_editor_uart_start();
+}
+
+void cmd_gsm_power(const char *args)
+{
+  if (!strcmp_P(args, PSTR("on"))) {
+    gsm_power(true);
+  } else if (!strcmp_P(args, PSTR("off"))) {
+    gsm_power(false);
+  }
 }
