@@ -1,21 +1,22 @@
 cmake_minimum_required (VERSION 2.8)
 
-#FIND_PACKAGE(cunit REQUIRED)
-
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
 INCLUDE_DIRECTORIES(
   ${MCODE_TOP}/src/
-#  ${PROJECT_BINARY_DIR}/include/
+  ${PROJECT_BINARY_DIR}/include/
 )
-
-#set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" )
-
-#set ( UDMD_TOP "${CMAKE_SOURCE_DIR}/udmd/" )
 
 set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/tests/cunit-main.c
+  ${MCODE_TOP}/src/common/hw-rtc.c
   ${MCODE_TOP}/src/common/mparser.c
+)
+
+option ( MCODE_RTC "Enable RTC support" ON )
+
+configure_file ( ${MCODE_TOP}/mcode-config.h.in
+  ${PROJECT_BINARY_DIR}/include/mcode-config.h
 )
 
 add_executable ( mcode-cunit ${CUNIT_SRC_LIST} )

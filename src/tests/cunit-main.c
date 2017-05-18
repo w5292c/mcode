@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "hw-rtc.h"
 #include "mparser.h"
 
 #include <stdio.h>
@@ -33,6 +34,7 @@
 static uint32_t TheCounter = 0;
 static bool TheFinished = false;
 
+static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 
@@ -61,6 +63,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "MCODE parser string utility test cases", mcode_parser_string_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "MCODE date/time test cases", mcode_date_time_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -129,7 +135,7 @@ const char *mcode_handler_simple(MParserEvent event, const char *str, size_t len
     break;
   case EParserEventString: {
     char *str1 = strndup(str, length);
-    fprintf(stdout, ">>> string(%d): \"%s\"\n", length, str1);
+    fprintf(stdout, ">>> string(%zd): \"%s\"\n", length, str1);
     free(str1);
     }
     break;
@@ -143,10 +149,10 @@ const char *mcode_handler_simple(MParserEvent event, const char *str, size_t len
     fprintf(stdout, ">>> punct: %d-[%c]\n", value, value);
     break;
   case EParserEventSepWhitespace:
-    fprintf(stdout, ">>> whitespace: %d\n", length);
+    fprintf(stdout, ">>> whitespace: %zd\n", length);
     break;
   case EParserEventSepEndOfLine:
-    fprintf(stdout, ">>> new-line: %d-[%d]\n", length, value);
+    fprintf(stdout, ">>> new-line: %zd-[%d]\n", length, value);
     break;
   case EParserEventEnd:
     fprintf(stdout, ">>> end\n");
@@ -178,7 +184,7 @@ const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t l
     break;
   case EParserEventString: {
     char *str1 = strndup(str, length);
-    fprintf(stdout, ">>> string(%d): \"%s\"\n", length, str1);
+    fprintf(stdout, ">>> string(%zd): \"%s\"\n", length, str1);
     free(str1);
     }
     break;
@@ -192,7 +198,7 @@ const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t l
     fprintf(stdout, ">>> punct: %d-[%c]\n", value, value);
     break;
   case EParserEventSepWhitespace:
-    fprintf(stdout, ">>> whitespace: %d\n", length);
+    fprintf(stdout, ">>> whitespace: %zd\n", length);
     break;
   case EParserEventSepEndOfLine: {
     if (!TheFinished) {
@@ -201,18 +207,18 @@ const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t l
       const size_t lineSz = (ch - str);
       CU_ASSERT(lineSz < length);
       char *line = strndup(str, lineSz);
-      fprintf(stdout, ">>> new-line: chars-left: %d, value: %d, line: \"%s\"\n", length, value, line);
+      fprintf(stdout, ">>> new-line: chars-left: %zd, value: %d, line: \"%s\"\n", length, value, line);
       free(line);
       if (!lineSz) {
         ch = NULL;
         TheFinished = true;
       }
     } else {
-      fprintf(stdout, ">>> new-line: chars-left: %d, value: %d\n", length, value);
+      fprintf(stdout, ">>> new-line: chars-left: %zd, value: %d\n", length, value);
     }
     return ch;
     } else {
-      fprintf(stdout, ">>> new-line: chars-left: %d, value: %d\n", length, value);
+      fprintf(stdout, ">>> new-line: chars-left: %zd, value: %d\n", length, value);
       return NULL;
     }
     }
@@ -226,4 +232,79 @@ const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t l
   }
 
   return NULL;
+}
+
+void mcode_date_time_tests(void)
+{
+  MTime time;
+  MDate date;
+  uint32_t mtime;
+
+  /* Check initial time */
+  memset(&time, 0, sizeof (time));
+  rtc_get_time(0, &time);
+  CU_ASSERT_EQUAL(time.hours, 0);
+  CU_ASSERT_EQUAL(time.minutes, 0);
+  CU_ASSERT_EQUAL(time.seconds, 0);
+
+  /* Check initial date */
+  memset(&date, 0, sizeof (date));
+  rtc_get_date(0, &date);
+  CU_ASSERT_EQUAL(date.day, 1);
+  CU_ASSERT_EQUAL(date.year, 2001);
+  CU_ASSERT_EQUAL(date.month, 1);
+  CU_ASSERT_EQUAL(date.dayOfWeek, 1);
+
+  /* Check time '19-Sep-2017, 23:41:59' */
+  memset(&time, 0, sizeof (time));
+  rtc_get_time(527557319, &time);
+  CU_ASSERT_EQUAL(time.hours, 23);
+  CU_ASSERT_EQUAL(time.minutes, 41);
+  CU_ASSERT_EQUAL(time.seconds, 59);
+
+  /* Check date '19-Sep-2017, 23:41:59' */
+  memset(&date, 0, sizeof (date));
+  rtc_get_date(527557319, &date);
+  CU_ASSERT_EQUAL(date.day, 19);
+  CU_ASSERT_EQUAL(date.year, 2017);
+  CU_ASSERT_EQUAL(date.month, 9);
+  CU_ASSERT_EQUAL(date.dayOfWeek, 2);
+
+  /* Check time '31-Dec-2016, 23:59:59' */
+  memset(&time, 0, sizeof (time));
+  rtc_get_time(504921599, &time);
+  CU_ASSERT_EQUAL(time.hours, 23);
+  CU_ASSERT_EQUAL(time.minutes, 59);
+  CU_ASSERT_EQUAL(time.seconds, 59);
+
+  /* Check date '31-Dec-2016, 23:59:59' */
+  memset(&date, 0, sizeof (date));
+  rtc_get_date(504921599, &date);
+  CU_ASSERT_EQUAL(date.day, 31);
+  CU_ASSERT_EQUAL(date.year, 2016);
+  CU_ASSERT_EQUAL(date.month, 12);
+  CU_ASSERT_EQUAL(date.dayOfWeek, 6);
+
+  /* Check convertion to 'mtime' for '31-Dec-2016, 23:59:59' */
+  mtime = rtc_to_mtime(&date, &time);
+  CU_ASSERT_EQUAL(mtime, 504921599);
+
+  /* Check time '1-Jan-2017, 0:00:00' */
+  memset(&time, 0, sizeof (time));
+  rtc_get_time(504921600, &time);
+  CU_ASSERT_EQUAL(time.hours, 0);
+  CU_ASSERT_EQUAL(time.minutes, 0);
+  CU_ASSERT_EQUAL(time.seconds, 0);
+
+  /* Check date '1-Jan-2017, 0:00:00' */
+  memset(&date, 0, sizeof (date));
+  rtc_get_date(504921600, &date);
+  CU_ASSERT_EQUAL(date.day, 1);
+  CU_ASSERT_EQUAL(date.year, 2017);
+  CU_ASSERT_EQUAL(date.month, 1);
+  CU_ASSERT_EQUAL(date.dayOfWeek, 7);
+
+  /* Check convertion to 'mtime' for '1-Jan-2017, 0:00:00' */
+  mtime = rtc_to_mtime(&date, &time);
+  CU_ASSERT_EQUAL(mtime, 504921600);
 }

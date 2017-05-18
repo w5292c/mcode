@@ -71,6 +71,25 @@ void mtime_set_new_day_alarm(uint8_t hours, uint8_t minutes, uint8_t seconds, mc
 const char *mtime_get_month_name(uint8_t month);
 const char *mtime_get_day_of_week_name(uint8_t dayOfWeek);
 
+/**
+ * Converts the time encoded in seconds to time
+ * @param[in] mtime The time encoded in the number of seconds since initial date
+ * @param[out] time Decoded time
+ */
+void rtc_get_time(uint32_t mtime, MTime *time);
+
+/**
+ * Converts the time encoded in seconds to date
+ * @param[in] mtime The time encoded in the number of seconds since initial date
+ * @param[out] time Decoded date
+ */
+void rtc_get_date(uint32_t mtime, MDate *date);
+
+/**
+ * Converts the date/time to the number of seconds since initial date
+ */
+uint32_t rtc_to_mtime(const MDate *date, const MTime *time);
+
 #endif /* MCODE_RTC */
 
 #ifdef __cplusplus
