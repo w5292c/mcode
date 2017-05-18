@@ -140,8 +140,8 @@ void rtc_get_date(uint32_t mtime, MDate *date)
 
 uint32_t rtc_to_mtime(const MDate *date, const MTime *time)
 {
-  if (date->year < MCODE_INITIAL_YEAR) {
-    /* No support for years before 'MCODE_INITIAL_YEAR' for now */
+  if (date->year < MCODE_INITIAL_YEAR || date->year > 2136) {
+    /* No support for years before 'MCODE_INITIAL_YEAR' and after 2136 for now */
     return 0;
   }
 
