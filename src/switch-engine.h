@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Alexander Chumakov
+ * Copyright (c) 2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_MTICK_H
-#define MCODE_MTICK_H
-
-#include "mglobal.h"
+#ifndef MCODE_SWITCH_ENGINE_H
+#define MCODE_SWITCH_ENGINE_H
 
 #include <stdint.h>
 
@@ -33,37 +31,14 @@
 extern "C" {
 #endif
 
-#define MCODE_MSECS_IN_A_SECOND (1000)
+void switch_engine_init(void);
+void switch_engine_deinit(void);
 
-/*!
- * Initialize the milli-second scheduler
- */
-void mtick_init(void);
-/*!
- * Deinitialize the milli-second scheduler
- */
-void mtick_deinit(void);
-/*!
- * Add a new loop to the scheduler
- * @param[in] tick The callback to be called each milli-second
- *
- */
-void mtick_add(mcode_tick tick);
-
-/*!
- * Suspend the main thread for mticks milli-seconds
- * @param[in] mticks The number of milli-seconds to sleep
- */
-void mtick_sleep(uint32_t mticks);
-
-/*!
- * Get the uptime in milliseconds
- * @return The number of milli-seconds since the last power-on
- */
-uint64_t mtick_count(void);
+void switch_engine_turn_off(uint32_t ids);
+void switch_engine_turn_on(uint32_t ids, uint32_t seconds);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* MCODE_MTICK_H */
+#endif /* MCODE_SWITCH_ENGINE_H */

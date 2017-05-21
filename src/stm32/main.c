@@ -33,6 +33,7 @@
 #include "cmd-engine.h"
 #include "gsm-engine.h"
 #include "mcode-config.h"
+#include "switch-engine.h"
 
 #include <stm32f10x.h>
 
@@ -60,8 +61,15 @@ int main(void)
 #ifdef MCODE_GSM
   gsm_init();
 #endif /* MCODE_GSM */
+#ifdef MCODE_SWITCH_ENGINE
+  switch_engine_init();
+#endif /* MCODE_SWITCH_ENGINE */
 
   mcode_scheduler_start();
+
+#ifdef MCODE_SWITCH_ENGINE
+  switch_engine_deinit();
+#endif /* MCODE_SWITCH_ENGINE */
 
   /* Clean-up */
 #ifdef MCODE_GSM

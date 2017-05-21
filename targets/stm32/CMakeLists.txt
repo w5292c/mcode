@@ -45,6 +45,7 @@ option ( MCODE_GSM "Enable GSM engine" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_PARSER "Enable string parser" ON )
 option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
+option ( MCODE_SWITCH_ENGINE "Enable the Switch Engine" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_DEBUG_BLINKING "Enable debug LEDs blinking" OFF )
 option ( MCODE_HW_I80_ENABLED "HW I80 interface is enabled" OFF )
@@ -75,6 +76,13 @@ if ( MCODE_PARSER )
     ${MCODE_TOP}/src/common/mparser.c
   )
 endif ( MCODE_PARSER )
+
+if ( MCODE_SWITCH_ENGINE )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-switch.c
+    ${MCODE_TOP}/src/stm32/switch-engine.c
+  )
+endif ( MCODE_SWITCH_ENGINE )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

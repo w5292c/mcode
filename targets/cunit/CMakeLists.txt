@@ -11,6 +11,7 @@ set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/tests/cunit-main.c
   ${MCODE_TOP}/src/common/hw-rtc.c
   ${MCODE_TOP}/src/common/mparser.c
+  ${MCODE_TOP}/src/stm32/switch-engine.c
 )
 
 option ( MCODE_RTC "Enable RTC support" ON )
