@@ -40,6 +40,10 @@ typedef enum {
   EGsmStateIdle,
   EGsmStateSendingAtCmd,
   EGsmStateSendingSmsAddress,
+  /* SMS handling */
+  EGsmStateSmsWaitingForIdle,
+  EGsmStateSmsReadingBody,
+  EGsmStateSmsCleanUp, /**< Delete the handled SMS, etc... */
 } TGsmState;
 
 typedef enum {
@@ -101,6 +105,8 @@ static void gsm_send_string(const char *str);
 static void gsm_uart2_handler(char *data, size_t length);
 static void gsm_handle_new_sms(const char *args, size_t length);
 static const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args);
+static const char *gsm_new_sms_parser_handler(MParserEvent event, const char *str,
+                                              size_t length, int32_t value);
 
 void gsm_init(void)
 {
@@ -346,6 +352,7 @@ const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args)
   return nextLine;
 }
 
+static char TheSmsFrom[16];
 void gsm_handle_new_sms(const char *args, size_t length)
 {
   mprintstr(PSTR("\r- New SMS event, args: "));
@@ -356,4 +363,14 @@ void gsm_handle_new_sms(const char *args, size_t length)
   } else {
     mprintstrln(PSTR("<null>"));
   }
+
+  memset(&TheSmsFrom, 0, sizeof (TheSmsFrom));
+  mparser_parse(args, length, gsm_new_sms_parser_handler);
+}
+
+const char *gsm_new_sms_parser_handler(MParserEvent event, const char *str,
+                                       size_t length, int32_t value)
+{
+  /* Parsing the new SMS arrived notification */
+  ;
 }
