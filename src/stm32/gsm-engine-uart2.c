@@ -38,7 +38,9 @@ void hw_gsm_init(void)
   pinConfig.GPIO_Mode = GPIO_Mode_Out_OD;
   pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOB, &pinConfig);
-  GPIO_WriteBit(GPIOB, GPIO_Pin_3, Bit_SET);
+
+  /* Turn GSM power ON on default */
+  hw_gsm_power(true);
 }
 
 void hw_gsm_deinit(void)
