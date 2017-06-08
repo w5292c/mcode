@@ -81,13 +81,14 @@ void lcd_init(uint16_t width, uint16_t height)
   pinConfig.GPIO_Mode = GPIO_Mode_Out_OD;
   pinConfig.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOD, &pinConfig);
-  GPIO_WriteBit(GPIOD, GPIO_Pin_4, Bit_RESET);
 #elif defined (STM32F10X_MD)
   pinConfig.GPIO_Pin =  GPIO_Pin_15;
   pinConfig.GPIO_Mode = GPIO_Mode_Out_OD;
   GPIO_Init(GPIOA, &pinConfig);
-  GPIO_WriteBit(GPIOA, GPIO_Pin_15, Bit_RESET);
 #endif /* STM32F10X_HD || STM32F10X_MD */
+  /* Turn the backlight OFF on default */
+  lcd_set_bl(false);
+
 #ifdef STM32F10X_HD
   /* Configure PD5 pin (RESET) for high-density devices */
   pinConfig.GPIO_Pin = GPIO_Pin_5;

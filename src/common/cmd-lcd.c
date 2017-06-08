@@ -33,6 +33,7 @@
 
 #include <string.h>
 
+static void cmd_engine_lcd_set_backlight(const char *arguments);
 #ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_read(const char *args, bool *startCmd);
 static void cmd_engine_write(const char *args, bool *startCmd);
@@ -40,10 +41,9 @@ static void cmd_engine_write(const char *args, bool *startCmd);
 
 void cmd_engine_lcd_help(void)
 {
-  mprintstrln(PSTR("> reset - Reset LCD module"));
-  mprintstrln(PSTR("> on - Turn LCD module ON"));
-  mprintstrln(PSTR("> off - Turn LCD module OFF"));
   mprintstrln(PSTR("> lcd-id Read the LCD ID"));
+  mprintstrln(PSTR("> bl <on/off> - Turn Backlight ON/OFF"));
+  mprintstrln(PSTR("> lcd <reset/on/off> - Reset LCD module or turn it ON/OFF"));
 
 #ifdef MCODE_HW_I80_ENABLED
   mprintstrln(PSTR("> i80-w <CMD> <DAT> - Write <CMD> with <DAT> to I80"));
@@ -56,13 +56,8 @@ bool cmd_engine_lcd_command(const char *command, bool *startCmd)
   if (!strcmp_P(command, PSTR("reset"))) {
     lcd_reset();
     return true;
-  } else if (!strcmp_P(command, PSTR("on"))) {
-    lcd_turn(true);
-    lcd_set_bl(true);
-    return true;
-  } else if (!strcmp_P(command, PSTR("off"))) {
-    lcd_set_bl(false);
-    lcd_turn(false);
+  } else if (!strcmp_P(command, PSTR("lcd "), 4)) {
+    cmd_engine_lcd_turn_lcd(command + 4);
     return true;
   } else if (!strcmp_P(command, PSTR("lcd-id"))) {
     const uint32_t id = lcd_read_id();
@@ -70,9 +65,12 @@ bool cmd_engine_lcd_command(const char *command, bool *startCmd)
     mprint_uint32(id, false);
     mprint(MStringNewLine);
     return true;
+  } else if (!strncmp_P(command, PSTR("bl "), 3)) {
+    cmd_engine_lcd_set_backlight(command + 3);
+    return true;
   }
 #ifdef MCODE_HW_I80_ENABLED
-  if (!strncmp_P(command, PSTR("i80-w "), 6)) {
+  else if (!strncmp_P(command, PSTR("i80-w "), 6)) {
     cmd_engine_write(&command[6], startCmd);
     return true;
   } else if (!strncmp_P(command, PSTR("i80-r "), 6)) {
@@ -82,6 +80,30 @@ bool cmd_engine_lcd_command(const char *command, bool *startCmd)
 #endif /* MCODE_HW_I80_ENABLED */
 
   return false;
+}
+
+void cmd_engine_lcd_turn_lcd(const char *arguments)
+{
+  if (!strcmp_P(command, PSTR("on"))) {
+    lcd_turn(false);
+  } else if (!strcmp_P(command, PSTR("off"))) {
+    lcd_turn(false);
+  } else if (!strcmp_P(command, PSTR("reset"))) {
+    lcd_reset();
+  } else {
+    merror(MStringWrongArgument);
+  }
+}
+
+void cmd_engine_lcd_set_backlight(const char *arguments)
+{
+  if (!strcmp_P(command, PSTR("on"))) {
+    lcd_set_bl(true);
+  } else if (!strcmp_P(command, PSTR("off"))) {
+    lcd_set_bl(false);
+  } else {
+    merror(MStringWrongArgument);
+  }
 }
 
 #ifdef MCODE_HW_I80_ENABLED
