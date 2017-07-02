@@ -24,6 +24,7 @@
 
 #include "hw-rtc.h"
 #include "mparser.h"
+#include "mcode-config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +34,9 @@
 
 static uint32_t TheCounter = 0;
 static bool TheFinished = false;
+#ifdef MCODE_RANDOM_DATA
+static uint8_t TheRands[] = MCODE_RANDOM_BYTES;
+#endif /* MCODE_RANDOM_DATA */
 
 static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
@@ -44,6 +48,14 @@ static const char *mcode_handler_read_sms(MParserEvent event, const char *str, s
 int main(void)
 {
   CU_pSuite pSuite = NULL;
+
+#ifdef MCODE_RANDOM_DATA
+  printf("Random data (%d bytes): ", MCODE_RANDOM_BYTES_COUNT);
+  for (int i = 0; i < MCODE_RANDOM_BYTES_COUNT; ++i) {
+    printf("0x%02x, ", TheRands[i]);
+  }
+  printf("\n");
+#endif /* MCODE_RANDOM_DATA */
 
   /* Initialize the CUnit test registry */
   if (CUE_SUCCESS != CU_initialize_registry()) {
