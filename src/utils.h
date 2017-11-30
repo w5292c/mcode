@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2017 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@
 #ifndef MCODE_UTILS_H
 #define MCODE_UTILS_H
 
+#include "mcode-config.h"
+
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -50,6 +53,10 @@ const char *string_next_decimal_number(const char *str, uint16_t *value);
 
 const char *string_to_buffer(const char *str,
                              uint8_t bufferLength, uint8_t *buffer, uint8_t *bufferFilled);
+
+#ifdef MCODE_PDU
+bool from_pdu_7bit(const char *pdu, size_t pduLength, char *out, size_t outMaxLength, size_t *outLength);
+#endif /* MCODE_PDU */
 
 #ifdef __cplusplus
 } /* extern "C" */

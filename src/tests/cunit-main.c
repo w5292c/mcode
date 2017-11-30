@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "utils.h"
 #include "hw-rtc.h"
 #include "mparser.h"
 #include "mcode-config.h"
@@ -38,6 +39,7 @@ static bool TheFinished = false;
 static uint8_t TheRands[] = MCODE_RANDOM_BYTES;
 #endif /* MCODE_RANDOM_DATA */
 
+static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
@@ -79,6 +81,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "MCODE date/time test cases", mcode_date_time_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "MCODE PDU test cases", mcode_pdu_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -319,4 +325,14 @@ void mcode_date_time_tests(void)
   /* Check convertion to 'mtime' for '1-Jan-2017, 0:00:00' */
   mtime = rtc_to_mtime(&date, &time);
   CU_ASSERT_EQUAL(mtime, 504921600);
+}
+
+void mcode_pdu_tests(void)
+{
+  char buffer[256] = { 0 };
+
+  size_t length = 0;
+  bool res = from_pdu_7bit("F4F29C0E", -1, buffer, sizeof (buffer), &length);
+  CU_ASSERT(res);
+  CU_ASSERT_STRING_EQUAL(buffer, "test");
 }

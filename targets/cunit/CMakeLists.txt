@@ -11,8 +11,10 @@ set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/tests/cunit-main.c
   ${MCODE_TOP}/src/common/hw-rtc.c
   ${MCODE_TOP}/src/common/mparser.c
+  ${MCODE_TOP}/src/common/utils.c
 )
 
+option ( MCODE_PDU "Enable PDU support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
 set ( MCODE_RANDOM_BYTES_COUNT 16 )
 
