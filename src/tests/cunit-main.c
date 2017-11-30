@@ -335,4 +335,10 @@ void mcode_pdu_tests(void)
   bool res = from_pdu_7bit("F4F29C0E", -1, buffer, sizeof (buffer), &length);
   CU_ASSERT(res);
   CU_ASSERT_STRING_EQUAL(buffer, "test");
+
+  length = 0;
+  memset(buffer, 0, sizeof (buffer));
+  res = from_pdu_7bit("F3B29BDC4ABBCD6F50AC3693B14022F2DB5D16B140381A", -1, buffer, sizeof (buffer), &length);
+  CU_ASSERT(res);
+  CU_ASSERT_STRING_EQUAL(buffer, "send-info 1532, \"done\", 84");
 }

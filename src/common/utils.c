@@ -261,6 +261,81 @@ const char *string_to_buffer(const char *str,
 #ifdef MCODE_PDU
 bool from_pdu_7bit(const char *pdu, size_t pduLength, char *out, size_t outMaxLength, size_t *outLength)
 {
-  return true;
+  if (!pdu || !out || !outLength || !outMaxLength) {
+    /* Wrong arguments */
+    return false;
+  }
+
+  if (-1 == pduLength) {
+    /* Update the length, if input pduLength is not defined */
+    pduLength = strlen(pdu);
+  }
+
+  char ch;
+  uint16_t temp = 0;
+  bool result = true;
+  uint8_t currentByte;
+  size_t inBufferIndex;
+  size_t outBufferIndex;
+  for (inBufferIndex = 0, outBufferIndex = 0; pduLength; ++pdu, --pduLength) {
+    ch = *pdu;
+    if (!char_is_hex(ch)) {
+      /* Detected invalid character, finish processing */
+      result = false;
+      break;
+    }
+
+    const uint8_t current = glob_ch_to_val(ch);
+    currentByte = currentByte << 4;
+    currentByte = currentByte | current;
+    ++inBufferIndex;
+    if (inBufferIndex & 1) {
+      /* We are in the middle of parsing another byte, continue */
+      continue;
+    }
+
+    /* For each 2nd item we get the whole byte of input data */
+    temp = temp >> 8;
+    temp = temp | ((uint16_t)currentByte << 8);
+
+    /* Check if the output buffer has enough space for another character */
+    if (outBufferIndex + 1 >= outMaxLength) {
+      /* We reached the end of output buffer, convertion done */
+      break;
+    }
+
+    switch (outBufferIndex % 8) {
+    case 0:
+      out[outBufferIndex++] = ((temp >> 8) & 0x7FU);
+      break;
+    case 1:
+      out[outBufferIndex++] = ((temp >> 7) & 0x7FU);
+      break;
+    case 2:
+      out[outBufferIndex++] = ((temp >> 6) & 0x7FU);
+      break;
+    case 3:
+      out[outBufferIndex++] = ((temp >> 5) & 0x7FU);
+      break;
+    case 4:
+      out[outBufferIndex++] = ((temp >> 4) & 0x7FU);
+      break;
+    case 5:
+      out[outBufferIndex++] = ((temp >> 3) & 0x7FU);
+      break;
+    case 6:
+      out[outBufferIndex++] = ((temp >> 2) & 0x7FU);
+      if (outBufferIndex + 1 < outMaxLength) {
+        out[outBufferIndex++] = ((temp >> 9) & 0x7FU);
+      }
+      break;
+    case 7:
+    default:
+      /* We must not appear here */
+      break;
+    }
+  }
+
+  return result;
 }
 #endif /* MCODE_PDU */
