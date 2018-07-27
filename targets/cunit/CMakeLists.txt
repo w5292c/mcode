@@ -14,8 +14,10 @@ set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/common/utils.c
 )
 
+option ( MCODE_GSM "Enable GSM engine" ON )
 option ( MCODE_PDU "Enable PDU support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
+
 set ( MCODE_RANDOM_BYTES_COUNT 16 )
 
 IF ( ${MCODE_RANDOM_BYTES_COUNT} EQUAL 0 )
@@ -34,6 +36,12 @@ ENDIF ()
 configure_file ( ${MCODE_TOP}/mcode-config.h.in
   ${PROJECT_BINARY_DIR}/include/mcode-config.h
 )
+
+IF ( MCODE_GSM )
+  SET ( CUNIT_SRC_LIST ${CUNIT_SRC_LIST}
+    ${MCODE_TOP}/src/common/gsm-utils.c
+  )
+ENDIF ( MCODE_GSM )
 
 add_executable ( mcode-cunit ${CUNIT_SRC_LIST} )
 

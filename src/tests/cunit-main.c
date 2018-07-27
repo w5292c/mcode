@@ -22,10 +22,12 @@
  * SOFTWARE.
  */
 
+#include "mcode-config.h"
+
 #include "utils.h"
 #include "hw-rtc.h"
 #include "mparser.h"
-#include "mcode-config.h"
+#include "gsm-utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +45,10 @@ static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
+
+#ifdef MCODE_GSM
+static void mcode_phone_encoding_tests(void);
+#endif /* MCODE_GSM */
 
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
 static const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t length, int32_t value);
@@ -88,6 +94,12 @@ int main(void)
     CU_cleanup_registry();
     return CU_get_error();
   }
+#ifdef MCODE_GSM
+  if (!CU_add_test(pSuite, "MCODE phone number encoding tests", mcode_phone_encoding_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+#endif /* MCODE_GSM */
 
   /* Run all tests using the basic interface */
   CU_basic_set_mode(CU_BRM_VERBOSE);
@@ -342,3 +354,36 @@ void mcode_pdu_tests(void)
   CU_ASSERT(res);
   CU_ASSERT_STRING_EQUAL(buffer, "send-info 1532, \"done\", 84");
 }
+
+#ifdef MCODE_GSM
+void mcode_phone_encoding_tests(void)
+{
+  const char TheAddress1[] = "+27831000015";
+  const char TheAddress2[] = "+120003456789";
+  const uint8_t TheEncodedAddress1Expected[] = u8"\x72\x38\x01\x00\x10\xF5";
+  const uint8_t TheEncodedAddress2Expected[] = u8"\x21\x00\x30\x54\x76\x98";
+  const size_t TheEncodedAddress1ExpectedLength = sizeof (TheEncodedAddress1Expected) - 1;
+  const size_t TheEncodedAddress2ExpectedLength = sizeof (TheEncodedAddress2Expected) - 1;
+
+  uint8_t *last;
+  uint8_t buffer[32];
+
+  /* Test encoding of phone number 1 */
+  memset(buffer, 0, sizeof (buffer));
+  last = gsm_utils_encode_phonenumber(TheAddress1, buffer, sizeof (buffer));
+  CU_ASSERT_PTR_EQUAL(last, buffer + TheEncodedAddress1ExpectedLength);
+  CU_ASSERT_TRUE(0 == memcmp(buffer, TheEncodedAddress1Expected, TheEncodedAddress1ExpectedLength));
+
+  /* Test encoding of phone number 2 */
+  memset(buffer, 0, sizeof (buffer));
+  last = gsm_utils_encode_phonenumber(TheAddress2, buffer, sizeof (buffer));
+  CU_ASSERT_PTR_EQUAL(last, buffer + TheEncodedAddress2ExpectedLength);
+  CU_ASSERT_TRUE(0 == memcmp(buffer, TheEncodedAddress2Expected, TheEncodedAddress2ExpectedLength));
+
+  /* Test encoding of phone number 1 with short buffer */
+  memset(buffer, 0, sizeof (buffer));
+  last = gsm_utils_encode_phonenumber(TheAddress1, buffer, 3);
+  CU_ASSERT_PTR_EQUAL(last, buffer + 3);
+  CU_ASSERT_TRUE(0 == memcmp(buffer, TheEncodedAddress1Expected, 3));
+}
+#endif /* MCODE_GSM */
