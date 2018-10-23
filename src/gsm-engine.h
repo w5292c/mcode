@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,6 +96,11 @@ bool gsm_send_cmd(const char *cmd);
  * @return Success of operation
  */
 bool gsm_send_sms(const char *address, const char *body);
+
+/**
+ * Handle arriving a new SMS, possibly with commands
+ */
+void gsm_handle_new_sms(const char *source, const char *body);
 
 #ifdef __cplusplus
 } /* extern "C" */

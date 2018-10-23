@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include "utils.h"
 #include "hw-rtc.h"
 #include "mparser.h"
+#include "gsm-engine.h"
 #include "mcode-config.h"
 
 #include <stdio.h>
@@ -43,6 +44,7 @@ static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
+static void mcode_gsm_handle_new_sms_tests(void);
 
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
 static const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t length, int32_t value);
@@ -85,6 +87,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "MCODE PDU test cases", mcode_pdu_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "MCODE new SMS test cases", mcode_gsm_handle_new_sms_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -341,4 +347,9 @@ void mcode_pdu_tests(void)
   res = from_pdu_7bit("F3B29BDC4ABBCD6F50AC3693B14022F2DB5D16B140381A", -1, buffer, sizeof (buffer), &length);
   CU_ASSERT(res);
   CU_ASSERT_STRING_EQUAL(buffer, "send-info 1532, \"done\", 84");
+}
+
+void mcode_gsm_handle_new_sms_tests(void)
+{
+  gsm_handle_new_sms("+78001236677", "line 1\nLine 2\nstatus\nline 4");
 }

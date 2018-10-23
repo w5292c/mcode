@@ -7,11 +7,16 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_BINARY_DIR}/include/
 )
 
+if ( NOT EXISTS ${CMAKE_BINARY_DIR}/include/allowed-phones.h )
+  message ( FATAL_ERROR "The allowed phones are not defined in '${CMAKE_BINARY_DIR}/include/allowed_phones.h'" )
+endif ( )
+
 set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/tests/cunit-main.c
   ${MCODE_TOP}/src/common/hw-rtc.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/utils.c
+  ${MCODE_TOP}/src/common/gsm-engine.c
 )
 
 option ( MCODE_PDU "Enable PDU support" ON )
