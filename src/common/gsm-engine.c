@@ -31,12 +31,34 @@
 #include <string.h>
 #include <stdbool.h>
 
+typedef void (*GsmEngineHandler)(const char *args, size_t length);
+
+typedef enum {
+  EGsmEngineCmdIdNone = 0,
+  EGsmEngineCmdIdStatus,
+  EGsmEngineCmdIdOn,
+  EGsmEngineCmdIdOff,
+} TGsmEngineCmdId;
+
+typedef struct {
+  const char *token;
+  TGsmEngineCmdId id;
+  GsmEngineHandler handler;
+} TGsmEngineCmd;
+
 static bool TheStatusReportEnabled = false;
 static const char *const ThePhones[] = ALLOWED_PHONES;
-
+static const TheCommands[] = {
+  { EGsmEngineCmdIdStatus, "st" },
+  { EGsmEngineCmdIdOn, "on" },
+  { EGsmEngineCmdIdOff, "off" },
+};
 
 static void gsm_engine_send_status(void);
 static bool gsm_engine_check_source(const char *source);
+static void gsm_engine_cmd_on(const char *args, size_t length);
+static void gsm_engine_cmd_off(const char *args, size_t length);
+static void gsm_engine_cmd_status(const char *args, size_t length);
 static void gsm_engine_process_line(const char *line, size_t length);
 
 void gsm_handle_new_sms(const char *source, const char *body)
@@ -89,6 +111,9 @@ bool gsm_engine_check_source(const char *source)
 
 void gsm_engine_process_line(const char *line, size_t length)
 {
+  const char *token = string_next_token(line, length);
+  const size_t tokenLength = token - line;
+
   char buffer[256] = {0};
   strncpy(buffer, line, length);
   printf("Line, length: %d, value: \"%s\"\n", (int)length, buffer);
@@ -96,4 +121,19 @@ void gsm_engine_process_line(const char *line, size_t length)
 
 void gsm_engine_send_status(void)
 {
+}
+
+void gsm_engine_cmd_on(const char *args, size_t length)
+{
+  //void switch_engine_turn_on(uint32_t ids, uint32_t seconds);
+}
+
+void gsm_engine_cmd_off(const char *args, size_t length)
+{
+  //void switch_engine_turn_off(uint32_t ids);
+}
+
+void gsm_engine_cmd_status(const char *args, size_t length)
+{
+  TheStatusReportEnabled = true;
 }

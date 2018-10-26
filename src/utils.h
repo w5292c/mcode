@@ -47,7 +47,13 @@ char nibble_to_char(uint8_t nibble);
 
 const char *string_skip_whitespace(const char *str);
 const char *string_next_number(const char *str, uint16_t *value);
-const char *string_next_token(const char *str, int *length);
+/**
+ * Extract the next token in the input string
+ * @param[in] str The input string to parse
+ * @param[in] length The optional size of the input string, or -1 if the string is '\0'-terminated
+ * @return The pointer to the next character after the detected token, or NULL if end-of-line reached
+ */
+const char *string_next_token(const char *str, size_t length);
 const char *string_next_hex_number(const char *str, uint16_t *value);
 const char *string_next_decimal_number(const char *str, uint16_t *value);
 

@@ -45,6 +45,7 @@ static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 static void mcode_gsm_handle_new_sms_tests(void);
+static void mcode_utils_get_next_token_tests(void);
 
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
 static const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t length, int32_t value);
@@ -91,6 +92,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "MCODE new SMS test cases", mcode_gsm_handle_new_sms_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "MCODE tests for utils-get_next_token API", mcode_utils_get_next_token_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -352,4 +357,33 @@ void mcode_pdu_tests(void)
 void mcode_gsm_handle_new_sms_tests(void)
 {
   gsm_handle_new_sms("+78001236677", "line 1\nLine 2\nstatus\nline 4");
+}
+
+void mcode_utils_get_next_token_tests(void)
+{
+  const char TestString1[] = "token 1 2";
+  const char *token = string_skip_whitespace(TestString1);
+  CU_ASSERT_EQUAL(token, TestString1);
+  token = string_next_token(token, -1);
+  CU_ASSERT_EQUAL(token, TestString1 + 5);
+  token = string_skip_whitespace(token);
+  CU_ASSERT_EQUAL(token, TestString1 + 6);
+  token = string_next_token(token, -1);
+  CU_ASSERT_EQUAL(token, TestString1 + 7);
+  token = string_skip_whitespace(token);
+  CU_ASSERT_EQUAL(token, TestString1 + 8);
+  token = string_next_token(token, -1);
+  CU_ASSERT_EQUAL(token, NULL);
+  token = string_next_token(token, -1);
+  CU_ASSERT_EQUAL(token, NULL);
+
+  const char TestString2[] = "token string";
+  token = string_next_token(TestString2, 9);
+  CU_ASSERT_EQUAL(token, TestString2 + 5);
+  token = string_skip_whitespace(token);
+  CU_ASSERT_EQUAL(token, TestString2 + 6);
+  token = string_next_token(token, 3);
+  CU_ASSERT_EQUAL(token, TestString2 + 9);
+  token = string_next_token(token, 0);
+  CU_ASSERT_EQUAL(token, NULL);
 }

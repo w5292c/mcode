@@ -183,26 +183,30 @@ const char *string_next_hex_number(const char *str, uint16_t *value)
   return str;
 }
 
-const char *string_next_token(const char *str, int *length)
+const char *string_next_token(const char *str, size_t length)
 {
-  int result = 0;
-  if (str) {
-    do {
-      const char ch = *str;
-      if (!ch) {
-        str = NULL;
-        break;
-      } else if (char_is_whitespace(ch)) {
-        break;
-      } else {
-        ++str;
-        ++result;
-      }
-    } while (1);
+  if (!str || !length) {
+    return NULL;
   }
 
-  if (length) {
-    *length = result;
+  char ch;
+  while (true) {
+    ch = *str;
+    if (!ch) {
+      str = NULL;
+      break;
+    }
+    if (char_is_whitespace(ch)) {
+      break;
+    }
+
+    ++str;
+    if (-1 != length) {
+      --length;
+      if (!length) {
+        break;
+      }
+    }
   }
 
   return str;
