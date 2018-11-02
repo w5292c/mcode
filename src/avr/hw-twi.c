@@ -25,6 +25,7 @@
 #include "hw-twi.h"
 
 #include "hw-uart.h"
+#include "mstring.h"
 #include "scheduler.h"
 
 #include <string.h>
@@ -57,6 +58,8 @@ typedef enum {
 #warning "READ_BUFFER_LENGTH already defined"
 #endif /* READ_BUFFER_LENGTH */
 
+static uint8_t TheTwiSchedulerId;
+
 static mcode_read_ready TheReadCallback;
 static mcode_done TheWriteCallback;
 
@@ -84,6 +87,7 @@ static inline void hw_twi_send_start(void);
 
 void twi_init(void)
 {
+  TheTwiSchedulerId = 0;
   TheTwiState = ETwiStateIdle;
   scheduler_add(hw_twi_sched_tick);
 
@@ -170,13 +174,19 @@ bool twi_recv_sync(uint8_t addr, uint8_t length, uint8_t *data)
 {
   if (TheTwiState != ETwiStateIdle) {
     /* Busy, cannot handle request */
+    merror(MStringInternalError);
     return false;
+  }
+  if (TheTwiSchedulerId) {
+    /* Already started, do not start a new request */
+    merror(MStringInternalError);
+    return;
   }
 
   TheSuccess = false;
   TheBuffer = data;
   twi_recv(addr, length, twi_read_ready);
-  scheduler_start();
+  scheduler_start(&TheTwiSchedulerId);
 
   return TheSuccess;
 }
@@ -185,12 +195,18 @@ bool twi_send_sync(uint8_t addr, uint8_t length, const uint8_t *data)
 {
   if (TheTwiState != ETwiStateIdle) {
     /* Busy, cannot handle request */
+    merror(MStringInternalError);
     return false;
+  }
+  if (TheTwiSchedulerId) {
+    /* Already started, do not start a new request */
+    merror(MStringInternalError);
+    return;
   }
 
   TheSuccess = false;
   twi_send(addr, length, data, twi_write_done);
-  scheduler_start();
+  scheduler_start(&TheTwiSchedulerId);
 
   return TheSuccess;
 }
@@ -198,7 +214,8 @@ bool twi_send_sync(uint8_t addr, uint8_t length, const uint8_t *data)
 void twi_write_done(bool success)
 {
   TheSuccess = success;
-  scheduler_stop();
+  scheduler_stop(TheTwiSchedulerId);
+  TheTwiSchedulerId = 0;
 }
 
 void twi_read_ready(bool success, uint8_t length, const uint8_t *data)
@@ -206,7 +223,8 @@ void twi_read_ready(bool success, uint8_t length, const uint8_t *data)
   TheSuccess = success;
   memcpy(TheBuffer, data, length);
   TheBuffer = 0;
-  scheduler_stop();
+  scheduler_stop(TheTwiSchedulerId);
+  TheTwiSchedulerId = 0;
 }
 
 static inline void hw_twi_send_start(void)

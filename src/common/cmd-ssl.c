@@ -39,6 +39,7 @@
 #ifdef MCODE_COMMAND_MODES
 static uint8_t TheMode;
 static uint8_t *ThePointer;
+static uint8_t TheSslSchedulerId;
 static uint32_t TheSuperUserTimeout;
 static void cmd_engine_mtick(void);
 static void cmd_engine_passwd(void);
@@ -144,6 +145,10 @@ void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
     cmd_engine_set_mode((CmdMode)value);
     return;
   }
+  if (TheSslSchedulerId) {
+    merror(MStringInternalError);
+    return;
+  }
 
   uint8_t hash[SHA256_DIGEST_LENGTH];
   uint8_t storedHash[SHA256_DIGEST_LENGTH];
@@ -154,7 +159,7 @@ void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
   line_editor_reset();
   line_editor_set_echo(false);
   line_editor_uart_set_callback(cmd_engine_on_pass);
-  scheduler_start();
+  scheduler_start(&TheSslSchedulerId);
   line_editor_set_echo(true);
 
   /* Check the entered password */
@@ -174,7 +179,8 @@ void cmd_engine_on_pass(const char *string)
 {
   const uint8_t length = strlen(string);
   SHA256((const uint8_t *)string, length, ThePointer);
-  scheduler_stop();
+  scheduler_stop(TheSslSchedulerId);
+  TheSslSchedulerId = 0;
 }
 
 void cmd_engine_mtick(void)
@@ -188,6 +194,11 @@ void cmd_engine_mtick(void)
 
 void cmd_engine_passwd(void)
 {
+  if (TheSslSchedulerId) {
+    merror(MStringInternalError);
+    return;
+  }
+
   /* First, we need to check the current password */
   uint8_t hash[SHA256_DIGEST_LENGTH];
   uint8_t tempHash[SHA256_DIGEST_LENGTH];
@@ -198,7 +209,7 @@ void cmd_engine_passwd(void)
   line_editor_reset();
   line_editor_set_echo(false);
   line_editor_uart_set_callback(cmd_engine_on_pass);
-  scheduler_start();
+  scheduler_start(&TheSslSchedulerId);
 
   /* Check the entered password */
   persist_store_load(PersistStoreIdHash, tempHash, SHA256_DIGEST_LENGTH);
@@ -210,12 +221,12 @@ void cmd_engine_passwd(void)
   /* Now, enter the new password */
   mprintstr(PSTR("Enter new password: "));
   line_editor_reset();
-  scheduler_start();
+  scheduler_start(&TheSslSchedulerId);
 
   ThePointer = tempHash;
   mprintstr(PSTR("Confirm new password: "));
   line_editor_reset();
-  scheduler_start();
+  scheduler_start(&TheSslSchedulerId);
 
   if (memcmp(hash, tempHash, SHA256_DIGEST_LENGTH)) {
     /* Passwords do not match */

@@ -37,6 +37,8 @@
 
 #include <string.h>
 
+extern uint8_t TheMainFrameId;
+
 #ifdef __AVR__
 /** @todo move to AVR-specific code */
 static void cmd_engine_call(const char *args, bool *startCmd);
@@ -103,7 +105,7 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     reboot();
     return true;
   } else if (!strcmp_P(args, PSTR("poweroff"))) {
-    scheduler_stop();
+    scheduler_stop(TheMainFrameId);
     return true;
 #ifdef MCODE_BOOTLOADER
   } else if (!strcmp_P(args, PSTR("bootloader"))) {

@@ -159,7 +159,8 @@ uint32_t rtc_to_mtime(const MDate *date, const MTime *time)
   mtime += year * (MCODE_DAYS_IN_A_YEAR*MCODE_SECONDS_IN_A_DAY);
 
   /* Finally, add the month info */
-  for (int i = 1; i < date->month; ++i) {
+  int i;
+  for (i = 1; i < date->month; ++i) {
     mtime += MCODE_SECONDS_IN_A_DAY*rtc_days_in_month(i, leapYear);
   }
 

@@ -42,6 +42,8 @@
 
 #include <avr/interrupt.h>
 
+uint8_t TheMainFrameId;
+
 int main (void)
 {
   /* first, init the scheduler */
@@ -111,7 +113,7 @@ int main (void)
   cmd_engine_start();
 
   /* start the scheduler, it never exits */
-  scheduler_start();
+  scheduler_start(&TheMainFrameId);
 
 #ifdef MCODE_SOUND
   sound_deinit();
