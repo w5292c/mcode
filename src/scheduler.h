@@ -43,13 +43,15 @@ void scheduler_deinit(void);
 
 /**
  * Start the scheduler in the current call stack position
+ * @param[in,out] The call stack position ID
  */
-void scheduler_start(void);
+void scheduler_start(uint8_t *id);
 
 /**
  * Stop the scheduler in the last call stack position
+ * @param[in] The call stack position ID to be stopped, returned in 'scheduler_start'
  */
-void scheduler_stop(void);
+void scheduler_stop(uint8_t id);
 
 /**
  * Add a new event handler

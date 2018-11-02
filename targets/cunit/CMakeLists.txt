@@ -12,6 +12,8 @@ set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/common/hw-rtc.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/utils.c
+  ${MCODE_TOP}/src/common/scheduler.c
+  ${MCODE_TOP}/src/common/mstring.c
 )
 
 option ( MCODE_PDU "Enable PDU support" ON )

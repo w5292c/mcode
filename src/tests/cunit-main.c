@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include "utils.h"
 #include "hw-rtc.h"
 #include "mparser.h"
+#include "scheduler.h"
 #include "mcode-config.h"
 
 #include <stdio.h>
@@ -35,15 +36,29 @@
 
 static uint32_t TheCounter = 0;
 static bool TheFinished = false;
+
+static uint8_t TheSchedulerId1 = 0;
+static uint8_t TheSchedulerId2 = 0;
+static uint8_t TheSchedulerId3 = 0;
+static uint8_t TheSchedulerId4 = 0;
+static uint8_t TheSchedulerId5 = 0;
+static uint8_t TheSchedulerId6 = 0;
+static uint8_t TheSchedulerId7 = 0;
+static uint8_t TheSchedulerId8 = 0;
+static uint8_t TheSchedulerId9 = 0;
+static uint32_t TheSchedulerTestsTickCount = 0;
+
 #ifdef MCODE_RANDOM_DATA
 static uint8_t TheRands[] = MCODE_RANDOM_BYTES;
 #endif /* MCODE_RANDOM_DATA */
 
+static void scheduler_tests(void);
 static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 
+static void scheduler_tests_tick(void);
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
 static const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t length, int32_t value);
 
@@ -85,6 +100,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "MCODE PDU test cases", mcode_pdu_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "MCODE Scheduler test cases", scheduler_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -341,4 +360,110 @@ void mcode_pdu_tests(void)
   res = from_pdu_7bit("F3B29BDC4ABBCD6F50AC3693B14022F2DB5D16B140381A", -1, buffer, sizeof (buffer), &length);
   CU_ASSERT(res);
   CU_ASSERT_STRING_EQUAL(buffer, "send-info 1532, \"done\", 84");
+}
+
+void scheduler_tests(void)
+{
+  TheSchedulerId1 = 0;
+  TheSchedulerId2 = 0;
+  TheSchedulerId3 = 0;
+  TheSchedulerId4 = 0;
+  TheSchedulerId5 = 0;
+  TheSchedulerId6 = 0;
+  TheSchedulerId7 = 0;
+  TheSchedulerId8 = 0;
+  TheSchedulerId9 = 0;
+  TheSchedulerTestsTickCount = 0;
+
+  scheduler_init();
+  scheduler_add(scheduler_tests_tick);
+
+  CU_ASSERT_EQUAL(TheSchedulerId1, 0);
+  scheduler_start(&TheSchedulerId1);
+  CU_ASSERT_EQUAL(TheSchedulerId1, 1);
+
+  scheduler_deinit();
+  CU_ASSERT_EQUAL(TheSchedulerTestsTickCount, 16);
+}
+
+void scheduler_tests_tick(void)
+{
+  ++TheSchedulerTestsTickCount;
+
+  switch (TheSchedulerTestsTickCount) {
+  case 1:
+    CU_ASSERT_EQUAL(TheSchedulerId2, 0);
+    scheduler_start(&TheSchedulerId2);
+    CU_ASSERT_EQUAL(TheSchedulerId2, 2);
+    break;
+  case 2:
+    CU_ASSERT_EQUAL(TheSchedulerId3, 0);
+    scheduler_start(&TheSchedulerId3);
+    CU_ASSERT_EQUAL(TheSchedulerId3, 4);
+    break;
+  case 3:
+    CU_ASSERT_EQUAL(TheSchedulerId4, 0);
+    scheduler_start(&TheSchedulerId4);
+    CU_ASSERT_EQUAL(TheSchedulerId4, 8);
+    break;
+  case 4:
+    CU_ASSERT_EQUAL(TheSchedulerId5, 0);
+    scheduler_start(&TheSchedulerId5);
+    CU_ASSERT_EQUAL(TheSchedulerId5, 16);
+    break;
+  case 5:
+    CU_ASSERT_EQUAL(TheSchedulerId6, 0);
+    scheduler_start(&TheSchedulerId6);
+    CU_ASSERT_EQUAL(TheSchedulerId6, 32);
+    break;
+  case 6:
+    CU_ASSERT_EQUAL(TheSchedulerId7, 0);
+    scheduler_start(&TheSchedulerId7);
+    CU_ASSERT_EQUAL(TheSchedulerId7, 64);
+    break;
+  case 7:
+    CU_ASSERT_EQUAL(TheSchedulerId8, 0);
+    scheduler_start(&TheSchedulerId8);
+    CU_ASSERT_EQUAL(TheSchedulerId8, 128);
+    break;
+  case 8: {
+    uint8_t id = 0xffu;
+    CU_ASSERT_EQUAL(id, 0xffu);
+    scheduler_start(&id);
+    CU_ASSERT_EQUAL(id, 0);
+    }
+    break;
+  case 9:
+    scheduler_stop(TheSchedulerId8);
+    break;
+  case 10:
+    scheduler_stop(TheSchedulerId1);
+    break;
+  case 11:
+    scheduler_stop(TheSchedulerId2);
+    break;
+  case 12:
+    scheduler_stop(TheSchedulerId3);
+    break;
+  case 13:
+    scheduler_stop(TheSchedulerId4);
+    break;
+  case 14:
+    scheduler_stop(TheSchedulerId5);
+    break;
+  case 15:
+    scheduler_stop(TheSchedulerId6);
+    break;
+  case 16:
+    scheduler_stop(TheSchedulerId7);
+    break;
+  default:
+    CU_ASSERT(false);
+    break;
+  }
+}
+
+void uart_write_char(char ch)
+{
+  putchar(ch);
 }

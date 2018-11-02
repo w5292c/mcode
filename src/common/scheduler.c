@@ -31,52 +31,54 @@
 #define MCODE_TICKS_COUNT (8)
 #endif /* MCODE_TICKS_COUNT */
 
-static uint8_t ExitRequests;
+static uint8_t TheIterator;
+static uint8_t TheRunFlags;
 static uint8_t ClientsNumber;
-static uint8_t CurrentExitRequestMask;
+static uint8_t TheNextRunFlag;
 static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
 void scheduler_init(void)
 {
+  TheRunFlags = 0;
+  TheNextRunFlag = 1;
+  ClientsNumber = 0;
 }
 
 void scheduler_deinit(void)
 {
 }
 
-void scheduler_start(void)
+void scheduler_start(uint8_t *id)
 {
-  if (!CurrentExitRequestMask) {
-    CurrentExitRequestMask = 1u;
-  } else {
-    if (CurrentExitRequestMask != 0x80u) {
-      CurrentExitRequestMask = (CurrentExitRequestMask << 1);
-    } else {
-      /* No more bits for another start, extend 'ExitRequests' to more bits? */
-      merror(MStringErrorLimit);
-      return;
-    }
+  /* Minimizing the call stack usage here */
+  if (!id) {
+    merror(MStringWrongArgument);
+    return;
+  }
+  if (!TheNextRunFlag) {
+    /* Return invalid/neutral ID */
+    *id = 0;
+    /* Too many starts, TheNextRunFlag' overflowed */
+    merror(MStringInternalError);
+    return;
   }
 
-  uint8_t i;
-  while (!(ExitRequests & CurrentExitRequestMask)) {
-    for (i = 0; i < ClientsNumber; ++i) {
-      mcode_tick tick = TheApplicationTicks[i];
-      if (tick) {
-        (*tick)();
+  *id = TheNextRunFlag;
+  TheNextRunFlag = (TheNextRunFlag << 1);
+  TheRunFlags |= *id;
+
+  while (TheRunFlags & *id) {
+    for (TheIterator = 0; TheIterator < ClientsNumber; ++TheIterator) {
+      if (TheApplicationTicks[TheIterator]) {
+        (*TheApplicationTicks[TheIterator])();
       }
     }
   }
-
-  ExitRequests &= ~CurrentExitRequestMask;
-  if (CurrentExitRequestMask) {
-    CurrentExitRequestMask = (CurrentExitRequestMask>>1);
-  }
 }
 
-void scheduler_stop(void)
+void scheduler_stop(uint8_t id)
 {
-  ExitRequests |= CurrentExitRequestMask;
+  TheRunFlags = (TheRunFlags & (~id));
 }
 
 void scheduler_add(mcode_tick tick)
@@ -85,6 +87,7 @@ void scheduler_add(mcode_tick tick)
     TheApplicationTicks[ClientsNumber++] = tick;
   } else {
     /*! @todo add assert(false) here */
+    merror(MStringInternalError);
     mprintstrln(PSTR("Error: no room for scheduler handler"));
   }
 }
