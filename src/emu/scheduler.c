@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
 static gboolean mcode_scheduler_idle(gpointer user_data);
 
-void mcode_scheduler_init(void)
+void scheduler_init(void)
 {
   ClientsNumber = 0;
   NoExitRequest = 1;
@@ -44,22 +44,22 @@ void mcode_scheduler_init(void)
   g_idle_add((GSourceFunc)mcode_scheduler_idle, NULL);
 }
 
-void mcode_scheduler_deinit(void)
+void scheduler_deinit(void)
 {
   memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
 }
 
-void mcode_scheduler_start(void)
+void scheduler_start(void)
 {
   mcode_main_start();
 }
 
-void mcode_scheduler_stop(void)
+void scheduler_stop(void)
 {
   mcode_main_quit();
 }
 
-void mcode_scheduler_add(mcode_tick tick)
+void scheduler_add(mcode_tick tick)
 {
   if (ClientsNumber < MCODE_TICKS_COUNT) {
     TheApplicationTicks[ClientsNumber++] = tick;

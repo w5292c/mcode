@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ void rtc_alarm_init(void)
   MCUCR |= (0U<<ISC10)|(0U<<ISC11);
   /* Enable external interrupt request INT1 (PD3) */
   GICR |= _BV(INT1);
-  mcode_scheduler_add(rtc_alarm_tick);
+  scheduler_add(rtc_alarm_tick);
 }
 
 void rtc_alarm_deinit(void)

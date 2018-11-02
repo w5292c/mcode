@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,7 @@ static volatile bool TheExternalInterrupt;
 void cmd_engine_tv_init(void)
 {
   cmd_engine_tv_set_state(CmdEngineTvStateOff);
-  mcode_scheduler_add(cmd_engine_tv_tick);
+  scheduler_add(cmd_engine_tv_tick);
 #ifdef __AVR__
   cmd_engine_tv_init_avr();
 #endif /* __AVR__ */

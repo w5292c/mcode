@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,7 +115,7 @@ void hw_uart_init (void)
   USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 #endif /* MCODE_UART2 */
 
-  mcode_scheduler_add (hw_uart_tick);
+  scheduler_add(hw_uart_tick);
 #ifdef MCODE_UART2
   mtick_add(uart_mtick);
 #endif /* MCODE_UART2 */

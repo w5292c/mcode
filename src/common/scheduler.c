@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2016 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,15 +36,15 @@ static uint8_t ClientsNumber;
 static uint8_t CurrentExitRequestMask;
 static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
 
-void mcode_scheduler_init(void)
+void scheduler_init(void)
 {
 }
 
-void mcode_scheduler_deinit(void)
+void scheduler_deinit(void)
 {
 }
 
-void mcode_scheduler_start(void)
+void scheduler_start(void)
 {
   if (!CurrentExitRequestMask) {
     CurrentExitRequestMask = 1u;
@@ -74,12 +74,12 @@ void mcode_scheduler_start(void)
   }
 }
 
-void mcode_scheduler_stop(void)
+void scheduler_stop(void)
 {
   ExitRequests |= CurrentExitRequestMask;
 }
 
-void mcode_scheduler_add(mcode_tick tick)
+void scheduler_add(mcode_tick tick)
 {
   if (ClientsNumber < MCODE_TICKS_COUNT) {
     TheApplicationTicks[ClientsNumber++] = tick;

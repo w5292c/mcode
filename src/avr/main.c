@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@
 int main (void)
 {
   /* first, init the scheduler */
-  mcode_scheduler_init();
+  scheduler_init();
   mtick_init();
 
 #ifdef MCODE_TWI
@@ -111,7 +111,7 @@ int main (void)
   cmd_engine_start();
 
   /* start the scheduler, it never exits */
-  mcode_scheduler_start();
+  scheduler_start();
 
 #ifdef MCODE_SOUND
   sound_deinit();

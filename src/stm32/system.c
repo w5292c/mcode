@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015-2017 Alexander Chumakov
+ * Copyright (c) 2015-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,7 +89,7 @@ void system_mtick(void)
     /* Power button release deticted*/
     if (state) {
       mtick_sleep(1000);
-      mcode_scheduler_stop();
+      scheduler_stop();
     } else {
       timeout = 0;
     }

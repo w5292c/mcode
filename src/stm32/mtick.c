@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ void mtick_init(void)
   SysTick_Config(SystemCoreClock / MCODE_MTICKS_PER_SECOND);
 
   /* Add the user-context tick handler */
-  mcode_scheduler_add(mcode_mtick_scheduler_tick);
+  scheduler_add(mcode_mtick_scheduler_tick);
 }
 
 void mtick_deinit(void)

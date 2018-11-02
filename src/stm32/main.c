@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ static void main_tick(void);
 int main(void)
 {
   /* first, init the scheduler */
-  mcode_scheduler_init();
+  scheduler_init();
   mtick_init();
   system_init();
   leds_init();
@@ -52,7 +52,7 @@ int main(void)
   lcd_init(240, 320);
   mprintstrln(PSTR("ARM variant started."));
 #ifdef MCODE_DEBUG_BLINKING
-  mcode_scheduler_add(main_tick);
+  scheduler_add(main_tick);
 #endif /* MCODE_DEBUG_BLINKING */
   console_init();
   cmd_engine_init();
@@ -65,7 +65,7 @@ int main(void)
   switch_engine_init();
 #endif /* MCODE_SWITCH_ENGINE */
 
-  mcode_scheduler_start();
+  scheduler_start();
 
 #ifdef MCODE_SWITCH_ENGINE
   switch_engine_deinit();
@@ -80,7 +80,7 @@ int main(void)
   leds_deinit();
   system_deinit();
   mtick_deinit();
-  mcode_scheduler_deinit();
+  scheduler_deinit();
   poweroff();
   return 0;
 }

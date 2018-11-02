@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -154,7 +154,7 @@ void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
   line_editor_reset();
   line_editor_set_echo(false);
   line_editor_uart_set_callback(cmd_engine_on_pass);
-  mcode_scheduler_start();
+  scheduler_start();
   line_editor_set_echo(true);
 
   /* Check the entered password */
@@ -174,7 +174,7 @@ void cmd_engine_on_pass(const char *string)
 {
   const uint8_t length = strlen(string);
   SHA256((const uint8_t *)string, length, ThePointer);
-  mcode_scheduler_stop();
+  scheduler_stop();
 }
 
 void cmd_engine_mtick(void)
@@ -198,7 +198,7 @@ void cmd_engine_passwd(void)
   line_editor_reset();
   line_editor_set_echo(false);
   line_editor_uart_set_callback(cmd_engine_on_pass);
-  mcode_scheduler_start();
+  scheduler_start();
 
   /* Check the entered password */
   persist_store_load(PersistStoreIdHash, tempHash, SHA256_DIGEST_LENGTH);
@@ -210,12 +210,12 @@ void cmd_engine_passwd(void)
   /* Now, enter the new password */
   mprintstr(PSTR("Enter new password: "));
   line_editor_reset();
-  mcode_scheduler_start();
+  scheduler_start();
 
   ThePointer = tempHash;
   mprintstr(PSTR("Confirm new password: "));
   line_editor_reset();
-  mcode_scheduler_start();
+  scheduler_start();
 
   if (memcmp(hash, tempHash, SHA256_DIGEST_LENGTH)) {
     /* Passwords do not match */

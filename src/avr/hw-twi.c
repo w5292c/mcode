@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +85,7 @@ static inline void hw_twi_send_start(void);
 void twi_init(void)
 {
   TheTwiState = ETwiStateIdle;
-  mcode_scheduler_add(hw_twi_sched_tick);
+  scheduler_add(hw_twi_sched_tick);
 
   /* Frequency: 100KHz (99632Hz) */
   TWBR = 29;
@@ -176,7 +176,7 @@ bool twi_recv_sync(uint8_t addr, uint8_t length, uint8_t *data)
   TheSuccess = false;
   TheBuffer = data;
   twi_recv(addr, length, twi_read_ready);
-  mcode_scheduler_start();
+  scheduler_start();
 
   return TheSuccess;
 }
@@ -190,7 +190,7 @@ bool twi_send_sync(uint8_t addr, uint8_t length, const uint8_t *data)
 
   TheSuccess = false;
   twi_send(addr, length, data, twi_write_done);
-  mcode_scheduler_start();
+  scheduler_start();
 
   return TheSuccess;
 }
@@ -198,7 +198,7 @@ bool twi_send_sync(uint8_t addr, uint8_t length, const uint8_t *data)
 void twi_write_done(bool success)
 {
   TheSuccess = success;
-  mcode_scheduler_stop();
+  scheduler_stop();
 }
 
 void twi_read_ready(bool success, uint8_t length, const uint8_t *data)
@@ -206,7 +206,7 @@ void twi_read_ready(bool success, uint8_t length, const uint8_t *data)
   TheSuccess = success;
   memcpy(TheBuffer, data, length);
   TheBuffer = 0;
-  mcode_scheduler_stop();
+  scheduler_stop();
 }
 
 static inline void hw_twi_send_start(void)

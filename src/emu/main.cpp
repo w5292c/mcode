@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   atexit(main_at_exit);
 
   /* first, init the scheduler */
-  mcode_scheduler_init();
+  scheduler_init();
   mtick_init();
   /* now, UART can be initialized */
   hw_uart_init();
@@ -94,13 +94,13 @@ int main(int argc, char **argv)
   mprintstrln(PSTR("]"));
   /* start the command engine, and switch to the scheduler, it never exits */
   cmd_engine_start();
-  mcode_scheduler_start();
+  scheduler_start();
 
   cmd_engine_deinit();
   line_editor_uart_deinit();
   lcd_deinit();
   mtick_deinit();
-  mcode_scheduler_deinit();
+  scheduler_deinit();
   hw_uart_deinit();
   pthread_exit(NULL);
   return 0;
@@ -115,14 +115,14 @@ void main_sigint_handler(int signo)
 {
   if (SIGINT == signo) {
     mprintstrln(PSTR("MAIN: got exit signal"));
-    mcode_scheduler_stop();
+    scheduler_stop();
   }
 }
 
 void main_request_exit(void)
 {
   mprintstrln(PSTR("MAIN: exit request"));
-  mcode_scheduler_stop();
+  scheduler_stop();
 }
 
 void mcode_main_start(void)

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2016 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ void hw_uart_init(void)
   /* Set frame format: 8data, 1stop bit */
   UCSRC = (1<<URSEL)|(3<<UCSZ0);
 
-  mcode_scheduler_add(hw_uart_tick);
+  scheduler_add(hw_uart_tick);
 }
 
 void hw_uart_set_callback(hw_uart_char_event aCallback)

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ void switch_engine_init(void)
   GPIO_Init(GPIOB, &pinConfig);
   GPIO_WriteBit(GPIOB, GPIO_Pin_2, Bit_RESET);
 
-  mcode_scheduler_add(switch_engine_tick);
+  scheduler_add(switch_engine_tick);
 }
 
 void switch_engine_deinit(void)

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +32,29 @@ extern "C" {
 #endif
 
 /**
- * This is a test scheduler, to be removed.
+ * Initialize the scheduler
  */
+void scheduler_init(void);
 
-void mcode_scheduler_init(void);
-void mcode_scheduler_deinit(void);
+/**
+ * Deinitialize the scheduler
+ */
+void scheduler_deinit(void);
 
-void mcode_scheduler_start(void);
-void mcode_scheduler_stop(void);
+/**
+ * Start the scheduler in the current call stack position
+ */
+void scheduler_start(void);
 
-void mcode_scheduler_add(mcode_tick tick);
+/**
+ * Stop the scheduler in the last call stack position
+ */
+void scheduler_stop(void);
+
+/**
+ * Add a new event handler
+ */
+void scheduler_add(mcode_tick tick);
 
 #ifdef __cplusplus
 } /* extern "C" */

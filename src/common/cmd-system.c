@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015-2017 Alexander Chumakov
+ * Copyright (c) 2015-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     reboot();
     return true;
   } else if (!strcmp_P(args, PSTR("poweroff"))) {
-    mcode_scheduler_stop();
+    scheduler_stop();
     return true;
 #ifdef MCODE_BOOTLOADER
   } else if (!strcmp_P(args, PSTR("bootloader"))) {

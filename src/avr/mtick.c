@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2016 Alexander Chumakov
+ * Copyright (c) 2014-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ static void mcode_mtick_scheduler_tick(void);
 
 void mtick_init(void)
 {
-  mcode_scheduler_add(mcode_mtick_scheduler_tick);
+  scheduler_add(mcode_mtick_scheduler_tick);
 
   /* Reset the Timer2 counter */
   TCNT0 = 0x00U;
