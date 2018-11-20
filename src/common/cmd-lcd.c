@@ -33,6 +33,7 @@
 
 #include <string.h>
 
+static void cmd_engine_lcd_turn_lcd(const char *arguments);
 static void cmd_engine_lcd_set_backlight(const char *arguments);
 #ifdef MCODE_HW_I80_ENABLED
 static void cmd_engine_read(const char *args, bool *startCmd);
