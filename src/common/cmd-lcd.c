@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2018 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ bool cmd_engine_lcd_command(const char *command, bool *startCmd)
   if (!strcmp_P(command, PSTR("reset"))) {
     lcd_reset();
     return true;
-  } else if (!strcmp_P(command, PSTR("lcd "), 4)) {
+  } else if (!strncmp_P(command, PSTR("lcd "), 4)) {
     cmd_engine_lcd_turn_lcd(command + 4);
     return true;
   } else if (!strcmp_P(command, PSTR("lcd-id"))) {
@@ -84,11 +84,11 @@ bool cmd_engine_lcd_command(const char *command, bool *startCmd)
 
 void cmd_engine_lcd_turn_lcd(const char *arguments)
 {
-  if (!strcmp_P(command, PSTR("on"))) {
+  if (!strcmp_P(arguments, PSTR("on"))) {
     lcd_turn(false);
-  } else if (!strcmp_P(command, PSTR("off"))) {
+  } else if (!strcmp_P(arguments, PSTR("off"))) {
     lcd_turn(false);
-  } else if (!strcmp_P(command, PSTR("reset"))) {
+  } else if (!strcmp_P(arguments, PSTR("reset"))) {
     lcd_reset();
   } else {
     merror(MStringWrongArgument);
@@ -97,9 +97,9 @@ void cmd_engine_lcd_turn_lcd(const char *arguments)
 
 void cmd_engine_lcd_set_backlight(const char *arguments)
 {
-  if (!strcmp_P(command, PSTR("on"))) {
+  if (!strcmp_P(arguments, PSTR("on"))) {
     lcd_set_bl(true);
-  } else if (!strcmp_P(command, PSTR("off"))) {
+  } else if (!strcmp_P(arguments, PSTR("off"))) {
     lcd_set_bl(false);
   } else {
     merror(MStringWrongArgument);
