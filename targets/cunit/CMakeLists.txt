@@ -4,6 +4,7 @@ set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
 INCLUDE_DIRECTORIES(
   ${MCODE_TOP}/src/
+  ${MCODE_TOP}/src/common/
   ${PROJECT_BINARY_DIR}/include/
 )
 
@@ -12,10 +13,12 @@ set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/common/hw-rtc.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/utils.c
+#  ${MCODE_TOP}/src/common/gsm-engine-uart2.c
 )
 
 option ( MCODE_PDU "Enable PDU support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
+option ( MCODE_UART2 "Enable UART2" ON )
 set ( MCODE_RANDOM_BYTES_COUNT 16 )
 
 IF ( ${MCODE_RANDOM_BYTES_COUNT} EQUAL 0 )

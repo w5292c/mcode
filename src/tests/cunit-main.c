@@ -22,10 +22,16 @@
  * SOFTWARE.
  */
 
+#include "mcode-config.h"
+
 #include "utils.h"
 #include "hw-rtc.h"
 #include "mparser.h"
+#include "mstring.h"
 #include "mcode-config.h"
+
+#include "hw-uart.h"
+#include "gsm-engine-uart2.c"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +41,10 @@
 
 static uint32_t TheCounter = 0;
 static bool TheFinished = false;
+
+static char TheTestBuffer[2048];
+static size_t TheTestBufferLength = 0;
+
 #ifdef MCODE_RANDOM_DATA
 static uint8_t TheRands[] = MCODE_RANDOM_BYTES;
 #endif /* MCODE_RANDOM_DATA */
@@ -43,7 +53,9 @@ static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
+static void mcode_common_gsm_engine_send_fstring_tests(void);
 
+static void mcode_hw_uart_handler_test(char *data, size_t length);
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
 static const char *mcode_handler_read_sms(MParserEvent event, const char *str, size_t length, int32_t value);
 
@@ -85,6 +97,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "MCODE PDU test cases", mcode_pdu_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "GSM engine test cases", mcode_common_gsm_engine_send_fstring_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -341,4 +357,83 @@ void mcode_pdu_tests(void)
   res = from_pdu_7bit("F3B29BDC4ABBCD6F50AC3693B14022F2DB5D16B140381A", -1, buffer, sizeof (buffer), &length);
   CU_ASSERT(res);
   CU_ASSERT_STRING_EQUAL(buffer, "send-info 1532, \"done\", 84");
+}
+
+void mcode_common_gsm_engine_send_fstring_tests(void)
+{
+  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
+  TheTestBufferLength = 0;
+
+  /* Simple 4-character string */
+  CU_ASSERT_EQUAL(TheTestBufferLength, 0);
+  gsm_send_fstring("abcd");
+  CU_ASSERT_EQUAL(TheTestBufferLength, 4);
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "abcd");
+
+  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
+  TheTestBufferLength = 0;
+  /* Escape sequences */
+  gsm_send_fstring("\\a\\b\\r\\n\\e\\v\\t\\f\\\\\\0");
+  CU_ASSERT_EQUAL(TheTestBufferLength, 10);
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "\a\b\r\n\e\v\t\f\\\0");
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 2], '\\');
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 1], '\0');
+
+  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
+  TheTestBufferLength = 0;
+  /* Zero-character in the middle of a string */
+  gsm_send_fstring("prefix\\0postfix");
+  CU_ASSERT_EQUAL(TheTestBufferLength, 14);
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "prefix");
+  CU_ASSERT_EQUAL(TheTestBuffer[5], 'x');
+  CU_ASSERT_EQUAL(TheTestBuffer[6], '\0');
+  CU_ASSERT_EQUAL(TheTestBuffer[7], 'p');
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer + 7, "postfix");
+}
+
+void mprint(uint8_t id)
+{
+}
+
+void mprintstr(const char *string)
+{
+}
+
+void mprintstrln(const char *string)
+{
+  mprintstr(string);
+  mprint(MStringNewLine);
+}
+
+void mprintbytes(const char *str, size_t length)
+{
+}
+
+void mprintbytesln(const char *str, size_t length)
+{
+}
+
+void uart2_write_char(char ch)
+{
+  TheTestBuffer[TheTestBufferLength++] = ch;
+}
+
+void hw_gsm_init(void)
+{
+}
+
+void hw_uart2_set_callback(hw_uart_handler cb)
+{
+}
+
+void mcode_hw_uart_handler_test(char *data, size_t length)
+{
+}
+
+void hw_gsm_power(bool on)
+{
+}
+
+void line_editor_uart_start(void)
+{
 }
