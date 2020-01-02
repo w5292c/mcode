@@ -54,6 +54,7 @@ static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 static void mcode_common_gsm_engine_send_fstring_tests(void);
+static void mcode_common_gsm_engine_send_cmd_raw_tests(void);
 
 static void mcode_hw_uart_handler_test(char *data, size_t length);
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
@@ -101,6 +102,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "GSM engine test cases", mcode_common_gsm_engine_send_fstring_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "GSM engine send raw test cases", mcode_common_gsm_engine_send_cmd_raw_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -389,6 +394,40 @@ void mcode_common_gsm_engine_send_fstring_tests(void)
   CU_ASSERT_EQUAL(TheTestBuffer[6], '\0');
   CU_ASSERT_EQUAL(TheTestBuffer[7], 'p');
   CU_ASSERT_STRING_EQUAL(TheTestBuffer + 7, "postfix");
+}
+
+void mcode_common_gsm_engine_send_cmd_raw_tests(void)
+{
+  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
+  TheTestBufferLength = 0;
+
+  /* Simple 4-character string */
+  CU_ASSERT_EQUAL(TheTestBufferLength, 0);
+  gsm_send_cmd_raw("abcd");
+  CU_ASSERT_EQUAL(TheTestBufferLength, 6);
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "abcd\r\n");
+
+  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
+  TheTestBufferLength = 0;
+  /* Escape sequences */
+  gsm_send_cmd_raw("\\a\\b\\r\\n\\e\\v\\t\\f\\\\\\0");
+  CU_ASSERT_EQUAL(TheTestBufferLength, 12);
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "\a\b\r\n\e\v\t\f\\\0");
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 4], '\\');
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 3], '\0');
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 2], '\r');
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 1], '\n');
+
+  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
+  TheTestBufferLength = 0;
+  /* Zero-character in the middle of a string */
+  gsm_send_cmd_raw("prefix\\0postfix");
+  CU_ASSERT_EQUAL(TheTestBufferLength, 16);
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "prefix");
+  CU_ASSERT_EQUAL(TheTestBuffer[5], 'x');
+  CU_ASSERT_EQUAL(TheTestBuffer[6], '\0');
+  CU_ASSERT_EQUAL(TheTestBuffer[7], 'p');
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer + 7, "postfix\r\n");
 }
 
 void mprint(uint8_t id)
