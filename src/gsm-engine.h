@@ -90,6 +90,19 @@ void gsm_power(bool on);
 bool gsm_send_cmd(const char *cmd);
 
 /**
+ * Send an AT command to GSM module
+ * @param[in] cmd The AT command to be sent, it may include escape sequences
+ * @note Supported escape sequences:
+ *       "\\r", "\\n", "\\t", "\\0",
+ *       "\\a", "\\b", "\\v", "\\f",
+ *       "\\e"
+ * @note The call automatically adds the end-of-line marker ("\r\n"),
+ *       no need to include it explicitly
+ * @note This call does not check GSM Engine state, can break the GSM state machine
+ */
+void gsm_send_cmd_raw(const char *cmd);
+
+/**
  * Send an SMS with 'body' to 'address'
  * @param[in] address The phone number for sending SMS
  * @param[in] body The SMS body to be sent

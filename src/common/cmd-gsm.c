@@ -41,6 +41,7 @@ static void cmd_gsm_power(const char *args);
 static void cmd_gsm_send_sms(const char *body);
 static void cmd_engine_send_at_command(const char *args);
 static void cmd_gsm_store_phone_number(const char *number);
+static void cmd_engine_send_raw_at_command(const char *args);
 static void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *body);
 
 void cmd_engine_gsm_init(void)
@@ -67,6 +68,9 @@ bool cmd_engine_gsm_command(const char *command, bool *startCmd)
   if (!strncmp_P(command, PSTR("at "), 3)) {
     cmd_engine_send_at_command(command + 3);
     return true;
+  } else if (!strncmp_P(command, PSTR("rat "), 4)) {
+    cmd_engine_send_raw_at_command(command + 4);
+    return true;
   } else if (!strncmp_P(command, PSTR("send-sms "), 9)) {
     cmd_gsm_send_sms(command + 9);
     return true;
@@ -91,6 +95,11 @@ void cmd_engine_send_at_command(const char *args)
     mprintstr_R(args);
     mprintstrln(PSTR("\""));
   }
+}
+
+void cmd_engine_send_raw_at_command(const char *args)
+{
+  gsm_send_cmd_raw(args);
 }
 
 void cmd_gsm_send_sms(const char *body)

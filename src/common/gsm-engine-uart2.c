@@ -149,8 +149,17 @@ bool gsm_send_cmd(const char *cmd)
 
   gsm_send_string(cmd);
   uart2_write_char('\r');
+  uart2_write_char('\n');
 
   return true;
+}
+
+void gsm_send_cmd_raw(const char *cmd)
+{
+  /* No state check for RAW variant */
+  gsm_send_fstring(cmd);
+  uart2_write_char('\r');
+  uart2_write_char('\n');
 }
 
 bool gsm_send_sms(const char *address, const char *body)
