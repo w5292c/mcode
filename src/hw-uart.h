@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 typedef void (*hw_uart_char_event)(char aChar);
-typedef void (*hw_uart_handler)(char *data, size_t length);
+typedef void (*hw_uart_handler)(const char *data, size_t length);
 
 void hw_uart_init(void);
 void hw_uart_deinit(void);

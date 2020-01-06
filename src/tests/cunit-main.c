@@ -404,30 +404,29 @@ void mcode_common_gsm_engine_send_cmd_raw_tests(void)
   /* Simple 4-character string */
   CU_ASSERT_EQUAL(TheTestBufferLength, 0);
   gsm_send_cmd_raw("abcd");
-  CU_ASSERT_EQUAL(TheTestBufferLength, 6);
-  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "abcd\r\n");
+  CU_ASSERT_EQUAL(TheTestBufferLength, 5);
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "abcd\r");
 
   memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
   TheTestBufferLength = 0;
   /* Escape sequences */
   gsm_send_cmd_raw("\\a\\b\\r\\n\\e\\v\\t\\f\\\\\\0");
-  CU_ASSERT_EQUAL(TheTestBufferLength, 12);
+  CU_ASSERT_EQUAL(TheTestBufferLength, 11);
   CU_ASSERT_STRING_EQUAL(TheTestBuffer, "\a\b\r\n\e\v\t\f\\\0");
-  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 4], '\\');
-  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 3], '\0');
-  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 2], '\r');
-  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 1], '\n');
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 3], '\\');
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 2], '\0');
+  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 1], '\r');
 
   memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
   TheTestBufferLength = 0;
   /* Zero-character in the middle of a string */
   gsm_send_cmd_raw("prefix\\0postfix");
-  CU_ASSERT_EQUAL(TheTestBufferLength, 16);
+  CU_ASSERT_EQUAL(TheTestBufferLength, 15);
   CU_ASSERT_STRING_EQUAL(TheTestBuffer, "prefix");
   CU_ASSERT_EQUAL(TheTestBuffer[5], 'x');
   CU_ASSERT_EQUAL(TheTestBuffer[6], '\0');
   CU_ASSERT_EQUAL(TheTestBuffer[7], 'p');
-  CU_ASSERT_STRING_EQUAL(TheTestBuffer + 7, "postfix\r\n");
+  CU_ASSERT_STRING_EQUAL(TheTestBuffer + 7, "postfix\r");
 }
 
 void mprint(uint8_t id)

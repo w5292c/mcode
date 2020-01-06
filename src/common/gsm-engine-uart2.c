@@ -99,7 +99,7 @@ static TGsmStateFlags TheGsmFlags = EGsmStateFlagNone;
 static void gsm_sms_send_body(void);
 static void gsm_send_string(const char *str);
 static void gsm_send_fstring(const char *str);
-static void gsm_uart2_handler(char *data, size_t length);
+static void gsm_uart2_handler(const char *data, size_t length);
 static void gsm_handle_new_sms(const char *args, size_t length);
 static const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args);
 
@@ -149,7 +149,6 @@ bool gsm_send_cmd(const char *cmd)
 
   gsm_send_string(cmd);
   uart2_write_char('\r');
-  uart2_write_char('\n');
 
   return true;
 }
@@ -159,7 +158,6 @@ void gsm_send_cmd_raw(const char *cmd)
   /* No state check for RAW variant */
   gsm_send_fstring(cmd);
   uart2_write_char('\r');
-  uart2_write_char('\n');
 }
 
 bool gsm_send_sms(const char *address, const char *body)
@@ -189,7 +187,7 @@ bool gsm_send_sms(const char *address, const char *body)
   return true;
 }
 
-void gsm_uart2_handler(char *data, size_t length)
+void gsm_uart2_handler(const char *data, size_t length)
 {
   TAtCmdId id;
   const char *args = NULL;
