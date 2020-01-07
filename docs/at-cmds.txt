@@ -1,0 +1,2 @@
+AT+CMGF=0 # PDU Mode
+AT+CMGF=1 # Text Mode
