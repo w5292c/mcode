@@ -33,6 +33,8 @@
 #include "hw-uart.h"
 #include "gsm-engine-uart2.c"
 
+#include "librock_sha256.c"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -53,6 +55,7 @@ static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
+static void mcode_security_sha256_tests(void);
 static void mcode_common_gsm_engine_send_fstring_tests(void);
 static void mcode_common_gsm_engine_send_cmd_raw_tests(void);
 
@@ -106,6 +109,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "GSM engine send raw test cases", mcode_common_gsm_engine_send_cmd_raw_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "Security:SHA256 test cases", mcode_security_sha256_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -427,6 +434,18 @@ void mcode_common_gsm_engine_send_cmd_raw_tests(void)
   CU_ASSERT_EQUAL(TheTestBuffer[6], '\0');
   CU_ASSERT_EQUAL(TheTestBuffer[7], 'p');
   CU_ASSERT_STRING_EQUAL(TheTestBuffer + 7, "postfix\r");
+}
+
+void mcode_security_sha256_tests(void)
+{
+  const uint8_t empty_str_expected_sha256[] = {
+    0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
+    0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55,
+  };
+  uint8_t md[MD_LENGTH_SHA256];
+  memset(md, 0, MD_LENGTH_SHA256);
+  sha256("", 0, md);
+  CU_ASSERT_EQUAL(memcmp(md, empty_str_expected_sha256, MD_LENGTH_SHA256), 0);
 }
 
 void mprint(uint8_t id)

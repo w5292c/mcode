@@ -5,6 +5,7 @@ set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 INCLUDE_DIRECTORIES(
   ${MCODE_TOP}/src/
   ${MCODE_TOP}/src/common/
+  ${MCODE_TOP}/src/security/
   ${PROJECT_BINARY_DIR}/include/
 )
 

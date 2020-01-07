@@ -63,8 +63,6 @@ THE SOFTWARE.
 
 #include "sha256.h"
 
-typedef unsigned long word_t;
-typedef unsigned char byte_t;
 #define PRIVATE static
 
 PRIVATE byte_t mask_8bit(byte_t x)
