@@ -61,6 +61,8 @@ THE SOFTWARE.
     Adapted to C by Forrest Cavalier III, MIB SOFTWARE INC.
 */
 
+#include "sha256.h"
+
 typedef unsigned long word_t;
 typedef unsigned char byte_t;
 #define PRIVATE static
@@ -193,13 +195,6 @@ PRIVATE void hash256_block(word_t *message_digest, unsigned char const *first/*,
 /* See MIT LICENSE above for copyright and license statement.*/
 #include <string.h> //memset
 
-typedef struct librock_SHA256_CTX {
-    word_t data_length_digits_[4]; //as 64bit integer (16bit x 4 integer)
-    word_t h_[8];
-    unsigned char buffer[64];
-    int nBuffer;
-} SHA256_CTX_t;
-
 int librock_SHA256_Init(struct librock_SHA256_CTX *c)
 {
     if (!c) {//mibsoftware.com Allow caller to use opaque structures.
@@ -305,6 +300,14 @@ int librock_SHA256_StoreFinal (unsigned char *md, struct librock_SHA256_CTX *c)
     return 1;
 } /* librock_SHA256_StoreFinal */
 /**************************************************************/
+
+void sha256(const void *data, int length, uint8_t *md)
+{
+  SHA256_CTX ctx;
+  librock_SHA256_Init(&ctx);
+  librock_SHA256_Update(&ctx, data, length);
+  librock_SHA256_StoreFinal(md, &ctx);
+}
 
 /**************************************************************/
 //[[Typical Example main]]  By Forrest Cavalier III, MIB SOFTWARE, INC.

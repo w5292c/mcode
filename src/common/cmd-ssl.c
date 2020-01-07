@@ -24,9 +24,9 @@
 
 #include "cmd-engine.h"
 
-#include "sha.h"
 #include "mtick.h"
 #include "utils.h"
+#include "sha256.h"
 #include "hw-uart.h"
 #include "mglobal.h"
 #include "mstring.h"
@@ -93,12 +93,12 @@ void cmd_engine_sha256(const char *aParams)
   mprint_uintd(n, 0);
   mprint(MStringNewLine);
 
-  uint8_t byteResultHash[SHA256_DIGEST_LENGTH];
-  SHA256((const unsigned char *)aParams, n, byteResultHash);
+  uint8_t byteResultHash[MD_LENGTH_SHA256];
+  sha256((const unsigned char *)aParams, n, byteResultHash);
 
   uint8_t i;
   uint8_t *ptr = byteResultHash;
-  for (i = 0; i < SHA256_DIGEST_LENGTH; i += 2, ptr += 2) {
+  for (i = 0; i < MD_LENGTH_SHA256; i += 2, ptr += 2) {
     uint16_t data = ((*ptr) << 8) | (*(ptr + 1) << 0);
     mprint_uint16(data, false);
   }
@@ -145,8 +145,8 @@ void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
     return;
   }
 
-  uint8_t hash[SHA256_DIGEST_LENGTH];
-  uint8_t storedHash[SHA256_DIGEST_LENGTH];
+  uint8_t hash[MD_LENGTH_SHA256];
+  uint8_t storedHash[MD_LENGTH_SHA256];
   ThePointer = hash;
 
   /* Enter the password */
@@ -158,8 +158,8 @@ void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
   line_editor_set_echo(true);
 
   /* Check the entered password */
-  persist_store_load(PersistStoreIdHash, storedHash, SHA256_DIGEST_LENGTH);
-  if (!memcmp(hash, storedHash, SHA256_DIGEST_LENGTH)) {
+  persist_store_load(PersistStoreIdHash, storedHash, MD_LENGTH_SHA256);
+  if (!memcmp(hash, storedHash, MD_LENGTH_SHA256)) {
     cmd_engine_set_mode((CmdMode)value);
   } else {
     merror(MStringInternalError);
@@ -173,7 +173,7 @@ void cmd_engine_set_cmd_mode(const char *args, bool *startCmd)
 void cmd_engine_on_pass(const char *string)
 {
   const uint8_t length = strlen(string);
-  SHA256((const uint8_t *)string, length, ThePointer);
+  sha256((const uint8_t *)string, length, ThePointer);
   scheduler_stop();
 }
 
@@ -189,8 +189,8 @@ void cmd_engine_mtick(void)
 void cmd_engine_passwd(void)
 {
   /* First, we need to check the current password */
-  uint8_t hash[SHA256_DIGEST_LENGTH];
-  uint8_t tempHash[SHA256_DIGEST_LENGTH];
+  uint8_t hash[MD_LENGTH_SHA256];
+  uint8_t tempHash[MD_LENGTH_SHA256];
   ThePointer = hash;
 
   /* Enter the password */
@@ -201,8 +201,8 @@ void cmd_engine_passwd(void)
   scheduler_start();
 
   /* Check the entered password */
-  persist_store_load(PersistStoreIdHash, tempHash, SHA256_DIGEST_LENGTH);
-  if (memcmp(hash, tempHash, SHA256_DIGEST_LENGTH)) {
+  persist_store_load(PersistStoreIdHash, tempHash, MD_LENGTH_SHA256);
+  if (memcmp(hash, tempHash, MD_LENGTH_SHA256)) {
     merror(MStringInternalError);
     return;
   }
@@ -217,12 +217,12 @@ void cmd_engine_passwd(void)
   line_editor_reset();
   scheduler_start();
 
-  if (memcmp(hash, tempHash, SHA256_DIGEST_LENGTH)) {
+  if (memcmp(hash, tempHash, MD_LENGTH_SHA256)) {
     /* Passwords do not match */
     merror(MStringInternalError);
     return;
   }
 
-  persist_store_save(PersistStoreIdHash, hash, SHA256_DIGEST_LENGTH);
+  persist_store_save(PersistStoreIdHash, hash, MD_LENGTH_SHA256);
 }
 #endif /* MCODE_COMMAND_MODES */

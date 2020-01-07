@@ -11,6 +11,7 @@ set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 INCLUDE_DIRECTORIES(
     ${MCODE_TOP}/src/
     ${MCODE_TOP}/src/stm32/
+    ${MCODE_TOP}/src/security/
     ${PROJECT_BINARY_DIR}/include/
     ${CMSIS_INCLUDE_DIR}
     ${StdPeriphLib_INCLUDE_DIR}
@@ -44,6 +45,7 @@ set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )
 option ( MCODE_GSM "Enable GSM engine" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_PARSER "Enable string parser" ON )
+option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
 option ( MCODE_SWITCH_ENGINE "Enable the Switch Engine" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
@@ -83,6 +85,15 @@ if ( MCODE_SWITCH_ENGINE )
     ${MCODE_TOP}/src/stm32/switch-engine.c
   )
 endif ( MCODE_SWITCH_ENGINE )
+
+if ( MCODE_SECURITY )
+#  add_definitions ( -DMD32_REG_T=long )
+
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-ssl.c
+    ${MCODE_TOP}/src/security/librock_sha256.c
+  )
+endif ( MCODE_SECURITY )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
