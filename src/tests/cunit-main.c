@@ -47,6 +47,25 @@ static bool TheFinished = false;
 static char TheTestBuffer[2048];
 static size_t TheTestBufferLength = 0;
 
+const char TheLongTestString[] =
+  "The MIT License (MIT)\n\n"
+  "Copyright (c) 2014 Alexander Chumakov\n\n"
+  "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
+  "of this software and associated documentation files (the \"Software\"), to deal\n"
+  "in the Software without restriction, including without limitation the rights\n"
+  "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
+  "copies of the Software, and to permit persons to whom the Software is\n"
+  "furnished to do so, subject to the following conditions:\n\n"
+  "The above copyright notice and this permission notice shall be included in all\n"
+  "copies or substantial portions of the Software.\n\n"
+  "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+  "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
+  "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
+  "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+  "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
+  "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
+  "SOFTWARE.\n\n";
+
 #ifdef MCODE_RANDOM_DATA
 static uint8_t TheRands[] = MCODE_RANDOM_BYTES;
 #endif /* MCODE_RANDOM_DATA */
@@ -454,6 +473,14 @@ void mcode_security_sha256_tests(void)
   memset(md, 0, MD_LENGTH_SHA256);
   sha256("abcd1234", 8, md);
   CU_ASSERT_EQUAL(memcmp(md, abcd1234_str_expected_sha256, MD_LENGTH_SHA256), 0);
+
+  const uint8_t long_test_str_expected_sha256[] = {
+    0x09, 0xbf, 0x00, 0xef, 0xa6, 0x49, 0x30, 0x2f, 0x93, 0x54, 0xb3, 0x86, 0x13, 0x13, 0xe2, 0xf1,
+    0xfc, 0x5b, 0xd0, 0x71, 0x7c, 0xa7, 0x7e, 0xf2, 0xd8, 0xfb, 0xd4, 0xf5, 0x5a, 0x17, 0x48, 0x9c,
+  };
+  memset(md, 0, MD_LENGTH_SHA256);
+  sha256(TheLongTestString, sizeof (TheLongTestString) - 1, md);
+  CU_ASSERT_EQUAL(memcmp(md, long_test_str_expected_sha256, MD_LENGTH_SHA256), 0);
 }
 
 void mprint(uint8_t id)
