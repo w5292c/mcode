@@ -44,6 +44,7 @@ set ( STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT} )
 
 option ( MCODE_GSM "Enable GSM engine" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
+option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_PARSER "Enable string parser" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
@@ -87,13 +88,19 @@ if ( MCODE_SWITCH_ENGINE )
 endif ( MCODE_SWITCH_ENGINE )
 
 if ( MCODE_SECURITY )
-#  add_definitions ( -DMD32_REG_T=long )
-
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/common/cmd-ssl.c
     ${MCODE_TOP}/src/security/librock_sha256.c
   )
 endif ( MCODE_SECURITY )
+
+if ( MCODE_RTC )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/stm32/hw-rtc.c
+    ${MCODE_TOP}/src/common/hw-rtc.c
+    ${MCODE_TOP}/src/common/cmd-rtc.c
+  )
+endif ( MCODE_RTC )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

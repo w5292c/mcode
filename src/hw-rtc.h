@@ -59,6 +59,12 @@ void mtime_deinit(void);
 void rtc_alarm_init(void);
 void rtc_alarm_deinit(void);
 
+/**
+ * First time RTC initialization
+ * @note Also, we need to call this before setting date/time on STM32 devices, need to check why
+ */
+void rtc_first_time_init(void);
+
 void mtime_get_time(mtime_time_ready callback);
 void mtime_set_time(uint8_t hours, uint8_t minutes, uint8_t seconds, mcode_done callback);
 

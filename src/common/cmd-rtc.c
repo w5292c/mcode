@@ -29,6 +29,8 @@
 #include "mglobal.h"
 #include "mstring.h"
 
+#include <string.h>
+
 typedef enum {
   CmdEngineRtcSetTimeTargetTime,
   CmdEngineRtcSetTimeTargetAlarm,
@@ -48,6 +50,7 @@ static bool cmd_engine_set_time(const char *args, bool *startCmd, uint8_t target
 
 void cmd_engine_rtc_help(void)
 {
+  mprintstrln(PSTR("> rtc init - First time initialization for RTC"));
   mprintstrln(PSTR("> time - Read the current time"));
   mprintstrln(PSTR("> time-set <hour> <min> <sec> - Update the current time"));
   mprintstrln(PSTR("> date - Read the current date"));
@@ -74,6 +77,9 @@ bool cmd_engine_rtc_command(const char *args, bool *startCmd)
     return cmd_engine_set_time(args + 9, startCmd, CmdEngineRtcSetTimeTargetAlarm);
   } else if (!strncmp_P(args, PSTR("new-day-set "), 12)) {
     return cmd_engine_set_time(args + 12, startCmd, CmdEngineRtcSetTimeTargetNewDayAlarm);
+  } else if (!strcmp_P(args, PSTR("rtc init"))) {
+    rtc_first_time_init();
+    return true;
   }
 
   return false;

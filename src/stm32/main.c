@@ -24,6 +24,7 @@
 
 #include "mtick.h"
 #include "hw-lcd.h"
+#include "hw-rtc.h"
 #include "system.h"
 #include "console.h"
 #include "hw-leds.h"
@@ -64,9 +65,17 @@ int main(void)
 #ifdef MCODE_SWITCH_ENGINE
   switch_engine_init();
 #endif /* MCODE_SWITCH_ENGINE */
+#ifdef MCODE_RTC
+  mtime_init();
+  rtc_alarm_init();
+#endif /* MCODE_RTC */
 
   scheduler_start();
 
+#ifdef MCODE_RTC
+  mtime_deinit();
+  rtc_alarm_deinit();
+#endif /* MCODE_RTC */
 #ifdef MCODE_SWITCH_ENGINE
   switch_engine_deinit();
 #endif /* MCODE_SWITCH_ENGINE */
