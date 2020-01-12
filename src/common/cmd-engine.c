@@ -155,7 +155,7 @@ void cmd_engine_show_help(void)
   cmd_engine_system_help();
 #ifdef MCODE_TV
   cmd_engine_tv_help();
-#endif /* MCODE_RTC */
+#endif /* MCODE_TV */
 #ifdef MCODE_CONSOLE_ENABLED
   cmd_engine_console_help();
 #endif /* MCODE_CONSOLE_ENABLED */

@@ -30,6 +30,11 @@
 
 void mtime_init(void)
 {
+  /* Enable PWR and BKP clocks */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+
+  /* Enable write access to Backup domain */
+  PWR_BackupAccessCmd(ENABLE);
 }
 
 void mtime_deinit(void)
@@ -46,12 +51,6 @@ void rtc_alarm_deinit(void)
 
 void rtc_first_time_init(void)
 {
-  /* Enable PWR and BKP clocks */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
-
-  /* Allow access to BKP Domain */
-  PWR_BackupAccessCmd(ENABLE);
-
   /* Reset Backup Domain */
   BKP_DeInit();
 

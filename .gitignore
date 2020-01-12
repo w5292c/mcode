@@ -30,3 +30,4 @@
 
 # Default build directory
 build/*
+build-tests/*
