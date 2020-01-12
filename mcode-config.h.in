@@ -97,6 +97,9 @@
 /* Enable support for PDU convertion functions */
 #cmakedefine MCODE_PDU
 
+/* Enable programming engine */
+#cmakedefine MCODE_PROG
+
 /* Base address for the bootloader code */
 #define MCODE_BOOTLOADER_BASE ( @MCODE_BOOTLOADER_BASE@ )
 

@@ -106,6 +106,7 @@ endif ( MCODE_RTC )
 if ( MCODE_PROG )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/common/cmd-prog.c
+    ${MCODE_TOP}/src/stm32/hw-nvm.c
   )
 endif ( MCODE_PROG )
 
