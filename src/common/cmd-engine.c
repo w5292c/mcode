@@ -112,6 +112,10 @@ void cmd_engine_on_cmd_ready(const char *aString)
   else if (cmd_engine_led_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_SWITCH_ENGINE */
+#ifdef MCODE_PROG
+  else if (cmd_engine_prog_exec(aString, &start_uart_editor)) {
+  }
+#endif /* MCODE_PROG */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
   }
   else if (*aString) {
@@ -168,4 +172,7 @@ void cmd_engine_show_help(void)
 #ifdef MCODE_SWITCH_ENGINE
   cmd_engine_switch_help();
 #endif /* MCODE_SWITCH_ENGINE */
+#ifdef MCODE_PROG
+  cmd_engine_prog_help();
+#endif /* MCODE_PROG */
 }

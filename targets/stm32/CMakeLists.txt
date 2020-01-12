@@ -46,6 +46,7 @@ option ( MCODE_GSM "Enable GSM engine" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
 option ( MCODE_PARSER "Enable string parser" ON )
+option ( MCODE_PROG "Enable programming commands" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
 option ( MCODE_SWITCH_ENGINE "Enable the Switch Engine" ON )
@@ -101,6 +102,12 @@ if ( MCODE_RTC )
     ${MCODE_TOP}/src/common/cmd-rtc.c
   )
 endif ( MCODE_RTC )
+
+if ( MCODE_PROG )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-prog.c
+  )
+endif ( MCODE_PROG )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 

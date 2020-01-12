@@ -126,6 +126,11 @@ void cmd_engine_switch_help(void);
 bool cmd_engine_led_command(const char *command, bool *startCmd);
 #endif /* MCODE_SWITCH_ENGINE */
 
+#ifdef MCODE_PROG
+void cmd_engine_prog_help(void);
+bool cmd_engine_prog_exec(const char *command, bool *startCmd);
+#endif /* MCODE_PROG */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
