@@ -352,7 +352,7 @@ void lcd_set_bl(bool on)
 
 uint32_t lcd_read_id(void)
 {
-  return 0;
+  return 0x02049481L;
 }
 
 void hw_i80_write_const_short(uint8_t cmd, uint16_t constValue, uint8_t length)

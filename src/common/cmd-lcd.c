@@ -86,7 +86,7 @@ bool cmd_engine_lcd_command(const char *command, bool *startCmd)
 void cmd_engine_lcd_turn_lcd(const char *arguments)
 {
   if (!strcmp_P(arguments, PSTR("on"))) {
-    lcd_turn(false);
+    lcd_turn(true);
   } else if (!strcmp_P(arguments, PSTR("off"))) {
     lcd_turn(false);
   } else if (!strcmp_P(arguments, PSTR("reset"))) {

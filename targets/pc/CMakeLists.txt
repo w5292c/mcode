@@ -11,9 +11,8 @@ pkg_check_modules ( SQLITE        sqlite3         REQUIRED )
 link_directories ( ${GLIB2_0_LIBRARY_DIRS} ${SQLITE_LIBRARY_DIRS} )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
-set ( MCODE_SSL ${MCODE_TOP}/src/openssl/ )
 
-include_directories ( ${GLIB2_0_INCLUDE_DIRS} ${SQLITE_INCLUDE_DIRS} ${MCODE_TOP}/src/ ${MCODE_SSL} )
+include_directories ( ${GLIB2_0_INCLUDE_DIRS} ${SQLITE_INCLUDE_DIRS} ${MCODE_TOP}/src/ ${MCODE_TOP}/src/security/ )
 
 INCLUDE ( ${QT_USE_FILE} )
 ADD_DEFINITIONS ( ${QT_DEFINITIONS} )
@@ -67,8 +66,7 @@ option ( MCODE_PERSIST_STORE_FAKE "Enable fake persistent store" OFF )
 
 if ( MCODE_SECURITY )
   set ( SRC_LIST ${SRC_LIST}
-    ${MCODE_SSL}/sha256.c
-    ${MCODE_SSL}/mem_clr.c
+    ${MCODE_TOP}/src/security/librock_sha256.c
   )
 endif ( MCODE_SECURITY )
 
