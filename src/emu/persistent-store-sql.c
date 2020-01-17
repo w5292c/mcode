@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@
 
 #include "persistent-store.h"
 
+#include "hw-nvm.h"
+
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,7 +39,7 @@ static const char MCodeDirectory[] = ".mcode";
 
 static char *ensure_directory(void);
 
-void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
+void persist_store_load(uint8_t id, void *data, uint8_t length)
 {
   char *const filename = ensure_directory();
   sqlite3 *db = NULL;
@@ -80,7 +82,7 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
   }
 }
 
-void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
+void persist_store_save(uint8_t id, const void *data, uint8_t length)
 {
   char *const filename = ensure_directory();
 

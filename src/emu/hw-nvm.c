@@ -22,33 +22,31 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_NVM_H
-#define MCODE_NVM_H
+#include "hw-nvm.h"
 
-#include <stdint.h>
+#include "persistent-store.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include <stdio.h>
 
-#define MCODE_NVM_MAX_INDEX (10)
+uint16_t nvm_read(uint_least8_t index)
+{
+  uint16_t values[MCODE_NVM_MAX_INDEX] = {0};
+  if (index < MCODE_NVM_MAX_INDEX) {
+    persist_store_load(PersistStoreIdNvm, values, sizeof (values));
+    return values[index];
+  }
+  fprintf(stderr, "Error: no NVM element at index: %d\n", index);
+  return 0;
+}
 
-/**
- * Read an NVM value
- * @param[in] index The index of NVM element to read
- * @return The value of NVM element
- */
-uint16_t nvm_read(uint_least8_t index);
-
-/**
- * Write the NVM element at \c index to \c value
- * @param[in] index The index of the NVM element to write
- * @param[in] value The value to write to the NVM element at \c index
- */
-void nvm_write(uint_least8_t index, uint16_t value);
-
-#ifdef __cplusplus
-} /* extern "C" { */
-#endif
-
-#endif /* MCODE_NVM_H */
+void nvm_write(uint_least8_t index, uint16_t value)
+{
+  uint16_t values[MCODE_NVM_MAX_INDEX] = {0};
+  if (index < MCODE_NVM_MAX_INDEX) {
+    persist_store_load(PersistStoreIdNvm, values, sizeof (values));
+    values[index] = value;
+    persist_store_save(PersistStoreIdNvm, values, sizeof (values));
+  } else {
+    fprintf(stderr, "Error: no NVM element at index: %d\n", index);
+  }
+}

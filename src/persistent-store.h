@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,11 @@ extern "C" {
 
 typedef enum {
   PersistStoreIdHash,
+  PersistStoreIdNvm,
 } PersistStoreId;
 
-void persist_store_load(uint8_t id, uint8_t *data, uint8_t length);
-void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length);
+void persist_store_load(uint8_t id, void *data, uint8_t length);
+void persist_store_save(uint8_t id, const void *data, uint8_t length);
 
 uint16_t persist_store_get_value(void);
 void persist_store_set_value(uint16_t value);

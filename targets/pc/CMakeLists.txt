@@ -53,6 +53,7 @@ set ( HEADERS_LIST_QT
 QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 
 option ( MCODE_LCD "Enable LCD support" ON )
+option ( MCODE_PROG "Enable programming commands" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
 option ( MCODE_TEST_IMAGES "Enable hard-coded test images" ON )
 option ( MCODE_COMMAND_MODES "Enable command engine modes" ON )
@@ -81,6 +82,13 @@ if ( MCODE_PERSIST_STORE_SQL )
     ${MCODE_TOP}/src/emu/persistent-store-sql.c
   )
 endif ( MCODE_PERSIST_STORE_SQL )
+
+if ( MCODE_PROG )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-prog.c
+    ${MCODE_TOP}/src/emu/hw-nvm.c
+  )
+endif ( MCODE_PROG )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
