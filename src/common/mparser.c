@@ -138,6 +138,7 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler handler
         ret = (*handler)(EParserEventSepWhitespace, ptr, ln, 0);
         if (ret) {
           str = ret;
+          /// @todo check length
         } else {
           length -= ln;
         }
@@ -177,5 +178,122 @@ bool mparser_is_number(char ch)
 
 bool mparser_is_whitespace(char ch)
 {
-  return ' ' == ch || '\t' == ch;
+  return ' ' == ch || '\t' == ch || '\v' == ch;
+}
+
+bool mparser_is_letter(char ch)
+{
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+TokenType next_token(const char **str, size_t *length, const char **token, uint32_t *value)
+{
+  char ch;
+  size_t len;
+  uint32_t val;
+  const char *ptr;
+  const char *addr;
+
+  /* Check arguments */
+  if (!str || !length || !value || !*str) {
+    return TokenError;
+  }
+
+  /* Check for end-of-string */
+  ptr = *str;
+  ch = *ptr;
+  len = *length;
+  /* No support for unicode for now */
+  if (!len || !ch || ch < 0) {
+    return TokenEnd;
+  }
+
+  /* Check punctuation characters */
+  if (mparser_is_punct(ch)) {
+    *value = ch;
+    *str = ++ptr;
+    *length = len - 1;
+    return TokenPunct;
+  }
+
+  /* Check for whitespace characters */
+  if (mparser_is_whitespace(ch)) {
+    *value = ch;
+    *str = ++ptr;
+    *length = len - 1;
+    return TokenWhitespace;
+  }
+
+  /* Check the character for new-line */
+  if ('\n' == ch || '\r' == ch) {
+    *value = ch;
+    *str = ++ptr;
+    *length = len - 1;
+    return TokenNewLine;
+  }
+
+  /* Check for a string token */
+  if ('"' == ch) {
+    /* Store the pointer to the beginning of the string */
+    addr = ptr + 1;
+    /* Search for the closing '"' */
+    for (++ptr; len > 0; --len, ++ptr) {
+      const char next_ch = *ptr;
+      if ('"' == next_ch) {
+        /* Closing '"' detected, report a string token */
+        *value = ptr - *str - 1;
+        *length -= *value + 2;
+        *token = addr;
+        *str = ptr + 1;
+        return TokenString;
+      }
+      if (next_ch <= 0 || '\n' == next_ch || '\r' == next_ch) {
+        /* No closing '"' found, report an error */
+        *value = ptr - *str - 1;
+        *length -= *value + 1;
+        *token = addr;
+        *str = ptr;
+        return TokenError;
+      }
+    }
+  }
+
+  /* Check for a number token */
+  if (mparser_is_number(ch)) {
+    val = ch - '0';
+    /* Search for the closing '"' */
+    for (++ptr; len > 0; --len, ++ptr) {
+      const char next_ch = *ptr;
+      if (mparser_is_number(next_ch)) {
+        val *= 10;
+        val += next_ch - '0';
+      } else {
+        *value = val;
+        *length -= ptr - *str;
+        *str = ptr;
+        return TokenInt;
+      }
+    }
+  }
+
+  /* Check for an ID token */
+  if (mparser_is_letter(ch)) {
+    /* Store the beginning of the token */
+    addr = ptr;
+    for (++ptr; len > 0; --len, ++ptr) {
+      const char next_ch = *ptr;
+      if (mparser_is_whitespace(next_ch) ||
+          '\n' == next_ch || '\r' == next_ch || 0 == next_ch ||
+          mparser_is_punct(next_ch)) {
+        /* End of token detected */
+        *value = ptr - *str;
+        *length -= *value;
+        *token = addr;
+        *str = ptr;
+        return TokenId;
+      }
+    }
+  }
+
+  return TokenError;
 }

@@ -69,6 +69,47 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler handler
  */
 int mparser_strcmp(const char *str, size_t length, const char *str2);
 
+/**
+ * String parser, version 2 skeleton
+ */
+typedef enum _TokenType {
+  TokenError,
+  TokenString,
+  TokenId,
+  TokenInt,
+  TokenBool,
+  TokenWhitespace,
+  TokenNewLine,
+  TokenCtrl,
+  TokenPunct,
+  TokenEnd,
+} TokenType;
+
+/**
+ * Tokenize the input
+ *
+ * Possible tokens:
+ * - String, format: "<string-content>", \c value returns the string length;
+ *                   Note: no escape sequences for string tokens are supported for now;
+ * - Integer: decimal number, example: 1237632, the value is returned in \c value;
+ * - Whitespace: vertical and horizontal tabs, space, no new-line here;
+ *               The character code is returned in \c value;
+ *               Temporary: any control characters that do not fall under other types;
+ * - NewLine: new line, one of the following: "\n", "\r", "\r\n";
+ * - Punctuation: punctuation characters: ",", ".", ";", ":";
+ * - Id: a keyword. See the list below;
+ * - End: the end of string/text;
+ * - Error: an error sequence of characters, for example a number combined with letters;
+ *          The error token length is returned in \c value;
+ * Keywords: start with a letter, can contain more letters, digits, underscores;
+ * Special keywords:
+ * - s<digit>[:<digit>] A string variable, up to 128 bytes per block, string blocks can be chained;
+ * - i<digit> An int variable, 32 bit integer, initialized to '0' after a restart;
+ * - p<digit> A 16-bit NVM int variable; keeps the stored value after a restart;
+ * @note No support for Unicode for now;
+ */
+TokenType next_token(const char **str, size_t *length, const char **token, uint32_t *value);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

@@ -72,6 +72,7 @@ static uint8_t TheRands[] = MCODE_RANDOM_BYTES;
 
 static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
+static void mcode_mparse_next_new(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 static void mcode_security_sha256_tests(void);
@@ -132,6 +133,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "Security:SHA256 test cases", mcode_security_sha256_tests)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "mparse_next API tests", mcode_mparse_next_new)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -528,4 +533,71 @@ void hw_gsm_power(bool on)
 
 void line_editor_uart_start(void)
 {
+}
+
+void mcode_mparse_next_new(void)
+{
+  const char *str;
+  const char *token;
+  size_t length;
+  TokenType type;
+  uint32_t value;
+  const char test_string[] = "\"string12\", token56, 12345";
+
+  value = 0;
+  token = NULL;
+  str = test_string;
+  length = strlen(test_string);
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenString);
+  CU_ASSERT_EQUAL(str, test_string + 10);
+  CU_ASSERT_EQUAL(length, 16);
+  CU_ASSERT_EQUAL(mparser_strcmp(token, value, "string12"), 0);
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenPunct);
+  CU_ASSERT_EQUAL(str, test_string + 11);
+  CU_ASSERT_EQUAL(length, 15);
+  CU_ASSERT_EQUAL(value, ',');
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenWhitespace);
+  CU_ASSERT_EQUAL(str, test_string + 12);
+  CU_ASSERT_EQUAL(length, 14);
+  CU_ASSERT_EQUAL(value, ' ');
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenId);
+  CU_ASSERT_EQUAL(str, test_string + 19);
+  CU_ASSERT_EQUAL(length, 7);
+  CU_ASSERT_EQUAL(value, 7);
+  CU_ASSERT_EQUAL(mparser_strcmp(token, value, "token56"), 0);
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenPunct);
+  CU_ASSERT_EQUAL(str, test_string + 20);
+  CU_ASSERT_EQUAL(length, 6);
+  CU_ASSERT_EQUAL(value, ',');
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenWhitespace);
+  CU_ASSERT_EQUAL(str, test_string + 21);
+  CU_ASSERT_EQUAL(length, 5);
+  CU_ASSERT_EQUAL(value, ' ');
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenInt);
+  CU_ASSERT_EQUAL(str, test_string + 26);
+  CU_ASSERT_EQUAL(length, 0);
+  CU_ASSERT_EQUAL(value, 12345);
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenEnd);
+  CU_ASSERT_EQUAL(str, test_string + 26);
+  CU_ASSERT_EQUAL(length, 0);
+
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenEnd);
+  CU_ASSERT_EQUAL(str, test_string + 26);
+  CU_ASSERT_EQUAL(length, 0);
 }
