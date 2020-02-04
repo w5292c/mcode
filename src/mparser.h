@@ -77,7 +77,6 @@ typedef enum _TokenType {
   TokenString,
   TokenId,
   TokenInt,
-  TokenBool,
   TokenWhitespace,
   TokenNewLine,
   TokenCtrl,

@@ -73,6 +73,7 @@ static uint8_t TheRands[] = MCODE_RANDOM_BYTES;
 static void mcode_pdu_tests(void);
 static void mcode_date_time_tests(void);
 static void mcode_mparse_next_new(void);
+static void mcode_mparse_next_errors(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 static void mcode_security_sha256_tests(void);
@@ -137,6 +138,10 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "mparse_next API tests", mcode_mparse_next_new)) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+  if (!CU_add_test(pSuite, "mparse_next error cases", mcode_mparse_next_errors)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -600,4 +605,23 @@ void mcode_mparse_next_new(void)
   CU_ASSERT_EQUAL(type, TokenEnd);
   CU_ASSERT_EQUAL(str, test_string + 26);
   CU_ASSERT_EQUAL(length, 0);
+}
+
+void mcode_mparse_next_errors(void)
+{
+  TokenType type;
+  const char *str;
+  size_t length;
+  uint32_t value;
+  const char *token;
+  const char tstr[] = "123a, \"string\"";
+
+  str = tstr;
+  length = strlen(str);
+  type = next_token(&str, &length, &token, &value);
+  CU_ASSERT_EQUAL(type, TokenError);
+  CU_ASSERT_EQUAL(str, tstr + 4);
+  CU_ASSERT_EQUAL(token, tstr);
+  CU_ASSERT_EQUAL(length, 10);
+  CU_ASSERT_EQUAL(value, 4);
 }

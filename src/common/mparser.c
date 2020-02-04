@@ -260,6 +260,7 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
 
   /* Check for a number token */
   if (mparser_is_number(ch)) {
+    addr = ptr;
     val = ch - '0';
     /* Search for the closing '"' */
     for (++ptr; len > 0; --len, ++ptr) {
@@ -267,13 +268,35 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
       if (mparser_is_number(next_ch)) {
         val *= 10;
         val += next_ch - '0';
-      } else {
+      } else if (mparser_is_punct(next_ch) || mparser_is_whitespace(next_ch) ||
+                                  '\n' == next_ch || '\r' == next_ch || !next_ch) {
+        /* Expected closing of a number */
         *value = val;
         *length -= ptr - *str;
         *str = ptr;
         return TokenInt;
+      } else {
+        /* Unexpected characters in a number, report an error */
+        for (; len > 0; --len, ++ptr) {
+          ch = *ptr;
+          if (mparser_is_whitespace(ch) || mparser_is_punct(ch) ||
+              '\n' == ch || '\r' == ch || !ch) {
+            break;
+          }
+        }
+        *value = ptr - *str;
+        *length -= *value;
+        *str = ptr;
+        *token = addr;
+        return TokenError;
       }
     }
+
+    /* Looks like a number in the end of the input text */
+    *value = val;
+    *length -= ptr - *str;
+    *str = ptr;
+    return TokenInt;
   }
 
   /* Check for an ID token */
