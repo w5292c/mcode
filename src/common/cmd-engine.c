@@ -26,6 +26,7 @@
 
 #include "mglobal.h"
 #include "mstring.h"
+#include "cmd-iface.h"
 #include "line-editor-uart.h"
 
 #include <string.h>
@@ -175,4 +176,11 @@ void cmd_engine_show_help(void)
 #ifdef MCODE_PROG
   cmd_engine_prog_help();
 #endif /* MCODE_PROG */
+
+  const TCmdData *iter = &__start_command_section;
+  const TCmdData *const end = &__stop_command_section;
+  for (; iter < end; ++ iter) {
+    mprintstr_R(iter->help);
+    mprint(MStringNewLine);
+  }
 }
