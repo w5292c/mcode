@@ -5,7 +5,7 @@ SECTIONS
   {
     . = ALIGN(4);
     __start_command_section = .;
-    *(.command_section)
+    *(command_section)
     __stop_command_section = .;
   } >FLASH
 }
