@@ -31,10 +31,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define CMD_USED __attribute__((used))
 #define CMD_SECTION __attribute__((section("command_section")))
 
 #define CMD_ENTRY(name, help, handler, init_handler, level) \
-  static const TCmdData name CMD_SECTION = { \
+  static const TCmdData name CMD_SECTION CMD_USED = { \
     help, \
     handler, \
     init_handler, \

@@ -24,6 +24,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/hw-uart.c
   ${MCODE_TOP}/src/common/mstring.c
+  ${MCODE_TOP}/src/common/cmd-help.c
   ${MCODE_TOP}/src/common/scheduler.c
   ${MCODE_TOP}/src/common/hw-lcd-spi.c
   ${MCODE_TOP}/src/common/cmd-system.c
@@ -113,6 +114,11 @@ endif ( MCODE_PROG )
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SRC_LIST} ${CMSIS_STARTUP_SOURCE} ${CMSIS_SOURCES} ${StdPeriphLib_SOURCES})
+
+# Add a Linker Script for including custom sections
+target_link_libraries ( ${CMAKE_PROJECT_NAME}
+  -T${MCODE_TOP}/targets/stm32/console-test_custom.ld
+)
 
 STM32_SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME})
 STM32_SET_HSE_VALUE(${CMAKE_PROJECT_NAME} 8000000)
