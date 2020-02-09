@@ -3,9 +3,8 @@ cmake_minimum_required (VERSION 2.6)
 add_definitions ( -mmcu=atmega32 -g -Os -Wall -Wstrict-prototypes )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
-set ( MCODE_SSL ${MCODE_TOP}/src/openssl/ )
 
-include_directories( ${MCODE_TOP}/src/ ${MCODE_SSL} )
+include_directories( ${MCODE_TOP}/src/ ${MCODE_TOP}/src/security/ )
 
 set ( CMAKE_SYSTEM_NAME "Generic" )
 set ( CMAKE_C_COMPILER "avr-gcc" )
@@ -23,6 +22,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/mstring.c
   ${MCODE_TOP}/src/common/scheduler.c
+  ${MCODE_TOP}/src/common/cmd-help.c
   ${MCODE_TOP}/src/common/cmd-engine.c
   ${MCODE_TOP}/src/common/cmd-system.c
   ${MCODE_TOP}/src/common/cmd-test-image.c
@@ -119,9 +119,8 @@ if ( MCODE_SECURITY )
   add_definitions ( -DMD32_REG_T=long )
 
   set ( SRC_LIST ${SRC_LIST}
-    ${MCODE_SSL}/sha256.c
-    ${MCODE_SSL}/mem_clr.c
     ${MCODE_TOP}/src/common/cmd-ssl.c
+    ${MCODE_TOP}/src/security/librock_sha256.c
   )
 endif ( MCODE_SECURITY )
 

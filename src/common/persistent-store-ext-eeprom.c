@@ -24,7 +24,7 @@
 
 #include "persistent-store.h"
 
-#include "sha.h"
+#include "sha256.h"
 #include "hw-twi.h"
 #include "mstring.h"
 
@@ -50,9 +50,9 @@ static uint16_t TheDummyWord EEMEM __attribute__((used)) = 0xffffu;
 
 #define CYCLIC_STORAGE_ITEMS_COUNT (32)
 
-void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
+void persist_store_load(uint8_t id, void *data, uint8_t length)
 {
-  if (PersistStoreIdHash != id || length != SHA256_DIGEST_LENGTH) {
+  if (PersistStoreIdHash != id || length != MD_LENGTH_SHA256) {
     return;
   }
 
@@ -70,13 +70,13 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
   }
 }
 
-void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
+void persist_store_save(uint8_t id, const void *data, uint8_t length)
 {
-  if (PersistStoreIdHash != id || length != SHA256_DIGEST_LENGTH) {
+  if (PersistStoreIdHash != id || length != MD_LENGTH_SHA256) {
     return;
   }
 
-  uint8_t buffer[SHA256_DIGEST_LENGTH + 2];
+  uint8_t buffer[MD_LENGTH_SHA256 + 2];
   buffer[0] = 0x00u;
   buffer[1] = 0x00u;
   memcpy(buffer + 2, data, length);
