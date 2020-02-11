@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -177,10 +177,13 @@ void cmd_engine_show_help(void)
   cmd_engine_prog_help();
 #endif /* MCODE_PROG */
 
+  /* New style for commands/help support, using 'command_section' section */
+  const char *help;
   const TCmdData *iter = &__start_command_section;
   const TCmdData *const end = &__stop_command_section;
   for (; iter < end; ++ iter) {
-    mprintstr_R(iter->help);
+    help = pgm_read_ptr_near(iter->help);
+    mprintstr(help);
     mprint(MStringNewLine);
   }
 }

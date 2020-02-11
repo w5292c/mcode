@@ -24,11 +24,13 @@
 
 #include "cmd-iface.h"
 
+#include "mglobal.h"
+
 #include <stddef.h>
 
 static bool cmd_help_command_handler(const char *args, bool *start_cmd);
 
-static const char TheHelpMessage[] = "> help - Show help for all commands";
+static const char TheHelpMessage[] PROGMEM = ("> help - Show help for all commands");
 
 CMD_ENTRY(help, TheHelpMessage, &cmd_help_command_handler, NULL, 0);
 
