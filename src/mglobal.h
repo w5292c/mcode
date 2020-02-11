@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014,2015 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@
 #define strlen_P strlen
 #define pgm_read_dword(ptr) (*((const uint32_t *)ptr))
 #define pgm_read_byte(ptr) (*((const uint8_t *)ptr))
+#define pgm_read_ptr_near(ptr) (ptr)
 #endif /* __AVR__ */
 
 #ifdef __cplusplus
