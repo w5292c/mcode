@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2016 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,22 @@
 
 #include "mglobal.h"
 #include "mstring.h"
+#include "scheduler.h"
 
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <termios.h>
 #include <pthread.h>
 
+static char TheBuffer[1] = {0};
 static int running_request = 0;
 static pthread_t TheKeyEventThread = 0;
 static struct termios TheStoredTermIos;
 
+static void emu_hw_uart_tick(void);
 /** The UART emulation thread */
 static void *emu_hw_uart_thread(void *threadid);
 
@@ -57,6 +61,8 @@ void hw_uart_init(void)
       mprint(MStringNewLine);
       exit(-1);
     }
+
+    scheduler_add(emu_hw_uart_tick);
   }
 }
 
@@ -121,11 +127,12 @@ void *emu_hw_uart_thread(void *threadid)
     }
 
     if (TheCallback && (escIndex == 3 || (!escIndex))) {
+      assert(!*TheBuffer);
       if (escIndex) {
-        (*TheCallback) (escChar);
+        TheBuffer[0] = escChar;
         escIndex = 0;
       } else {
-        (*TheCallback) (ch);
+        TheBuffer[0] = ch;
       }
     }
   }
@@ -136,4 +143,12 @@ void *emu_hw_uart_thread(void *threadid)
   mprint(MStringNewLine);
   pthread_exit(NULL);
   return NULL;
+}
+
+void emu_hw_uart_tick(void)
+{
+  if (*TheBuffer) {
+    TheCallback(*TheBuffer);
+    *TheBuffer = 0;
+  }
 }

@@ -27,6 +27,7 @@
 #include "main.h"
 
 #include <glib.h>
+#include <assert.h>
 #include <string.h>
 
 #define MCODE_TICKS_COUNT (8)
@@ -66,7 +67,7 @@ void scheduler_add(mcode_tick tick)
   if (ClientsNumber < MCODE_TICKS_COUNT) {
     TheApplicationTicks[ClientsNumber++] = tick;
   } else {
-    /*! @todo add assert(false) here */
+    assert(false);
   }
 }
 
