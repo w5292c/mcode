@@ -40,7 +40,7 @@
 #define strlen_P strlen
 #define pgm_read_dword(ptr) (*((const uint32_t *)ptr))
 #define pgm_read_byte(ptr) (*((const uint8_t *)ptr))
-#define pgm_read_ptr_near(ptr) (ptr)
+#define pgm_read_ptr_near(ptr) (*((const void **)ptr))
 #endif /* __AVR__ */
 
 #ifdef __cplusplus

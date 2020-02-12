@@ -182,7 +182,7 @@ void cmd_engine_show_help(void)
   const TCmdData *iter = &__start_command_section;
   const TCmdData *const end = &__stop_command_section;
   for (; iter < end; ++ iter) {
-    help = pgm_read_ptr_near(iter->help);
+    help = pgm_read_ptr_near(&iter->help);
     mprintstr(help);
     mprint(MStringNewLine);
   }
