@@ -116,8 +116,6 @@ if ( MCODE_PWM )
 endif ( MCODE_PWM )
 
 if ( MCODE_SECURITY )
-  add_definitions ( -DMD32_REG_T=long )
-
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/common/cmd-ssl.c
     ${MCODE_TOP}/src/security/librock_sha256.c

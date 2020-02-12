@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,9 @@ void line_editor_uart_callback(char aChar)
       if (line_editor_cursor > 0) {
         --line_editor_cursor;
         line_editor_buffer[line_editor_cursor] = 0;
-        mprintstr(PSTR("\010 \010"));
+        if (TheEchoEnabled) {
+          mprintstr(PSTR("\010 \010"));
+        }
       }
     }
   } else {
