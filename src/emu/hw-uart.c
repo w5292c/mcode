@@ -148,7 +148,8 @@ void *emu_hw_uart_thread(void *threadid)
 void emu_hw_uart_tick(void)
 {
   if (*TheBuffer) {
-    TheCallback(*TheBuffer);
+    const char ch = *TheBuffer;
     *TheBuffer = 0;
+    TheCallback(ch);
   }
 }

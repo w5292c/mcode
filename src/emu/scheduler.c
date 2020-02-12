@@ -25,41 +25,76 @@
 #include "scheduler.h"
 
 #include "main.h"
+#include "mstring.h"
 
 #include <glib.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 #define MCODE_TICKS_COUNT (8)
 
-static int NoExitRequest;
-static int ClientsNumber;
-static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT];
+static uint8_t ExitRequests = 0;
+static uint8_t ClientsNumber = 0;
+static uint8_t CurrentExitRequestMask = 0;
 
-static gboolean mcode_scheduler_idle(gpointer user_data);
+static pthread_t TheCoreThread = 0;
+static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT] = {NULL};
+
+static void *emu_core_scheduler_thread(void *threadid);
 
 void scheduler_init(void)
 {
-  ClientsNumber = 0;
-  NoExitRequest = 1;
+  int result;
+
   memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
 
-  g_idle_add((GSourceFunc)mcode_scheduler_idle, NULL);
+  result = pthread_create(&TheCoreThread, NULL, emu_core_scheduler_thread, NULL);
+  if (result) {
+    mprintstrln(PSTR("Error: failed creating the Core thread"));
+    exit(1);
+  }
 }
 
 void scheduler_deinit(void)
 {
-  memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
+  pthread_join(TheCoreThread, NULL);
 }
 
 void scheduler_start(void)
 {
-  mcode_main_start();
+  if (!CurrentExitRequestMask) {
+    CurrentExitRequestMask = 1u;
+  } else {
+    if (CurrentExitRequestMask != 0x80u) {
+      CurrentExitRequestMask = (CurrentExitRequestMask << 1);
+    } else {
+      /* No more bits for another start, extend 'ExitRequests' to more bits? */
+      merror(MStringErrorLimit);
+      return;
+    }
+  }
+
+  uint8_t i;
+  while (!(ExitRequests & CurrentExitRequestMask)) {
+    for (i = 0; i < ClientsNumber; ++i) {
+      mcode_tick tick = TheApplicationTicks[i];
+      if (tick) {
+        (*tick)();
+      }
+    }
+  }
+
+  ExitRequests &= ~CurrentExitRequestMask;
+  if (CurrentExitRequestMask) {
+    CurrentExitRequestMask = (CurrentExitRequestMask>>1);
+  }
 }
 
 void scheduler_stop(void)
 {
-  mcode_main_quit();
+  ExitRequests |= CurrentExitRequestMask;
 }
 
 void scheduler_add(mcode_tick tick)
@@ -71,15 +106,10 @@ void scheduler_add(mcode_tick tick)
   }
 }
 
-gboolean mcode_scheduler_idle(gpointer user_data)
+void *emu_core_scheduler_thread(void *threadid)
 {
-  int i = 0;
-  for (i = 0; i < ClientsNumber; i++) {
-    mcode_tick tick = TheApplicationTicks[i];
-    if (tick) {
-      (*tick)();
-    }
-  }
+  (void)threadid;
 
-  return TRUE;
+  scheduler_start();
+  return NULL;
 }

@@ -31,8 +31,6 @@
 extern "C" {
 #endif
 
-void mcode_main_start(void);
-void mcode_main_quit(void);
 void main_request_exit(void);
 
 uint16_t main_base_width(void);

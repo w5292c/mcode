@@ -94,7 +94,9 @@ int main(int argc, char **argv)
   mprintstrln(PSTR("]"));
   /* start the command engine, and switch to the scheduler, it never exits */
   cmd_engine_start();
-  scheduler_start();
+
+  /* Start the QT4 event loop in the main thread */
+  const int res = app.exec();
 
   cmd_engine_deinit();
   line_editor_uart_deinit();
@@ -103,7 +105,7 @@ int main(int argc, char **argv)
   scheduler_deinit();
   hw_uart_deinit();
   pthread_exit(NULL);
-  return 0;
+  return res;
 }
 
 static void main_at_exit(void)
@@ -123,15 +125,6 @@ void main_request_exit(void)
 {
   mprintstrln(PSTR("MAIN: exit request"));
   scheduler_stop();
-}
-
-void mcode_main_start(void)
-{
-  QApplication::exec();
-}
-
-void mcode_main_quit(void)
-{
   QApplication::exit(0);
 }
 

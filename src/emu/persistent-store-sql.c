@@ -55,7 +55,7 @@ void persist_store_load(uint8_t id, void *data, uint8_t length)
   const char *const sql = "SELECT value FROM store WHERE id = ?";
   rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
   if (rc == SQLITE_OK) {
-    sqlite3_bind_int(res, 1, id);
+    sqlite3_bind_int(res, 1, id + 1);
   } else {
       fprintf(stderr, "Failed to execute statement: %s\n", sqlite3_errmsg(db));
   }
