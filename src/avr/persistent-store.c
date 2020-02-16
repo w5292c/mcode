@@ -48,9 +48,9 @@ static uint16_t TheCyclicStorage[CYCLIC_STORAGE_LENGTH] EEMEM = {
 
 static uint16_t TheInitailValue EEMEM = 60;
 
-void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
+void persist_store_load(uint8_t id, void *data, uint8_t length)
 {
-  const uint8_t *pointer = NULL;
+  const void *pointer = NULL;
   switch (id) {
   case PersistStoreIdHash:
     pointer = TheHash;
@@ -62,9 +62,9 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
   eeprom_read_block(data, pointer, length);
 }
 
-void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
+void persist_store_save(uint8_t id, const void *data, uint8_t length)
 {
-  uint8_t *pointer = NULL;
+  void *pointer = NULL;
   switch (id) {
   case PersistStoreIdHash:
     pointer = TheHash;
