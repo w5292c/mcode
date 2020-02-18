@@ -100,7 +100,7 @@ void persist_store_save(uint8_t id, const void *data, uint8_t length)
   if (rc == SQLITE_OK) {
     gchar *const encodedData = g_base64_encode(data, length);
     sqlite3_bind_text(res, 1, encodedData, -1, g_free);
-    sqlite3_bind_int(res, 2, id);
+    sqlite3_bind_int(res, 2, id + 1);
   } else {
       fprintf(stderr, "Failed to execute statement: %s\n", sqlite3_errmsg(db));
   }
