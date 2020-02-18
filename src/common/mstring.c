@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015-2017 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -178,6 +178,45 @@ void mprintstr_R(const char *string)
       mputch(ch);
     }
   }
+}
+
+void mprintexpr(const char *expr)
+{
+  char ch;
+  bool escape = false;
+
+  if (!expr) {
+    /* Nothing to print */
+    return;
+  }
+
+  do {
+    ch = pgm_read_byte(expr++);
+    if (!ch) {
+      break;
+    }
+    if (!escape && '\\' == ch) {
+      escape = true;
+      continue;
+    }
+    if (escape) {
+      escape = false;
+      switch (ch) {
+      case 'n':
+        ch = '\n';
+        break;
+      case 'r':
+        ch = '\r';
+        break;
+      case 't':
+        ch = '\t';
+        break;
+      default:
+        break;
+      }
+    }
+    mputch(ch);
+  } while (true);
 }
 
 void mprint_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress)

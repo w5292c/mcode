@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015-2018 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@ void cmd_engine_system_help(void)
   mprintstrln(PSTR("> call <addr> - Call a program at <addr>"));
 #endif /* __AVR__ */
   mprintstrln(PSTR("> echo <string> - Echo <string> to console"));
+  mprintstrln(PSTR("> expr <expression> - print <expression> to console"));
   mprintstrln(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds"));
   mprintstrln(PSTR("> test [<args>] - Usually empty placeholder for temparary experiments"));
 }
@@ -68,6 +69,9 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     return cmd_engine_sleep(args + 5, startCmd);
   } else if (!strncmp_P(args, PSTR("echo"), 4)) {
     return cmd_engine_echo(args + 4, startCmd);
+  } else if (!strncmp_P(args, PSTR("expr "), 5)) {
+    mprintexpr(args + 5);
+    return true;
   } else if (!strcmp_P(args, PSTR("ut"))) {
 #ifdef MCODE_WDT
     mprintstr(PSTR("Reset reason: 0x"));
