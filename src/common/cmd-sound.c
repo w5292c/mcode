@@ -34,13 +34,13 @@
 static void cmd_engine_play_note(const char *args, bool *startCmd);
 static void cmd_engine_play_tune(const char *args, bool *startCmd);
 
-void cmd_engine_led_help(void)
+void cmd_engine_sound_help(void)
 {
   mprintstrln(PSTR("> sound <note> <length> - Play <note>, <length> msecs"));
   mprintstrln(PSTR("> tune <NNTT>[<NNTT>...] - Play tune, notes NN and TT length"));
 }
 
-bool cmd_engine_led_command(const char *command, bool *startCmd)
+bool cmd_engine_sound_command(const char *command, bool *startCmd)
 {
   if (!strncmp_P(command, PSTR("sound "), 6)) {
     cmd_engine_play_note(command + 6, startCmd);

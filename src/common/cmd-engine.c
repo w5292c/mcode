@@ -102,7 +102,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
   }
 #endif /* MCODE_CONSOLE_ENABLED */
 #ifdef MCODE_SOUND
-  else if (cmd_engine_led_command(aString, &start_uart_editor)) {
+  else if (cmd_engine_sound_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_SOUND */
 #ifdef MCODE_GSM
@@ -165,7 +165,7 @@ void cmd_engine_show_help(void)
   cmd_engine_console_help();
 #endif /* MCODE_CONSOLE_ENABLED */
 #ifdef MCODE_SOUND
-  cmd_engine_led_help();
+  cmd_engine_sound_help();
 #endif /* MCODE_SOUND */
 #ifdef MCODE_GSM
   cmd_engine_gsm_help();

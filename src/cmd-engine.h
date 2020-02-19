@@ -110,8 +110,8 @@ bool cmd_engine_led_command(const char *command, bool *startCmd);
 #endif /* MCODE_LEDS */
 
 #ifdef MCODE_SOUND
-void cmd_engine_led_help(void);
-bool cmd_engine_led_command(const char *command, bool *startCmd);
+void cmd_engine_sound_help(void);
+bool cmd_engine_sound_command(const char *command, bool *startCmd);
 #endif /* MCODE_SOUND */
 
 #ifdef MCODE_GSM
