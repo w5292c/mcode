@@ -1,2 +1,11 @@
+1) Choose to use Text mode (1):
 AT+CMGF=0 # PDU Mode
 AT+CMGF=1 # Text Mode
+
+2) Sending SMSes:
+Ready for body sequence:
+>>> 0x3E, 0x20
+
+3) Select the character set:
+AT+CSCS="GSM"
+To be changed to "HEX" or "UCS2" in later updates;

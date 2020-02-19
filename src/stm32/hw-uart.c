@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2018 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,7 @@ typedef struct _TLineReaderState {
 
 volatile static TLineReaderState TheUart2State = {0};
 
+static uint64_t TheLastCharTimestamp = 0;
 static hw_uart_handler TheUart2Callback = NULL;
 #endif /* MCODE_UART2 */
 
@@ -169,11 +170,14 @@ static void hw_uart_tick(void)
   }
 
 #ifdef MCODE_UART2
-    /* Check if we have a ready line to handle */
+  /* Check if we have a ready line to handle */
   const uint8_t readyFlag = (1u << TheUart2State.readIndex);
   if (!(TheUart2State.ready & readyFlag)) {
-    /* No ready data detected */
-    return;
+    /* No ready data detected, check if we are 'idle' for too long (10ms) */
+    if (!TheLastCharTimestamp || (mtick_count() - TheLastCharTimestamp) < 10 ||
+        !TheUart2State.lineBufferLength[TheUart2State.readIndex]) {
+      return;
+    }
   }
 
   /* Report the currently read line */
@@ -195,6 +199,7 @@ void USART2_IRQHandler(void)
 {
   if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
     const uint16_t data = USART_ReceiveData(USART2);
+    TheLastCharTimestamp = mtick_count();
     size_t size = TheUart2State.lineBufferLength[TheUart2State.writeIndex];
     volatile char *const buffer = TheUart2State.lineBuffer[TheUart2State.writeIndex];
     switch (TheUart2State.state) {
