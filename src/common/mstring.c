@@ -30,9 +30,25 @@
 
 #include <string.h>
 
+static ostream_handler TheOutputHandler = NULL;
+ void io_set_ostream_handler(ostream_handler handler);
+
 void mputch(char ch)
 {
+  /* Check if we have a custom output stream handler */
+  if (TheOutputHandler) {
+    /* If we have a custom output stream handler, use it */
+    (*TheOutputHandler)(ch);
+    return;
+  }
+
+  /* Default output stream handler */
   uart_write_char(ch);
+}
+
+void io_set_ostream_handler(ostream_handler handler)
+{
+  TheOutputHandler = handler;
 }
 
 void merror(uint8_t id)

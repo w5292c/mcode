@@ -45,6 +45,19 @@ typedef enum {
   MStringEnterPass,
 } MCodeStringId;
 
+/**
+ * This type defines prototype for a output stream handler
+ * implementing actual output of strings to output devices.
+ */
+typedef void (*ostream_handler)(char ch);
+
+/**
+ * Set output stream handler
+ * @param[in] handler The new output stream handler, or \c NULL to reset to default handler
+ * @note The default handler sends the output stream to UART1 device (can be overridden)
+ */
+void io_set_ostream_handler(ostream_handler handler);
+
 const char *mstring(uint8_t id);
 
 void mputch(char ch);
