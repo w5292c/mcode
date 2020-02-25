@@ -57,6 +57,11 @@ void collected_text_reset(void);
 const char *collected_text(void);
 size_t collected_text_length(void);
 
+void alt_uart_write_char(char ch);
+void collected_alt_text_reset(void);
+const char *collected_alt_text(void);
+size_t collected_alt_text_length(void);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif /* __cplusplus */

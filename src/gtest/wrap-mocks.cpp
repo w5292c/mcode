@@ -29,6 +29,8 @@
 namespace {
 char TheCollectedText[4096];
 size_t TheCollectedTextLength = 0;
+char TheCollectedAltText[4096];
+size_t TheCollectedAltTextLength = 0;
 MHwInterface *TheMockInterface = NULL;
 }
 
@@ -65,4 +67,25 @@ void collected_text_reset(void)
 {
   TheCollectedTextLength = 0;
   memset(TheCollectedText, 0, sizeof (TheCollectedText));
+}
+
+void alt_uart_write_char(char ch)
+{
+  TheCollectedAltText[TheCollectedAltTextLength++] = ch;
+}
+
+void collected_alt_text_reset(void)
+{
+  TheCollectedAltTextLength = 0;
+  memset(TheCollectedAltText, 0, sizeof (TheCollectedAltText));
+}
+
+const char *collected_alt_text(void)
+{
+  return TheCollectedAltText;
+}
+
+size_t collected_alt_text_length(void)
+{
+  return TheCollectedAltTextLength;
 }

@@ -45,8 +45,6 @@ protected:
 
 TEST_F(StringTest, MPutchSimple)
 {
-  collected_text_reset();
-
   InSequence sequence;
   EXPECT_CALL(_mock, uart_write_char('a'))
     .Times(1);
@@ -66,6 +64,18 @@ TEST(StringBasic, MPutchSimple)
 
   ASSERT_EQ(collected_text_length(), 3);
   ASSERT_STREQ(collected_text(), "abc");
+}
+
+TEST(StringBasic, MAltPutchSimple)
+{
+  collected_alt_text_reset();
+  io_set_ostream_handler(alt_uart_write_char);
+
+  mprintstr("abc");
+
+  ASSERT_EQ(collected_alt_text_length(), 3);
+  ASSERT_STREQ(collected_alt_text(), "abc");
+  io_set_ostream_handler(NULL);
 }
 
 void ostream_handler_impl(char ch)
