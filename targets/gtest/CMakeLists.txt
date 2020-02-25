@@ -26,4 +26,4 @@ configure_file ( ${MCODE_TOP}/mcode-config.h.in
 
 add_executable(console-test.test ${SRC_LIST})
 
-target_link_libraries(console-test.test ${GTEST_LIBRARIES} pthread "-Wl,--wrap,uart_write_char")
+target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread "-Wl,--wrap,uart_write_char")

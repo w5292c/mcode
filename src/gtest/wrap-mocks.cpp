@@ -29,10 +29,25 @@
 namespace {
 char TheCollectedText[4096];
 size_t TheCollectedTextLength = 0;
+MHwInterface *TheMockInterface = NULL;
+}
+
+MHwInterface::MHwInterface()
+{
+  TheMockInterface = this;
+}
+
+MHwInterface::~MHwInterface()
+{
+  TheMockInterface = NULL;
 }
 
 extern "C" void __wrap_uart_write_char(char ch)
 {
+  if (TheMockInterface) {
+    TheMockInterface->uart_write_char(ch);
+    return;
+  }
   TheCollectedText[TheCollectedTextLength++] = ch;
 }
 

@@ -26,11 +26,31 @@
 #define MCODE_WRAP_MOCKS_H
 
 #include <stddef.h>
+#include <gmock/gmock.h>
+
+#ifdef __cplusplus
+class MHwInterface
+{
+public:
+  MHwInterface();
+  virtual ~MHwInterface();
+  virtual void uart_write_char(char ch) = 0;
+};
+
+class MHwMockImpl : public MHwInterface
+{
+public:
+  MOCK_METHOD(void, uart_write_char, (char ch), (override));
+};
+#endif /* __cplusplus */
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+/**
+ * The wrapped 'uart_write_char' function, passes request to the mock object
+ */
 void __wrap_uart_write_char(char ch);
 
 void collected_text_reset(void);

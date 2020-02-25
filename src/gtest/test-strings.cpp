@@ -27,9 +27,38 @@
 
 #include <gtest/gtest.h>
 
+using namespace testing;
+
 extern "C" void ostream_handler_impl(char ch);
 
-TEST(Strings, MPutchSimple)
+class StringTest : public Test
+{
+protected:
+  void SetUp() override {
+  }
+  void TearDown() override {
+  }
+
+protected:
+  StrictMock<MHwMockImpl> _mock;
+};
+
+TEST_F(StringTest, MPutchSimple)
+{
+  collected_text_reset();
+
+  InSequence sequence;
+  EXPECT_CALL(_mock, uart_write_char('a'))
+    .Times(1);
+  EXPECT_CALL(_mock, uart_write_char('b'))
+    .Times(1);
+  EXPECT_CALL(_mock, uart_write_char('c'))
+    .Times(1);
+
+  mprintstr("abc");
+}
+
+TEST(StringBasic, MPutchSimple)
 {
   collected_text_reset();
 
