@@ -41,7 +41,7 @@ protected:
   StrictMock<MHwMockImpl> _mock;
 };
 
-TEST_F(StringTest, MPutchSimple)
+TEST_F(StringTest, MPrintStrSimple)
 {
   InSequence sequence;
   EXPECT_CALL(_mock, uart_write_char('a'))
@@ -52,4 +52,60 @@ TEST_F(StringTest, MPutchSimple)
     .Times(1);
 
   mprintstr("abc");
+}
+
+TEST_F(StringTest, MPrintStrLnSimple)
+{
+  InSequence sequence;
+  EXPECT_CALL(_mock, uart_write_char('d')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('e')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('f')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('\r')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('\n')).Times(1);
+
+  mprintstrln("def");
+}
+
+TEST_F(StringTest, MPrintBytesSimple)
+{
+  InSequence sequence;
+  EXPECT_CALL(_mock, uart_write_char('q')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('w')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('e')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('r')).Times(1);
+
+  mprintbytes("qwer", -1);
+}
+
+TEST_F(StringTest, MPrintBytesLnSimple)
+{
+  InSequence sequence;
+  EXPECT_CALL(_mock, uart_write_char('p')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('o')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('i')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('u')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('\r')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('\n')).Times(1);
+
+  mprintbytesln("poiu", -1);
+}
+
+TEST_F(StringTest, MPrintBytesWithLength)
+{
+  InSequence sequence;
+  EXPECT_CALL(_mock, uart_write_char('q')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('w')).Times(1);
+
+  mprintbytes("qwer", 2);
+}
+
+TEST_F(StringTest, MPrintBytesLnWithLength)
+{
+  InSequence sequence;
+  EXPECT_CALL(_mock, uart_write_char('p')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('o')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('\r')).Times(1);
+  EXPECT_CALL(_mock, uart_write_char('\n')).Times(1);
+
+  mprintbytesln("poiu", 2);
 }
