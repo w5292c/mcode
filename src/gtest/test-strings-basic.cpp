@@ -29,27 +29,46 @@
 
 using namespace testing;
 
-class StringTest : public Test
+class StringBasic : public Test
 {
 protected:
   void SetUp() override {
+    collected_text_reset();
+    collected_alt_text_reset();
   }
   void TearDown() override {
+    collected_text_reset();
+    collected_alt_text_reset();
   }
-
-protected:
-  StrictMock<MHwMockImpl> _mock;
 };
 
-TEST_F(StringTest, MPutchSimple)
+class AltStringBasic : public StringBasic
 {
-  InSequence sequence;
-  EXPECT_CALL(_mock, uart_write_char('a'))
-    .Times(1);
-  EXPECT_CALL(_mock, uart_write_char('b'))
-    .Times(1);
-  EXPECT_CALL(_mock, uart_write_char('c'))
-    .Times(1);
+protected:
+  void SetUp() override {
+    StringBasic::SetUp();
 
+    io_set_ostream_handler(alt_uart_write_char);
+  }
+  void TearDown() override {
+    io_set_ostream_handler(NULL);
+
+    StringBasic::TearDown();
+  }
+};
+
+TEST_F(StringBasic, MPutchSimple)
+{
   mprintstr("abc");
+
+  ASSERT_EQ(collected_text_length(), 3);
+  ASSERT_STREQ(collected_text(), "abc");
+}
+
+TEST_F(AltStringBasic, MAltPutchSimple)
+{
+  mprintstr("abc");
+
+  ASSERT_EQ(collected_alt_text_length(), 3);
+  ASSERT_STREQ(collected_alt_text(), "abc");
 }
