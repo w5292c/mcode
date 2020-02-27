@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
+option ( MCODE_COVERAGE "Enable code coverage" ON )
+
 # Locate GTest
 find_package(GTest REQUIRED)
 include_directories(
@@ -14,6 +16,10 @@ set (
   # Source code files
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/mstring.c
+)
+
+set (
+  TEST_SRC_LIST
   # Test source code files
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
@@ -25,6 +31,19 @@ configure_file ( ${MCODE_TOP}/mcode-config.h.in
   ${PROJECT_BINARY_DIR}/include/mcode-config.h
 )
 
-add_executable(console-test.test ${SRC_LIST})
+add_library ( console-test.lib STATIC ${SRC_LIST})
+if ( MCODE_COVERAGE )
+  target_compile_options ( console-test.lib PRIVATE "-fprofile-arcs" "-ftest-coverage" )
+  target_link_libraries ( console-test.lib gcov )
+endif ( MCODE_COVERAGE )
 
-target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread "-Wl,--wrap,uart_write_char")
+add_executable(console-test.test ${TEST_SRC_LIST})
+
+#if ( MCODE_COVERAGE )
+#  target_compile_options(console-test.test PRIVATE "-fprofile-arcs" "-ftest-coverage")
+#endif ( MCODE_COVERAGE )
+
+target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread console-test.lib "-Wl,--wrap,uart_write_char")
+#if ( MCODE_COVERAGE )
+#  target_link_libraries(console-test.test gcov )
+#endif ( MCODE_COVERAGE )
