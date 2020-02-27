@@ -237,6 +237,10 @@ void mprintexpr(const char *expr)
 
 void mprint_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress)
 {
+  if (!data) {
+    return;
+  }
+
   uint8_t i;
   bool newLineReported = true;
   for (i = 0; i < length; ++i) {

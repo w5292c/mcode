@@ -272,3 +272,146 @@ TEST_P(StringNumeric, SimpleTwenty)
   snprintf(buffer, sizeof (buffer), "%020u", GetParam());
   ASSERT_STREQ(collected_text(), buffer);
 }
+
+TEST_P(StringNumeric, SimpleUint8Skip)
+{
+  mprint_uint8(GetParam(), true);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%X", static_cast<uint8_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleUint8NoSkip)
+{
+  mprint_uint8(GetParam(), false);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%02X", static_cast<uint8_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleUint16Skip)
+{
+  mprint_uint16(GetParam(), true);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%X", static_cast<uint16_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleUint16NoSkip)
+{
+  mprint_uint16(GetParam(), false);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%04X", static_cast<uint16_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleUint32Skip)
+{
+  mprint_uint32(GetParam(), true);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%X", static_cast<uint32_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleUint32NoSkip)
+{
+  mprint_uint32(GetParam(), false);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%08X", static_cast<uint32_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleUint64Skip)
+{
+  mprint_uint64(GetParam(), true);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%X", static_cast<uint32_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleUint64NoSkip)
+{
+  mprint_uint64(GetParam(), false);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%016X", static_cast<uint32_t>(GetParam()));
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_F(StringBasic, MPrintExprBasicEscapes)
+{
+  const char *const expected = "abc\r\ndef\t\t\tghi\r\r\n\nq\\wezxrty";
+  const char *const original = "abc\\r\\ndef\\t\\t\\tghi\\r\\r\\n\\nq\\\\we\\z\\xrty";
+
+  mprintexpr(original);
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, MPrintExprNull)
+{
+  mprintexpr(NULL);
+  ASSERT_STREQ(collected_text(), "");
+}
+
+TEST_F(StringBasic, MPrintDumpBufferBasicNullNoAddress)
+{
+  mprint_dump_buffer(0, NULL, false);
+
+  ASSERT_STREQ(collected_text(), "");
+}
+
+TEST_F(StringBasic, MPrintDumpBufferBasicNullWithAddress)
+{
+  mprint_dump_buffer(0, NULL, true);
+
+  ASSERT_STREQ(collected_text(), "");
+}
+
+TEST_F(StringBasic, MPrintDumpBufferBasicNullNoAddressWithLength)
+{
+  mprint_dump_buffer(100, NULL, false);
+
+  ASSERT_STREQ(collected_text(), "");
+}
+
+TEST_F(StringBasic, MPrintDumpBufferBasicNullWithAddressWithLength)
+{
+  mprint_dump_buffer(100, NULL, true);
+
+  ASSERT_STREQ(collected_text(), "");
+}
+
+TEST_F(StringBasic, MPrintDumpShortBufferNoAddress)
+{
+  mprint_dump_buffer(1, reinterpret_cast<const uint8_t *>("A"), false);
+
+  ASSERT_STREQ(collected_text(), "41 \r\n");
+}
+
+TEST_F(StringBasic, MPrintDumpShortBufferWithAddress)
+{
+  mprint_dump_buffer(1, reinterpret_cast<const uint8_t *>("A"), true);
+
+  ASSERT_STREQ(collected_text(), "00000000  41 \r\n");
+}
+
+TEST_F(StringBasic, MPrintDumpLongBufferNoAddress)
+{
+  mprint_dump_buffer(20, reinterpret_cast<const uint8_t *>("1234567890ABCDEFGHIJ"), false);
+
+  ASSERT_STREQ(collected_text(), "31 32 33 34 35 36 37 38 39 30 41 42 43 44 45 46 \r\n47 48 49 4A \r\n");
+}
+
+TEST_F(StringBasic, MPrintDumpLongBufferWithAddress)
+{
+  mprint_dump_buffer(20, reinterpret_cast<const uint8_t *>("1234567890ABCDEFGHIJ"), true);
+
+  ASSERT_STREQ(collected_text(), "00000000  31 32 33 34 35 36 37 38 39 30 41 42 43 44 45 46 \r\n00000010  47 48 49 4A \r\n");
+}
