@@ -39,11 +39,4 @@ endif ( MCODE_COVERAGE )
 
 add_executable(console-test.test ${TEST_SRC_LIST})
 
-#if ( MCODE_COVERAGE )
-#  target_compile_options(console-test.test PRIVATE "-fprofile-arcs" "-ftest-coverage")
-#endif ( MCODE_COVERAGE )
-
 target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread console-test.lib "-Wl,--wrap,uart_write_char")
-#if ( MCODE_COVERAGE )
-#  target_link_libraries(console-test.test gcov )
-#endif ( MCODE_COVERAGE )
