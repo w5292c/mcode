@@ -390,28 +390,28 @@ TEST_F(StringBasic, MPrintDumpBufferBasicNullWithAddressWithLength)
 
 TEST_F(StringBasic, MPrintDumpShortBufferNoAddress)
 {
-  mprint_dump_buffer(1, reinterpret_cast<const uint8_t *>("A"), false);
+  mprint_dump_buffer(1, "A", false);
 
   ASSERT_STREQ(collected_text(), "41 \r\n");
 }
 
 TEST_F(StringBasic, MPrintDumpShortBufferWithAddress)
 {
-  mprint_dump_buffer(1, reinterpret_cast<const uint8_t *>("A"), true);
+  mprint_dump_buffer(1, "A", true);
 
   ASSERT_STREQ(collected_text(), "00000000  41 \r\n");
 }
 
 TEST_F(StringBasic, MPrintDumpLongBufferNoAddress)
 {
-  mprint_dump_buffer(20, reinterpret_cast<const uint8_t *>("1234567890ABCDEFGHIJ"), false);
+  mprint_dump_buffer(20, "1234567890ABCDEFGHIJ", false);
 
   ASSERT_STREQ(collected_text(), "31 32 33 34 35 36 37 38 39 30 41 42 43 44 45 46 \r\n47 48 49 4A \r\n");
 }
 
 TEST_F(StringBasic, MPrintDumpLongBufferWithAddress)
 {
-  mprint_dump_buffer(20, reinterpret_cast<const uint8_t *>("1234567890ABCDEFGHIJ"), true);
+  mprint_dump_buffer(20, "1234567890ABCDEFGHIJ", true);
 
   ASSERT_STREQ(collected_text(), "00000000  31 32 33 34 35 36 37 38 39 30 41 42 43 44 45 46 \r\n00000010  47 48 49 4A \r\n");
 }

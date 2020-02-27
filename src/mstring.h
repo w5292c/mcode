@@ -85,7 +85,7 @@ void mprint_uint32(uint32_t value, bool skipZeros);
 void mprint_uint64(uint64_t value, bool skipZeros);
 void mprint_uintd(uint32_t value, uint8_t minDigits);
 
-void mprint_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress);
+void mprint_dump_buffer(uint8_t length, const void *data, bool showAddress);
 
 #ifdef __cplusplus
 } /* extern "C" */

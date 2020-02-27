@@ -235,7 +235,7 @@ void mprintexpr(const char *expr)
   } while (true);
 }
 
-void mprint_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress)
+void mprint_dump_buffer(uint8_t length, const void *data, bool showAddress)
 {
   if (!data) {
     return;
@@ -254,8 +254,7 @@ void mprint_dump_buffer(uint8_t length, const uint8_t *data, bool showAddress)
     }
 
     /* Write hex data */
-    mprint_uint8(*data, false);
-    ++data;
+    mprint_uint8(*(*(const uint8_t **)&data)++, false);
     mputch(' ');
 
     if ((i & 0x0fu) == 0x0fu) {
