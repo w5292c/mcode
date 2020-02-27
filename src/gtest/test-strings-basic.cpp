@@ -57,6 +57,112 @@ protected:
   }
 };
 
+class StringWithIds : public TestWithParam<int>
+{
+protected:
+  void SetUp() override {
+    TestWithParam<int>::SetUp();
+
+    collected_text_reset();
+    collected_alt_text_reset();
+  }
+  void TearDown() override {
+    collected_text_reset();
+    collected_alt_text_reset();
+
+    TestWithParam<int>::TearDown();
+  }
+
+  const char *ExpectedBaseString() const {
+    switch (GetParam()) {
+    case MStringNull:
+      return "";
+    case MStringNewLine:
+      return "\r\n";
+    case MStringError:
+      return "Error: ";
+    case MStringWarning:
+      return "Warning: ";
+    case MStringInternalError:
+      return "internal error";
+    case MStringWrongArgument:
+      return "wrong argument(s)";
+    case MStringWrongMode:
+      return "only root can do this";
+    case MStringErrorLimit:
+      return "limit reached";
+    case MStringEnterPass:
+      return "Enter password: ";
+    default:
+      return "##undefined##";
+    }
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(
+  StringIds,
+  StringWithIds,
+  Values(
+    MStringNull,
+    MStringNewLine,
+    MStringError,
+    MStringWarning,
+    MStringInternalError,
+    MStringWrongArgument,
+    MStringWrongMode,
+    MStringErrorLimit,
+    MStringEnterPass,
+    1000)
+);
+
+class StringNumeric : public TestWithParam<unsigned int>
+{
+protected:
+  void SetUp() override {
+    TestWithParam<unsigned int>::SetUp();
+
+    collected_text_reset();
+    collected_alt_text_reset();
+  }
+  void TearDown() override {
+    collected_text_reset();
+    collected_alt_text_reset();
+
+    TestWithParam<unsigned int>::TearDown();
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(
+  StringNumbers,
+  StringNumeric,
+  Values(
+    0u,
+    1u,
+    7u,
+    9u,
+    10u,
+    19u,
+    67u,
+    99u,
+    100u,
+    109u,
+    147u,
+    999u,
+    1000u,
+    9999u,
+    10000u,
+    99999u,
+    100000u,
+    999999u,
+    1000000u,
+    9999999u,
+    10000000u,
+    99999999u,
+    100000000u,
+    999999999u,
+    1000000000u)
+);
+
 TEST_F(StringBasic, MPutchSimple)
 {
   mprintstr("abc");
@@ -71,4 +177,98 @@ TEST_F(AltStringBasic, MAltPutchSimple)
 
   ASSERT_EQ(collected_alt_text_length(), 3);
   ASSERT_STREQ(collected_alt_text(), "abc");
+}
+
+TEST_F(StringBasic, MStringRSimple)
+{
+  mprintstr_R("abc");
+
+  ASSERT_EQ(collected_text_length(), 3);
+  ASSERT_STREQ(collected_text(), "abc");
+}
+
+TEST_F(AltStringBasic, MAltStringRSimple)
+{
+  mprintstr_R("abc");
+
+  ASSERT_EQ(collected_alt_text_length(), 3);
+  ASSERT_STREQ(collected_alt_text(), "abc");
+}
+
+TEST_P(StringWithIds, MString)
+{
+  ASSERT_STREQ(mstring(GetParam()), ExpectedBaseString());
+}
+
+TEST_P(StringWithIds, MError)
+{
+  merror(GetParam());
+  const std::string &expected = std::string("Error: ") + ExpectedBaseString() + "\r\n";
+  ASSERT_STREQ(collected_text(), expected.data());
+}
+
+TEST_P(StringWithIds, MWarning)
+{
+  mwarning(GetParam());
+  const std::string &expected = std::string("Warning: ") + ExpectedBaseString() + "\r\n";
+  ASSERT_STREQ(collected_text(), expected.data());
+}
+
+TEST_P(StringNumeric, SimpleZero)
+{
+  mprint_uintd(GetParam(), 0);
+  const std::string &expected = std::to_string(GetParam());
+  ASSERT_STREQ(collected_text(), expected.data());
+}
+
+TEST_P(StringNumeric, SimpleOne)
+{
+  mprint_uintd(GetParam(), 1);
+  const std::string &expected = std::to_string(GetParam());
+  ASSERT_STREQ(collected_text(), expected.data());
+}
+
+TEST_P(StringNumeric, SimpleTwo)
+{
+  mprint_uintd(GetParam(), 2);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%02u", GetParam());
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleFive)
+{
+  mprint_uintd(GetParam(), 5);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%05u", GetParam());
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleTen)
+{
+  mprint_uintd(GetParam(), 10);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%010u", GetParam());
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleFifteen)
+{
+  mprint_uintd(GetParam(), 15);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%015u", GetParam());
+  ASSERT_STREQ(collected_text(), buffer);
+}
+
+TEST_P(StringNumeric, SimpleTwenty)
+{
+  mprint_uintd(GetParam(), 20);
+
+  char buffer[32] = {0};
+  snprintf(buffer, sizeof (buffer), "%020u", GetParam());
+  ASSERT_STREQ(collected_text(), buffer);
 }

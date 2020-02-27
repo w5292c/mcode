@@ -271,7 +271,7 @@ const char *mstring(uint8_t id)
 {
   switch (id) {
   case MStringNull:
-    return NULL;
+    return PSTR("");
   case MStringNewLine:
     return PSTR("\r\n");
   case MStringError:
