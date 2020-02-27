@@ -40,3 +40,13 @@ endif ( MCODE_COVERAGE )
 add_executable(console-test.test ${TEST_SRC_LIST})
 
 target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread console-test.lib "-Wl,--wrap,uart_write_char")
+
+add_custom_target (
+  cov
+  DEPENDS console-test.test
+  COMMAND ${PROJECT_BINARY_DIR}/console-test.test
+  COMMAND mkdir -p ${PROJECT_BINARY_DIR}/lcov
+  COMMAND lcov -c -d ${MCODE_TOP} -o ${PROJECT_BINARY_DIR}/lcov/summary.info
+  COMMAND mkdir -p ${PROJECT_BINARY_DIR}/html
+  COMMAND genhtml -o ${PROJECT_BINARY_DIR}/html ${PROJECT_BINARY_DIR}/lcov/summary.info
+)
