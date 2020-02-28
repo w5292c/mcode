@@ -256,3 +256,41 @@ TEST_F(UtilsBasic, DISABLED_StringToBuffer)
   ASSERT_EQ(buffer[0], 0x12u);
   ASSERT_STREQ(result, "3");
 }
+
+TEST_F(UtilsBasic, FromPdu7bit)
+{
+  char buffer[256] = { 0 };
+
+  size_t length = 0;
+  bool res = from_pdu_7bit("F4F29C0E", -1, buffer, sizeof (buffer), &length);
+  ASSERT_EQ(res, true);
+  ASSERT_STREQ(buffer, "test");
+
+  memset(buffer, 0, sizeof (buffer));
+  res = from_pdu_7bit("F4F29C0EX", -1, buffer, sizeof (buffer), &length);
+  /* Failure is reported, as the 'X' char is illigal in this context */
+  ASSERT_EQ(res, false);
+  ASSERT_STREQ(buffer, "test");
+
+  memset(buffer, 0, sizeof  (buffer));
+  res = from_pdu_7bit(NULL, -1, buffer, sizeof (buffer), &length);
+  /* Failure is reported, as the 'X' char is illigal in this context */
+  ASSERT_EQ(res, false);
+
+  length = 0;
+  memset(buffer, 0, sizeof (buffer));
+  res = from_pdu_7bit("F3B29BDC4ABBCD6F50AC3693B14022F2DB5D16B140381A", -1, buffer, sizeof (buffer), &length);
+  ASSERT_EQ(res, true);
+  ASSERT_STREQ(buffer, "send-info 1532, \"done\", 84");
+}
+TEST_F(UtilsBasic, DISABLED_FromPdu7bit)
+{
+  char buffer[256] = { 0 };
+
+  size_t length = 0;
+  bool res = from_pdu_7bit("F4F29C0E", -1, buffer, 2, &length);
+  /* Failure is reported, as the 'X' char is illigal in this context */
+  ASSERT_EQ(res, true);
+  ASSERT_EQ(length, 2);
+  ASSERT_STREQ(buffer, "te");
+}

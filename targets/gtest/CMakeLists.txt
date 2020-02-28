@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
+option ( MCODE_PDU "Enable PDU support" ON )
 option ( MCODE_COVERAGE "Enable code coverage" ON )
 
 # Locate GTest
