@@ -22,53 +22,47 @@
  * SOFTWARE.
  */
 
-#include "scheduler.h"
-
-#include "mstring.h"
-
-#include <glib.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
-
-#define MCODE_TICKS_COUNT (8)
-
-static bool QuitRequest = false;
-static uint8_t ExitRequests = 0;
-static uint8_t ClientsNumber = 0;
-static uint8_t CurrentExitRequestMask = 0;
-
-static pthread_t TheCoreThread = 0;
-static mcode_tick TheApplicationTicks[MCODE_TICKS_COUNT] = {NULL};
-
-static void *emu_core_scheduler_thread(void *threadid);
-
-void scheduler_init(void)
+void scheduler_start(void)
 {
-  int result;
+  if (!CurrentExitRequestMask) {
+    CurrentExitRequestMask = 1u;
+  } else {
+    if (CurrentExitRequestMask != 0x80u) {
+      CurrentExitRequestMask = (CurrentExitRequestMask << 1);
+    } else {
+      /* No more bits for another start, extend 'ExitRequests' to more bits? */
+      merror(MStringErrorLimit);
+      return;
+    }
+  }
 
-  memset(TheApplicationTicks, 0, sizeof (TheApplicationTicks));
+  uint8_t i;
+  while (!(ExitRequests & CurrentExitRequestMask) && !QuitRequest) {
+    for (i = 0; i < ClientsNumber; ++i) {
+      mcode_tick tick = TheApplicationTicks[i];
+      if (tick) {
+        (*tick)();
+      }
+    }
+  }
 
-  result = pthread_create(&TheCoreThread, NULL, emu_core_scheduler_thread, NULL);
-  if (result) {
-    mprintstrln(PSTR("Error: failed creating the Core thread"));
-    exit(1);
+  ExitRequests &= ~CurrentExitRequestMask;
+  if (CurrentExitRequestMask) {
+    CurrentExitRequestMask = (CurrentExitRequestMask>>1);
   }
 }
 
-void scheduler_deinit(void)
+void scheduler_stop(void)
 {
-  QuitRequest = true;
-  pthread_join(TheCoreThread, NULL);
+  ExitRequests |= CurrentExitRequestMask;
 }
 
-void *emu_core_scheduler_thread(void *threadid)
+void scheduler_add(mcode_tick tick)
 {
-  (void)threadid;
-
-  scheduler_start();
-  return NULL;
+  if (ClientsNumber < MCODE_TICKS_COUNT) {
+    TheApplicationTicks[ClientsNumber++] = tick;
+  } else {
+    /*! @todo add assert(false) here */
+    mprintstrln(PSTR("Error: no room for scheduler handler"));
+  }
 }
-
-#include "scheduler.impl"

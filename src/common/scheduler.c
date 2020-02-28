@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2018 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include "mstring.h"
 #include "mcode-config.h"
 
+#define QuitRequest false
 #ifndef MCODE_TICKS_COUNT
 #define MCODE_TICKS_COUNT (8)
 #endif /* MCODE_TICKS_COUNT */
@@ -44,47 +45,4 @@ void scheduler_deinit(void)
 {
 }
 
-void scheduler_start(void)
-{
-  if (!CurrentExitRequestMask) {
-    CurrentExitRequestMask = 1u;
-  } else {
-    if (CurrentExitRequestMask != 0x80u) {
-      CurrentExitRequestMask = (CurrentExitRequestMask << 1);
-    } else {
-      /* No more bits for another start, extend 'ExitRequests' to more bits? */
-      merror(MStringErrorLimit);
-      return;
-    }
-  }
-
-  uint8_t i;
-  while (!(ExitRequests & CurrentExitRequestMask)) {
-    for (i = 0; i < ClientsNumber; ++i) {
-      mcode_tick tick = TheApplicationTicks[i];
-      if (tick) {
-        (*tick)();
-      }
-    }
-  }
-
-  ExitRequests &= ~CurrentExitRequestMask;
-  if (CurrentExitRequestMask) {
-    CurrentExitRequestMask = (CurrentExitRequestMask>>1);
-  }
-}
-
-void scheduler_stop(void)
-{
-  ExitRequests |= CurrentExitRequestMask;
-}
-
-void scheduler_add(mcode_tick tick)
-{
-  if (ClientsNumber < MCODE_TICKS_COUNT) {
-    TheApplicationTicks[ClientsNumber++] = tick;
-  } else {
-    /*! @todo add assert(false) here */
-    mprintstrln(PSTR("Error: no room for scheduler handler"));
-  }
-}
+#include "scheduler.impl"

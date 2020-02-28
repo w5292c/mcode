@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2018 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,14 +117,13 @@ void main_sigint_handler(int signo)
 {
   if (SIGINT == signo) {
     mprintstrln(PSTR("MAIN: got exit signal"));
-    scheduler_stop();
+    main_request_exit();
   }
 }
 
 void main_request_exit(void)
 {
   mprintstrln(PSTR("MAIN: exit request"));
-  scheduler_stop();
   QApplication::exit(0);
 }
 

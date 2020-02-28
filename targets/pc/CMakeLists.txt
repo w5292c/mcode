@@ -12,7 +12,13 @@ link_directories ( ${GLIB2_0_LIBRARY_DIRS} ${SQLITE_LIBRARY_DIRS} )
 
 set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
-include_directories ( ${GLIB2_0_INCLUDE_DIRS} ${SQLITE_INCLUDE_DIRS} ${MCODE_TOP}/src/ ${MCODE_TOP}/src/security/ )
+include_directories (
+  ${GLIB2_0_INCLUDE_DIRS}
+  ${SQLITE_INCLUDE_DIRS}
+  ${MCODE_TOP}/src/
+  ${MCODE_TOP}/src/common/
+  ${MCODE_TOP}/src/security/
+)
 
 INCLUDE ( ${QT_USE_FILE} )
 ADD_DEFINITIONS ( ${QT_DEFINITIONS} )
