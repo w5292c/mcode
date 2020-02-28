@@ -140,6 +140,8 @@ void rtc_get_date(uint32_t mtime, MDate *date)
 
 uint32_t rtc_to_mtime(const MDate *date, const MTime *time)
 {
+  int i;
+
   if (date->year < MCODE_INITIAL_YEAR || date->year > 2136) {
     /* No support for years before 'MCODE_INITIAL_YEAR' and after 2136 for now */
     return 0;
@@ -159,7 +161,7 @@ uint32_t rtc_to_mtime(const MDate *date, const MTime *time)
   mtime += year * (MCODE_DAYS_IN_A_YEAR*MCODE_SECONDS_IN_A_DAY);
 
   /* Finally, add the month info */
-  for (int i = 1; i < date->month; ++i) {
+  for (i = 1; i < date->month; ++i) {
     mtime += MCODE_SECONDS_IN_A_DAY*rtc_days_in_month(i, leapYear);
   }
 

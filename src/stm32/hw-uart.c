@@ -59,7 +59,7 @@ typedef struct _TLineReaderState {
   uint32_t ready : 4; /**< Ready indications for each read buffer */
 } TLineReaderState;
 
-volatile static TLineReaderState TheUart2State = {0};
+volatile static TLineReaderState TheUart2State = {{0}};
 
 static uint64_t TheLastCharTimestamp = 0;
 static hw_uart_handler TheUart2Callback = NULL;
