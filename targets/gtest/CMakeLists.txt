@@ -23,6 +23,7 @@ set (
   # Test source code files
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
+  ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-mocked.cpp
 )

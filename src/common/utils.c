@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,8 @@ bool char_is_whitespace(char ch)
     '\r' == ch ||
     '\n' == ch ||
     '\t' == ch ||
+    '\v' == ch ||
+    '\f' == ch ||
     '\000' == ch);
 }
 
