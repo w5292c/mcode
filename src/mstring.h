@@ -70,6 +70,7 @@ void mprintstr(const char *string);
 void mprintstrln(const char *string);
 void mprintbytes(const char *str, size_t length);
 void mprintbytesln(const char *str, size_t length);
+void mprinthexencodedstr16(const char *str, size_t length);
 
 void mprintstr_R(const char *string);
 

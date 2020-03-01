@@ -35,12 +35,14 @@ public:
   MHwInterface();
   virtual ~MHwInterface();
   virtual void uart_write_char(char ch) = 0;
+  virtual void uart2_write_char(char ch) = 0;
 };
 
 class MHwMockImpl : public MHwInterface
 {
 public:
   MOCK_METHOD(void, uart_write_char, (char ch), (override));
+  MOCK_METHOD(void, uart2_write_char, (char ch), (override));
 };
 #endif /* __cplusplus */
 
@@ -52,10 +54,15 @@ extern "C" {
  * The wrapped 'uart_write_char' function, passes request to the mock object
  */
 void __wrap_uart_write_char(char ch);
+void __wrap_uart2_write_char(char ch);
 
 void collected_text_reset(void);
 const char *collected_text(void);
 size_t collected_text_length(void);
+
+void collected_text2_reset(void);
+const char *collected_text2(void);
+size_t collected_text2_length(void);
 
 void alt_uart_write_char(char ch);
 void collected_alt_text_reset(void);

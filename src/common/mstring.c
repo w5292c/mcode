@@ -270,6 +270,17 @@ void mprint_dump_buffer(uint8_t length, const void *data, bool showAddress)
   }
 }
 
+void mprinthexencodedstr16(const char *str, size_t length)
+{
+  int i;
+  const int n = length/4;
+
+  for (i = 0; i < n; ++i, str += 4) {
+    const uint16_t ch = glob_str_to_uint16(str);
+    mputch((char)ch);
+  }
+}
+
 const char *mstring(uint8_t id)
 {
   switch (id) {

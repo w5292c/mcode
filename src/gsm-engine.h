@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 
 #ifndef MCODE_GSM_ENGINE_H
 #define MCODE_GSM_ENGINE_H
+
 
 #include <stdbool.h>
 
@@ -109,6 +110,14 @@ void gsm_send_cmd_raw(const char *cmd);
  * @return Success of operation
  */
 bool gsm_send_sms(const char *address, const char *body);
+
+/**
+ * Read and print in console the content of a recieved SMS
+ * @param[in] index The index of the SMS to read
+ * @return The success status, \c true on success
+ * @note The SMS should be encoded in UCS2 (AT+CSCS="UCS2")
+ */
+bool gsm_read_sms(int index);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -29,6 +29,8 @@
 namespace {
 char TheCollectedText[4096];
 size_t TheCollectedTextLength = 0;
+char TheCollectedText2[4096];
+size_t TheCollectedText2Length = 0;
 char TheCollectedAltText[4096];
 size_t TheCollectedAltTextLength = 0;
 MHwInterface *TheMockInterface = NULL;
@@ -53,6 +55,15 @@ extern "C" void __wrap_uart_write_char(char ch)
   TheCollectedText[TheCollectedTextLength++] = ch;
 }
 
+extern "C" void __wrap_uart2_write_char(char ch)
+{
+  if (TheMockInterface) {
+    TheMockInterface->uart2_write_char(ch);
+    return;
+  }
+  TheCollectedText2[TheCollectedText2Length++] = ch;
+}
+
 const char *collected_text(void)
 {
   return TheCollectedText;
@@ -67,6 +78,22 @@ void collected_text_reset(void)
 {
   TheCollectedTextLength = 0;
   memset(TheCollectedText, 0, sizeof (TheCollectedText));
+}
+
+void collected_text2_reset(void)
+{
+  TheCollectedText2Length = 0;
+  memset(TheCollectedText2, 0, sizeof (TheCollectedText2));
+}
+
+const char *collected_text2(void)
+{
+  return TheCollectedText2;
+}
+
+size_t collected_text2_length(void)
+{
+  return TheCollectedText2Length;
 }
 
 void alt_uart_write_char(char ch)

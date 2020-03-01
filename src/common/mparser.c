@@ -168,7 +168,7 @@ int mparser_strcmp(const char *str, size_t length, const char *str2)
 
 bool mparser_is_punct(char ch)
 {
-  return ',' == ch || ';' == ch || ':' == ch;
+  return ',' == ch || ';' == ch || ':' == ch || '+' == ch;
 }
 
 bool mparser_is_number(char ch)

@@ -4,29 +4,43 @@ set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 
 option ( MCODE_PDU "Enable PDU support" ON )
 option ( MCODE_COVERAGE "Enable code coverage" ON )
+option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
 
 # Locate GTest
 find_package(GTest REQUIRED)
 include_directories(
   ${GTEST_INCLUDE_DIRS}
   ${MCODE_TOP}/src
-  ${PROJECT_BINARY_DIR}/include/)
+  ${MCODE_TOP}/src/common
+  ${PROJECT_BINARY_DIR}/include
+)
 
 set (
   SRC_LIST
   # Source code files
   ${MCODE_TOP}/src/common/utils.c
+  ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/mstring.c
+  ${MCODE_TOP}/src/common/scheduler.c
+  ${MCODE_TOP}/src/common/gsm-engine-uart2.c
+  ${MCODE_TOP}/src/common/line-editor-uart.c
+)
+
+set_source_files_properties (
+  ${MCODE_TOP}/src/common/gsm-engine-uart2.c
+  PROPERTIES COMPILE_FLAGS "-Dstatic=\"\""
 )
 
 set (
   TEST_SRC_LIST
   # Test source code files
+  ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
   ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-mocked.cpp
+  ${MCODE_TOP}/src/gtest/test-gsm-engine-basic.cpp
 )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in
@@ -41,7 +55,7 @@ endif ( MCODE_COVERAGE )
 
 add_executable(console-test.test ${TEST_SRC_LIST})
 
-target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread console-test.lib "-Wl,--wrap,uart_write_char")
+target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread console-test.lib "-Wl,--wrap,uart_write_char,--wrap,uart2_write_char")
 
 add_custom_target (
   cov

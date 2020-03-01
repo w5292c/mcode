@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 
 #include "hw-uart.h"
 #include "mglobal.h"
+#include "mparser.h"
 #include "mstring.h"
 #include "line-editor-uart.h"
 
@@ -40,6 +41,8 @@ typedef enum {
   EGsmStateIdle,
   EGsmStateSendingAtCmd,
   EGsmStateSendingSmsAddress,
+  EGsmStateReadingSmsBody,
+  EGsmStateReadingSmsHeader,
 } TGsmState;
 
 typedef enum {
@@ -58,6 +61,7 @@ typedef enum {
   EAtCmdIdError,
   EAtCmdIdEmpty,
   EAtCmdIdReady,
+  EAtCmdIdSmsRead,
   EAtCmdIdSmsSent,
   EAtCmdIdFullFunc,
   EAtCmdIdSmsReady,
@@ -87,6 +91,7 @@ static const TGsmResponses TheGsmResponses[] = {
   { "+CBC", EAtCmdIdBatteryLevel },
   { "+CMGS", EAtCmdIdSmsSent },
   { "+CMTI", EAtCmdIdSmsIndication },
+  { "+CMGR", EAtCmdIdSmsRead },
   { "> ", EAtCmdIdSmsReadyForBody },
   { NULL, EAtCmdIdNull },
 };
@@ -101,6 +106,9 @@ static void gsm_send_string(const char *str);
 static void gsm_send_fstring(const char *str);
 static void gsm_uart2_handler(const char *data, size_t length);
 static void gsm_handle_new_sms(const char *args, size_t length);
+static void gsm_read_sms_handle_body(const char *data, size_t length);
+static void gsm_read_sms_handle_header(const char *data, size_t length);
+static void gsm_read_sms_handle_response(const char *data, size_t length);
 static const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args);
 
 void gsm_init(void)
@@ -193,6 +201,12 @@ void gsm_uart2_handler(const char *data, size_t length)
   const char *args = NULL;
   const char *next = data;
   const char *curr = data;
+
+  if (EGsmStateReadingSmsBody == TheGsmState ||
+      EGsmStateReadingSmsHeader == TheGsmState) {
+    gsm_read_sms_handle_response(data, length);
+    return;
+  }
   while (next) {
     next = gsm_parse_response(next, &id, &args);
     switch (id) {
@@ -413,4 +427,107 @@ void gsm_handle_new_sms(const char *args, size_t length)
   } else {
     mprintstrln(PSTR("<null>"));
   }
+}
+
+bool gsm_read_sms(int index)
+{
+  if (EGsmStateIdle != TheGsmState) {
+    /* GSM engine is not ready */
+    return false;
+  }
+
+  TheGsmState = EGsmStateReadingSmsHeader;
+  io_set_ostream_handler(uart2_write_char);
+  mprintstr("AT+CMGR=");
+  mprint_uintd(index, 1);
+  mprintstr("\r");
+  io_set_ostream_handler(NULL);
+
+  return true;
+}
+
+void gsm_read_sms_handle_response(const char *data, size_t length)
+{
+  if (EGsmStateReadingSmsHeader == TheGsmState) {
+    gsm_read_sms_handle_header(data, length);
+  } else if (EGsmStateReadingSmsBody == TheGsmState) {
+    gsm_read_sms_handle_body(data, length);
+  }
+}
+
+void gsm_read_sms_handle_header(const char *data, size_t length)
+{
+  uint32_t value;
+  TokenType type;
+  const char *token;
+  /*
+   * Example response:
+   * > +CMGR: "REC READ","002B00390038003800370035003300310030003100320033","","20/01/08,10:25:13+12""
+   */
+
+  do {
+    /* Parse '+' */
+    type = next_token(&data, &length, &token, &value);
+    if (TokenEnd == type) {
+      /* Got empty notification, skip it */
+      return;
+    } else if (TokenPunct != type || '+' != value) {
+      /* Failed parsing */
+      break;
+    }
+    /* Parse "CMGR" */
+    type = next_token(&data, &length, &token, &value);
+    if (TokenId != type || !mparser_strcmp(token, length, "CMGR")) {
+      break;
+    }
+    /* Parse ':' */
+    type = next_token(&data, &length, &token, &value);
+    if (TokenPunct != type || ':' != value) {
+      break;
+    }
+    /* Parse whitespace after ':' */
+    type = next_token(&data, &length, &token, &value);
+    if (TokenWhitespace != type || ' ' != value) {
+      break;
+    }
+    /* Parse "REC READ" */
+    type = next_token(&data, &length, &token, &value);
+    if (TokenString != type) {
+      break;
+    }
+    /* Parse ',' */
+    type = next_token(&data, &length, &token, &value);
+    if (TokenPunct != type || ',' != value) {
+      break;
+    }
+    /* Parse the phone number field */
+    type = next_token(&data, &length, &token, &value);
+    if (TokenString != type) {
+      break;
+    }
+    /* At this point we have the phone number UCS2-engoded in 'token'/'value'(length)
+     * Need to check the phone number at this point */
+    mprintstr("Phone: ");
+    mprinthexencodedstr16(token, value);
+    mprint(MStringNewLine);
+
+    /* Wait for the SMS body */
+    TheGsmState = EGsmStateReadingSmsBody;
+    return;
+  } while (false);
+  TheGsmState = EGsmStateIdle;
+}
+
+void gsm_read_sms_handle_body(const char *data, size_t length)
+{
+  /*
+   * Example body:
+   * > 005400650073007400200053004D0053003A00200061006200630064
+   */
+  mprintstr("SMS body [");
+  mprinthexencodedstr16(data, length);
+  mprintstrln("]");
+
+  /* Finished handling the SMS */
+  TheGsmState = EGsmStateIdle;
 }
