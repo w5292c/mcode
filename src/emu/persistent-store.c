@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ uint8_t TheHash[32] = {
   0xa7u, 0x25u, 0x00u, 0x0fu, 0xebu, 0x82u, 0xe8u, 0xf1u,
 };
 
-void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
+void persist_store_load(uint8_t id, void *data, uint8_t length)
 {
   const uint8_t *pointer = NULL;
   switch (id) {
@@ -48,7 +48,7 @@ void persist_store_load(uint8_t id, uint8_t *data, uint8_t length)
   memcpy(data, pointer, length);
 }
 
-void persist_store_save(uint8_t id, const uint8_t *data, uint8_t length)
+void persist_store_save(uint8_t id, const void *data, uint8_t length)
 {
   uint8_t *pointer = NULL;
   switch (id) {

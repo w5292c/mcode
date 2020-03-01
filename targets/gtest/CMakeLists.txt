@@ -35,9 +35,11 @@ set_source_files_properties (
 set (
   TEST_SRC_LIST
   # Test source code files
+  ${MCODE_TOP}/src/emu/hw-nvm.c
   ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
+  ${MCODE_TOP}/src/emu/persistent-store.c
   ${MCODE_TOP}/src/gtest/test-mvars-basic.cpp
   ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-basic.cpp
