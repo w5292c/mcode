@@ -81,6 +81,7 @@ typedef enum _TokenType {
   TokenNewLine,
   TokenCtrl,
   TokenPunct,
+  TokenVariable,
   TokenEnd,
 } TokenType;
 

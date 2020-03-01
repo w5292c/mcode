@@ -24,19 +24,14 @@
 
 #include "cmd-engine.h"
 
+#include "mvars.h"
 #include "utils.h"
 #include "hw-nvm.h"
 #include "mglobal.h"
+#include "mparser.h"
 #include "mstring.h"
 
 #include <string.h>
-
-#define PROG_INTVARS_COUNT (16)
-#define PROG_STRVARS_COUNT (16)
-#define PROG_STRVAR_LENGTH (128)
-
-static uint32_t TheIntBuffers[PROG_INTVARS_COUNT];
-static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH];
 
 static void cmd_engine_prog_set(const char *args);
 static void cmd_engine_prog_print(const char *args);
@@ -71,71 +66,52 @@ void cmd_engine_prog_execute(const char *args)
 
 void cmd_engine_prog_print(const char *args)
 {
-  uint16_t index;
-  const char var_name = *args++;
-  args = string_next_decimal_number(args, &index);
-  if (args ||
-    ('s' == var_name && index >= PROG_STRVARS_COUNT) ||
-    ('i' == var_name && index >= PROG_INTVARS_COUNT) ||
-    ('n' == var_name && index >= 10)) {
-    merror(MStringWrongArgument);
-    return;
-  }
-
-  if ('s' == var_name) {
-    mputch('\'');
-    mprintstr_R(TheStringBuffers[index]);
-    mputch('\'');
-  } else if ('i' == var_name) {
-    mprint_uintd(TheIntBuffers[index], 1);
-  } else if ('n' == var_name) {
-    mprint_uintd(nvm_read(index), 1);
-  } else {
-    merror(MStringWrongArgument);
-    return;
-  }
+  mvar_print(args);
   mprint(MStringNewLine);
 }
 
 void cmd_engine_prog_set(const char *args)
 {
-  uint16_t index;
-  uint16_t value;
-  const char var_name = *args++;
-  args = string_next_decimal_number(args, &index);
-  if (!args ||
-    ('s' == var_name && index >= PROG_STRVARS_COUNT) ||
-    ('i' == var_name && index >= PROG_INTVARS_COUNT) ||
-    ('n' == var_name && index >= 10)) {
+  size_t index;
+  size_t count;
+  size_t length;
+  MVarType type;
+  uint32_t value;
+  const char *token;
+  TokenType token_type;
+
+  length = strlen(args);
+  token_type = next_token(&args, &length, &token, &value);
+  if (TokenVariable != token_type) {
     merror(MStringWrongArgument);
     return;
   }
 
-  if ('i' == var_name || 'n' == var_name) {
-    args = string_skip_whitespace(args);
-    if (!args) {
-      merror(MStringWrongArgument);
-      return;
-    }
-    args = string_next_number(args, &value);
-    if (args) {
-      merror(MStringWrongArgument);
-      return;
-    }
-    if ('i' == var_name) {
-      TheIntBuffers[index] = value;
-    } else {
-      nvm_write(index, value);
-    }
-  } else if ('s' == var_name && *args++) {
-    const size_t length = strlen(args);
-    if (length < PROG_STRVAR_LENGTH) {
-      memset(TheStringBuffers[index], 0, PROG_STRVAR_LENGTH);
-      memcpy(TheStringBuffers[index], args, length);
-    } else {
-      merror(MStringWrongArgument);
-    }
-  } else {
+  /* Extract parameters from 'value' */
+  type = (MVarType)((value >> 8)&0xffu);
+  index = (value >> 16)&0xffu;
+  count = (value >> 24)&0xffu;
+
+  token_type = next_token(&args, &length, &token, &value);
+  if (TokenWhitespace != token_type) {
     merror(MStringWrongArgument);
+    return;
+  }
+
+  token_type = next_token(&args, &length, &token, &value);
+  if (TokenString == token_type && type == VarTypeString) {
+    size_t length;
+    char *const str = mvar_str(index, count, &length);
+    if (!str || value > length) {
+      /* Either index/count are not correct, or input string is too long */
+      merror(MStringWrongArgument);
+      return;
+    }
+    memset(str, 0, length);
+    strncpy(str, token, value);
+  } else if (TokenInt == token_type && type == VarTypeInt) {
+    mvar_int_set(index, value);
+  } else if (TokenInt == token_type && type == VarTypeNvm) {
+    mvar_nvm_set(index, value);
   }
 }

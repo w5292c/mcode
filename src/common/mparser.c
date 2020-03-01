@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 
 #include "mparser.h"
 
+#include "mvars.h"
 #include "utils.h"
 
 #include <assert.h>
@@ -301,6 +302,18 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
 
   /* Check for an ID token */
   if (mparser_is_letter(ch)) {
+    /* Check if this may be a variable first */
+    size_t index;
+    size_t count;
+    MVarType type;
+
+    type = next_var(str, length, token, value, &index, &count);
+    if (VarTypeNone != type) {
+      *value = *value | ((type & 0xffu) << 8) |
+               ((index & 0xffu) << 16) | ((count & 0xffu) << 24);
+      return TokenVariable;
+    }
+
     /* Store the beginning of the token */
     addr = ptr;
     for (++ptr; len > 0; --len, ++ptr) {

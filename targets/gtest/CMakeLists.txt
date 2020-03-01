@@ -18,6 +18,7 @@ include_directories(
 set (
   SRC_LIST
   # Source code files
+  ${MCODE_TOP}/src/common/mvars.c
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/mstring.c
@@ -37,6 +38,7 @@ set (
   ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
+  ${MCODE_TOP}/src/gtest/test-mvars-basic.cpp
   ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-mocked.cpp
