@@ -32,6 +32,10 @@
 extern "C" {
 #endif
 
+#define PROG_INTVARS_COUNT (16)
+#define PROG_STRVARS_COUNT (16)
+#define PROG_STRVAR_LENGTH (128)
+
 typedef enum _MVarType {
   VarTypeNone,
   VarTypeInt,
@@ -47,7 +51,7 @@ void mvar_nvm_set(int index, uint16_t value);
 
 char *mvar_str(int index, int count, size_t *length);
 
-void mvar_print(const char *var);
+void mvar_print(const char *var, size_t length);
 
 MVarType next_var(const char **str, size_t *length,
                   const char **token, uint32_t *value,

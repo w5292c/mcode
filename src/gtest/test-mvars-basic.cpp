@@ -47,3 +47,20 @@ TEST_F(VarsBasic, MPutchSimple)
   mvar_int_set(0, 0x12345678u);
   ASSERT_EQ(mvar_int_get(0), 0x12345678u);
 }
+
+TEST_F(VarsBasic, StringVarBasic)
+{
+  size_t length0 = 0;
+  size_t length1 = 0;
+  char *const v0 = mvar_str(0, 1, &length0);
+  char *const v1 = mvar_str(1, 1, &length1);
+  ASSERT_EQ(length0, PROG_STRVAR_LENGTH);
+  ASSERT_EQ(length1, PROG_STRVAR_LENGTH);
+  ASSERT_EQ(v1, v0 + PROG_STRVAR_LENGTH);
+}
+
+TEST_F(VarsBasic, StringVarCount)
+{
+  char *const v0 = mvar_str(0, PROG_STRVARS_COUNT, &length0);
+  
+}

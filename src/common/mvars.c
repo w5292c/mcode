@@ -28,6 +28,8 @@
 #include "hw-nvm.h"
 #include "mstring.h"
 
+#include <string.h>
+
 #define PROG_INTVARS_COUNT (16)
 #define PROG_STRVARS_COUNT (16)
 #define PROG_STRVAR_LENGTH (128)
@@ -65,7 +67,11 @@ char *mvar_str(int index, int count, size_t *length)
 {
   if (index < PROG_STRVARS_COUNT) {
     if (length) {
-      *length = PROG_STRVAR_LENGTH*count;
+      int last = index + count;
+      if (last > PROG_STRVARS_COUNT) {
+        last = PROG_STRVARS_COUNT;
+      }
+      *length = PROG_STRVAR_LENGTH*(last - index);
     }
     return TheStringBuffers[index];
   } else {
@@ -73,28 +79,47 @@ char *mvar_str(int index, int count, size_t *length)
   }
 }
 
-void mvar_print(const char *var)
+void mvar_print(const char *var, size_t length)
 {
-  if (!var || !*var || !*(var + 1)) {
+  size_t idx = 0;
+  size_t cnt = 1;
+  const char *token = NULL;
+  uint32_t token_length = 0;
+  MVarType type = VarTypeNone;
+
+  if (!var) {
     return;
   }
 
-  const char name = *var;
-  const int index = glob_ch_to_val(*(var + 1));
-  if ('i' == name || 'n' == name) {
+  if (-1 == length) {
+    /* Update the length, if it is not defined */
+    length = strlen(var);
+  }
+
+  type = next_var(&var, &length, &token, &token_length, &idx, &cnt);
+  if (VarTypeNone == type) {
+    /* The variable name is not correct/not found */
+    return;
+  }
+
+  if (VarTypeString == type) {
+    size_t length = 0;
+    const char *const str = mvar_str(idx, cnt, &length);
+    if (str && length) {
+      mprintbytes(str, length);
+    }
+  } else {
     uint32_t value = 0;
-    if ('i' == name) {
-      value = mvar_int_get(index);
+    if (VarTypeNvm) {
+      value = mvar_nvm_get(idx);
+      if (cnt > 1) {
+        /* Combine 2nd 16-bit word in LE style */
+        value |= (mvar_nvm_get(idx + 1) << 16);
+      }
     } else {
-      value = mvar_nvm_get(index);
+      value = mvar_int_get(idx);
     }
     mprint_uintd(value, 1);
-  } else if ('s' == name) {
-    size_t length = 0;
-    const char *const str = mvar_str(index, 1, &length);
-    if (str) {
-      mprintstr(str);
-    }
   }
 }
 
