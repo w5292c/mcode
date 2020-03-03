@@ -110,7 +110,7 @@ void mvar_print(const char *var, size_t length)
     }
   } else {
     uint32_t value = 0;
-    if (VarTypeNvm) {
+    if (VarTypeNvm == type) {
       value = mvar_nvm_get(idx);
       if (cnt > 1) {
         /* Combine 2nd 16-bit word in LE style */
@@ -145,7 +145,7 @@ MVarType next_var(const char **str, size_t *length,
   ptr = *str;
   nxt = ptr;
   size_t len = *length;
-  if (!ptr || !length) {
+  if (!ptr || !len) {
     return VarTypeNone;
   }
 
