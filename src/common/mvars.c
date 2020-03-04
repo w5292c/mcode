@@ -30,10 +30,9 @@
 
 #include <string.h>
 
-#define PROG_INTVARS_COUNT (16)
-#define PROG_STRVARS_COUNT (16)
-#define PROG_STRVAR_LENGTH (128)
-
+static int ThePutchIndex = 0;
+static int ThePutchCount = 0;
+static int ThePutchPointer = 0;
 static uint32_t TheIntBuffers[PROG_INTVARS_COUNT];
 static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH];
 
@@ -211,4 +210,25 @@ MVarType next_var(const char **str, size_t *length,
   *length -= *value;
   return (type == 's') ? VarTypeString :
          (type == 'i') ? VarTypeInt : VarTypeNvm;
+}
+
+void mvar_putch(char ch)
+{
+  size_t end = 0;
+  char *const buffer = mvar_str(ThePutchIndex, ThePutchCount, &end);
+  if (!buffer || ThePutchPointer >= end - 1) {
+    return;
+  }
+
+  buffer[ThePutchPointer++] = ch;
+}
+
+void mvar_putch_config(int index, int count)
+{
+  size_t end;
+  char *const buffer = mvar_str(index, count, &end);
+  ThePutchIndex = index;
+  ThePutchCount = count;
+  ThePutchPointer = 0;
+  memset(buffer, 0, end);
 }

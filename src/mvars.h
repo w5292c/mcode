@@ -57,6 +57,24 @@ MVarType next_var(const char **str, size_t *length,
                   const char **token, uint32_t *value,
                   size_t *index, size_t *count);
 
+/**
+ * Write the character passed in \c ch to the previously configured string variable
+ * @param[in] ch The character to be added to the string variable
+ * @note If the currently configured variable does not have enough space for the new character,
+ *       the request is ignored.
+ */
+void mvar_putch(char ch);
+
+/**
+ * Configure the \c mvar_putch requests
+ * @param[in] index The start index of the output string variable for \c mvar_putch requests
+ * @param[in] count The number of blocks for the output string variables for \c mvar_putch requests
+ * @note The \c index and \c count are checked for correctness before applying, if we pass invalid
+ *       values, they are rounded to the nearest correct values
+ * @note This request also resets the variable buffer, feeling with with \0 character
+ */
+void mvar_putch_config(int index, int count);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

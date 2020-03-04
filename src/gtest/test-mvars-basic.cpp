@@ -23,6 +23,7 @@
  */
 
 #include "mvars.h"
+#include "mstring.h"
 #include "wrap-mocks.h"
 
 #include <gtest/gtest.h>
@@ -39,6 +40,7 @@ protected:
   void TearDown() override {
     collected_text_reset();
     collected_alt_text_reset();
+    io_set_ostream_handler(NULL);
   }
 };
 
@@ -262,4 +264,19 @@ TEST_F(VarsBasic, NvmVarParseVarNameNullName)
   MVarType type = next_var(&var_name, &length, &token, &value, &index, &count);
 
   ASSERT_EQ(type, VarTypeNone);
+}
+
+TEST_F(VarsBasic, MVarPutchBasic)
+{
+  size_t length = 0;
+  char *const buffer = mvar_str(0, 1, &length);
+  memset(buffer, 0, length);
+
+  mvar_putch_config(0, 1);
+  io_set_ostream_handler(mvar_putch);
+
+  mprintstrln("hello");
+  ASSERT_STREQ(buffer, "hello\r\n");
+  mprintstrln("new line of text");
+  ASSERT_STREQ(buffer, "hello\r\nnew line of text\r\n");
 }
