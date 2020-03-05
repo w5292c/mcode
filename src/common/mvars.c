@@ -30,9 +30,8 @@
 
 #include <string.h>
 
-static int ThePutchIndex = 0;
-static int ThePutchCount = 0;
-static int ThePutchPointer = 0;
+static char *TheStringPutchPointer = NULL;
+static const char *TheStringPutchPointerEnd = NULL;
 static uint32_t TheIntBuffers[PROG_INTVARS_COUNT];
 static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH];
 
@@ -214,21 +213,24 @@ MVarType next_var(const char **str, size_t *length,
 
 void mvar_putch(char ch)
 {
-  size_t end = 0;
-  char *const buffer = mvar_str(ThePutchIndex, ThePutchCount, &end);
-  if (!buffer || ThePutchPointer >= end - 1) {
-    return;
+  if (TheStringPutchPointer && TheStringPutchPointer < TheStringPutchPointerEnd) {
+    *TheStringPutchPointer++ = ch;
   }
-
-  buffer[ThePutchPointer++] = ch;
 }
 
 void mvar_putch_config(int index, int count)
 {
-  size_t end;
-  char *const buffer = mvar_str(index, count, &end);
-  ThePutchIndex = index;
-  ThePutchCount = count;
-  ThePutchPointer = 0;
-  memset(buffer, 0, end);
+  size_t length = 0;
+  TheStringPutchPointer = mvar_str(index, count, &length);
+  if (TheStringPutchPointer) {
+    /* Reserve 1 byte for end-of-string marker \0 */
+    if (length) {
+      TheStringPutchPointerEnd = TheStringPutchPointer + length - 1;
+      memset(TheStringPutchPointer, 0, length);
+    } else {
+      TheStringPutchPointerEnd = TheStringPutchPointer;
+    }
+  } else {
+    TheStringPutchPointerEnd = NULL;
+  }
 }

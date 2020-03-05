@@ -26,6 +26,7 @@
 #include "mstring.h"
 #include "wrap-mocks.h"
 
+#include <string.h>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -42,6 +43,63 @@ protected:
     collected_alt_text_reset();
     io_set_ostream_handler(NULL);
   }
+};
+
+class PutchStrBasic_s0_1 : public Test
+{
+protected:
+  void SetUp() override {
+    _buffer = mvar_str(0, 1, &_length);
+    memset(_buffer, 0, _length);
+    // Reserve 1 byte for end-of-string
+    --_length;
+
+    mputch_str_config(_buffer, _length);
+    io_set_ostream_handler(mputch_str);
+  }
+  void TearDown() override {
+    io_set_ostream_handler(NULL);
+  }
+
+protected:
+  char *_buffer;
+  size_t _length;
+};
+
+class PutchVarBasic_s0_1 : public Test
+{
+protected:
+  void SetUp() override {
+    mvar_putch_config(0, 1);
+    io_set_ostream_handler(mvar_putch);
+
+    _buffer = mvar_str(0, 1, &_length);
+  }
+  void TearDown() override {
+    io_set_ostream_handler(NULL);
+  }
+
+protected:
+  char *_buffer;
+  size_t _length;
+};
+
+class PutchVarBasic_s0_z : public Test
+{
+protected:
+  void SetUp() override {
+    /* Get the whole memory block for string variables */
+    _buffer = mvar_str(0, 35, &_length);
+    memset(_buffer, 0, _length);
+    io_set_ostream_handler(mvar_putch);
+  }
+  void TearDown() override {
+    io_set_ostream_handler(NULL);
+  }
+
+protected:
+  char *_buffer;
+  size_t _length;
 };
 
 TEST_F(VarsBasic, IntVar)
@@ -266,17 +324,82 @@ TEST_F(VarsBasic, NvmVarParseVarNameNullName)
   ASSERT_EQ(type, VarTypeNone);
 }
 
-TEST_F(VarsBasic, MVarPutchBasic)
+TEST_F(PutchStrBasic_s0_1, MVarPutchBasic)
 {
-  size_t length = 0;
-  char *const buffer = mvar_str(0, 1, &length);
-  memset(buffer, 0, length);
-
-  mvar_putch_config(0, 1);
-  io_set_ostream_handler(mvar_putch);
-
   mprintstrln("hello");
-  ASSERT_STREQ(buffer, "hello\r\n");
+  ASSERT_STREQ(_buffer, "hello\r\n");
   mprintstrln("new line of text");
-  ASSERT_STREQ(buffer, "hello\r\nnew line of text\r\n");
+  ASSERT_STREQ(_buffer, "hello\r\nnew line of text\r\n");
+}
+
+TEST_F(PutchStrBasic_s0_1, MVarPutchLongText)
+{
+  // 150 + 1 bytes
+  const char *const input =
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}";
+  // 127 bytes (1 extra byte was reserved for the end-of-string marker)
+  const char *const expected =
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjkl";
+
+  mprintstrln(input);
+  ASSERT_STREQ(_buffer, expected);
+}
+
+TEST_F(PutchVarBasic_s0_1, MVarPutchBasic)
+{
+  mprintstrln("hello");
+  ASSERT_STREQ(_buffer, "hello\r\n");
+  mprintstrln("new line of text");
+  ASSERT_STREQ(_buffer, "hello\r\nnew line of text\r\n");
+}
+
+TEST_F(PutchVarBasic_s0_1, MVarPutchLongText)
+{
+  // 150 + 1 bytes
+  const char *const input =
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}";
+  // 127 bytes (1 extra byte was reserved for the end-of-string marker)
+  const char *const expected =
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjklzxcvbnm!@#$%^&()_+{}"
+    "0123456789qwertyuiopasdfghjkl";
+
+  mprintstrln(input);
+  ASSERT_STREQ(_buffer, expected);
+}
+
+TEST_F(PutchVarBasic_s0_z, CorrectIndex)
+{
+  /* Configure to use an incorrect index */
+  mvar_putch_config(0, 1);
+
+  mvar_putch('A');
+  const void *result = memchr(_buffer, 'A', _length);
+  ASSERT_NE(result, (const void *)NULL);
+}
+
+TEST_F(PutchVarBasic_s0_z, IncorrectIndex)
+{
+  /* Configure to use an incorrect index */
+  mvar_putch_config(100, 1);
+
+  mvar_putch('A');
+  const void *result = memchr(_buffer, 'A', _length);
+  ASSERT_EQ(result, (const void *)NULL);
+}
+
+TEST_F(PutchVarBasic_s0_z, SmallCount)
+{
+  /* Configure to use an incorrect index */
+  mvar_putch_config(0, 0);
+
+  mvar_putch('A');
+  const void *result = memchr(_buffer, 'A', _length);
+  ASSERT_EQ(result, (const void *)NULL);
 }

@@ -30,8 +30,9 @@
 
 #include <string.h>
 
+static char *TheStringPutchPointer = NULL;
+static const char *TheStringPutchPointerEnd = NULL;
 static ostream_handler TheOutputHandler = NULL;
- void io_set_ostream_handler(ostream_handler handler);
 
 void mputch(char ch)
 {
@@ -44,6 +45,21 @@ void mputch(char ch)
 
   /* Default output stream handler */
   uart_write_char(ch);
+}
+
+void mputch_str(char ch)
+{
+  if (TheStringPutchPointer && TheStringPutchPointer < TheStringPutchPointerEnd)
+  {
+    *TheStringPutchPointer++ = ch;
+  }
+}
+
+void mputch_str_config(char *buffer, size_t length)
+{
+  TheStringPutchPointer = buffer;
+  TheStringPutchPointerEnd = buffer + length;
+  memset(buffer, 0, length);
 }
 
 void io_set_ostream_handler(ostream_handler handler)

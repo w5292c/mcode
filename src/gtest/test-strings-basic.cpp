@@ -57,6 +57,28 @@ protected:
   }
 };
 
+class StringPutchBasic : public StringBasic
+{
+protected:
+  void SetUp() override {
+    StringBasic::SetUp();
+
+     memset(_buffer, 0, sizeof (_buffer));
+     mputch_str_config(_buffer, _buffer_length);
+    io_set_ostream_handler(mputch_str);
+  }
+  void TearDown() override {
+    io_set_ostream_handler(NULL);
+
+    StringBasic::TearDown();
+  }
+
+protected:
+  // Longer buffer to test accessing memory outside permitted range
+  char _buffer[64];
+  const static size_t _buffer_length = 32;
+};
+
 class StringWithIds : public TestWithParam<int>
 {
 protected:
@@ -414,4 +436,12 @@ TEST_F(StringBasic, MPrintDumpLongBufferWithAddress)
   mprint_dump_buffer(20, "1234567890ABCDEFGHIJ", true);
 
   ASSERT_STREQ(collected_text(), "00000000  31 32 33 34 35 36 37 38 39 30 41 42 43 44 45 46 \r\n00000010  47 48 49 4A \r\n");
+}
+
+TEST_F(StringPutchBasic, MVarPutchBasic)
+{
+  mprintstrln("hello");
+  ASSERT_STREQ(_buffer, "hello\r\n");
+  mprintstrln("new line of text");
+  ASSERT_STREQ(_buffer, "hello\r\nnew line of text\r\n");
 }

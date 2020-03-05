@@ -62,6 +62,19 @@ const char *mstring(uint8_t id);
 
 void mputch(char ch);
 
+/**
+ * Put character handler for appending the character to the previously configured string buffer
+ * @param[in] The character to append to the previously configured string buffer
+ */
+void mputch_str(char ch);
+
+/**
+ * Confure the string buffer for \c mputch_str handler
+ * @param[in] buffer The pointer to the start of the string buffer to be used with \c mputch_str
+ * @param[in] length The length of the string buffer to be used with \c mputch_str
+ */
+void mputch_str_config(char *buffer, size_t length);
+
 void merror(uint8_t id);
 void mwarning(uint8_t id);
 void mprint(uint8_t id);
