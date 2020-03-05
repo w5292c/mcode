@@ -25,6 +25,7 @@
 
 #include "gsm-engine.h"
 
+#include "mvars.h"
 #include "hw-uart.h"
 #include "mglobal.h"
 #include "mparser.h"
@@ -442,17 +443,20 @@ bool gsm_read_sms(int index)
   mprint_uintd(index, 1);
   mprintstr("\r");
   io_set_ostream_handler(NULL);
+  mvar_putch_config(0, 2);
 
   return true;
 }
 
 void gsm_read_sms_handle_response(const char *data, size_t length)
 {
+  io_set_ostream_handler(mvar_putch);
   if (EGsmStateReadingSmsHeader == TheGsmState) {
     gsm_read_sms_handle_header(data, length);
   } else if (EGsmStateReadingSmsBody == TheGsmState) {
     gsm_read_sms_handle_body(data, length);
   }
+  io_set_ostream_handler(NULL);
 }
 
 void gsm_read_sms_handle_header(const char *data, size_t length)
