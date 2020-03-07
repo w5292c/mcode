@@ -66,7 +66,7 @@ void cmd_engine_prog_execute(const char *args)
 
 void cmd_engine_prog_print(const char *args)
 {
-  mvar_print(args);
+  mvar_print(args, -1);
   mprint(MStringNewLine);
 }
 

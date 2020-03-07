@@ -293,7 +293,9 @@ void mprinthexencodedstr16(const char *str, size_t length)
 
   for (i = 0; i < n; ++i, str += 4) {
     const uint16_t ch = glob_str_to_uint16(str);
-    mputch((char)ch);
+    if (ch < 128) {
+      mputch((char)ch);
+    }
   }
 }
 
