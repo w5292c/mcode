@@ -11,10 +11,13 @@ INCLUDE_DIRECTORIES(
 
 set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/tests/cunit-main.c
+  ${MCODE_TOP}/src/emu/hw-nvm.c
+  ${MCODE_TOP}/src/common/utils.c
+  ${MCODE_TOP}/src/common/mvars.c
   ${MCODE_TOP}/src/common/hw-rtc.c
   ${MCODE_TOP}/src/common/mparser.c
-  ${MCODE_TOP}/src/common/utils.c
-#  ${MCODE_TOP}/src/common/gsm-engine-uart2.c
+  ${MCODE_TOP}/src/common/mstring.c
+  ${MCODE_TOP}/src/emu/persistent-store.c
 )
 
 option ( MCODE_PDU "Enable PDU support" ON )

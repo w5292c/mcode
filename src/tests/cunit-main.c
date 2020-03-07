@@ -174,13 +174,13 @@ void mcode_parser_parser_tests(void)
   TestString = "+CMGR: 1,\"+70001112233\",,10\r";
   TheCounter = 0;
   mparser_parse(TestString, strlen(TestString), &mcode_handler_simple);
-  CU_ASSERT_EQUAL(TheCounter, 12);
+  CU_ASSERT_EQUAL(TheCounter, 13);
 
   TheFinished = false;
   TestString = "+CMGR: 12,\"+70001234567\",,12\rline 1\rline 2\rline 3\r\rOK\r";
   TheCounter = 0;
   mparser_parse(TestString, strlen(TestString), &mcode_handler_read_sms);
-  CU_ASSERT_EQUAL(TheCounter, 18);
+  CU_ASSERT_EQUAL(TheCounter, 19);
 }
 
 void mcode_parser_string_tests(void)
@@ -493,25 +493,7 @@ void mcode_security_sha256_tests(void)
   CU_ASSERT_EQUAL(memcmp(md, long_test_str_expected_sha256, MD_LENGTH_SHA256), 0);
 }
 
-void mprint(uint8_t id)
-{
-}
-
-void mprintstr(const char *string)
-{
-}
-
-void mprintstrln(const char *string)
-{
-  mprintstr(string);
-  mprint(MStringNewLine);
-}
-
-void mprintbytes(const char *str, size_t length)
-{
-}
-
-void mprintbytesln(const char *str, size_t length)
+void uart_write_char(char ch)
 {
 }
 
