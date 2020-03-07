@@ -289,6 +289,10 @@ void mprint_dump_buffer(uint8_t length, const void *data, bool showAddress)
 void mprinthexencodedstr16(const char *str, size_t length)
 {
   int i;
+
+  if (-1 == length) {
+    length = strlen(str);
+  }
   const int n = length/4;
 
   for (i = 0; i < n; ++i, str += 4) {

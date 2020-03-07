@@ -209,6 +209,42 @@ TEST_F(StringBasic, MStringRSimple)
   ASSERT_STREQ(collected_text(), "abc");
 }
 
+TEST_F(StringBasic, PrintHexEncodedString16Basic)
+{
+  const char *const expected = "0123ABCD";
+  const char *const original = "00300031003200330041004200430044";
+  mprinthexencodedstr16(original, -1);
+
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, PrintHexEncodedString16BasicWithLength)
+{
+  const char *const expected = "0123ABCD";
+  const char *const original = "00300031003200330041004200430044";
+  mprinthexencodedstr16(original, 32);
+
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, PrintHexEncodedString16BasicWithSmallLength)
+{
+  const char *const expected = "0123AB";
+  const char *const original = "00300031003200330041004200430044";
+  mprinthexencodedstr16(original, 24);
+
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, PrintHexEncodedString16BasicWithWrongChars)
+{
+  const char *const expected = "0123ABCD";
+  const char *const original = "00300031003200330100ffff0041004200430044";
+  mprinthexencodedstr16(original, -1);
+
+  ASSERT_STREQ(collected_text(), expected);
+}
+
 TEST_F(AltStringBasic, MAltStringRSimple)
 {
   mprintstr_R("abc");
