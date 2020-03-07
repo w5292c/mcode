@@ -32,8 +32,9 @@
 
 static char *TheStringPutchPointer = NULL;
 static const char *TheStringPutchPointerEnd = NULL;
-static uint32_t TheIntBuffers[PROG_INTVARS_COUNT];
-static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH];
+static uint32_t TheIntBuffers[PROG_INTVARS_COUNT] = {0};
+static const char *TheLabelVars[MCODE_LABELS_COUNT] = {NULL};
+static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH] = {0};
 
 uint32_t mvar_int_get(int index)
 {
@@ -59,6 +60,22 @@ uint16_t mvar_nvm_get(int index)
 void mvar_nvm_set(int index, uint16_t value)
 {
   nvm_write(index, value);
+}
+
+const char *mvar_label(int index)
+{
+  if (index < MCODE_LABELS_COUNT) {
+    return TheLabelVars[index];
+  } else {
+    return NULL;
+  }
+}
+
+const char *mvar_label_set(int index, const char *label)
+{
+  if (index < MCODE_LABELS_COUNT) {
+    TheLabelVars[index] = label;
+  }
 }
 
 char *mvar_str(int index, int count, size_t *length)
@@ -106,6 +123,10 @@ void mvar_print(const char *var, size_t length)
     if (str && length) {
       mprintbytes(str, length);
     }
+  } else if (VarTypeLabel == type) {
+    const uint64_t value = (unsigned long)mvar_label(idx);
+    mprintstr("0x");
+    mprint_uint64(value, true);
   } else {
     uint32_t value = 0;
     if (VarTypeNvm == type) {
@@ -126,7 +147,7 @@ MVarType next_var(const char **str, size_t *length,
 {
   /*
    * Variable names:
-   * - s; n; i; (at index '0' on default, count - 1);
+   * - s; n; i; l; (at index '0' on default, count - 1);
    * - s1; n3; i6; (at defined index, count - 1);
    * - s2:2; i5:4; n1:2; (at provided index and with defined count);
    * Indeces: 0..9, a..z, a refers to 10, b - 11, etc...;
@@ -153,7 +174,7 @@ MVarType next_var(const char **str, size_t *length,
   do {
     type = *ptr++;
     --len;
-    if ('s' != type && 'i' != type && 'n' != type) {
+    if ('s' != type && 'i' != type && 'n' != type && 'l' != type) {
       /* Wrong variable name */
       break;
     }
@@ -194,7 +215,7 @@ MVarType next_var(const char **str, size_t *length,
     }
   } while (false);
 
-  if ('s' != type && 'i' != type && 'n' != type) {
+  if ('s' != type && 'i' != type && 'n' != type && 'l' != type) {
     /* No variable detected */
     return VarTypeNone;
   }
@@ -208,7 +229,8 @@ MVarType next_var(const char **str, size_t *length,
   *count = cnt;
   *length -= *value;
   return (type == 's') ? VarTypeString :
-         (type == 'i') ? VarTypeInt : VarTypeNvm;
+         (type == 'i') ? VarTypeInt :
+         (type == 'n') ? VarTypeNvm : VarTypeLabel;
 }
 
 void mvar_putch(char ch)

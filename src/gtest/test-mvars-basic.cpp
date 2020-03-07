@@ -299,6 +299,15 @@ TEST_F(VarsBasic, NvmVarPrintLong)
   ASSERT_STREQ(collected_text(), "2881288827");
 }
 
+TEST_F(VarsBasic, NvmVarPrintShortLabel)
+{
+  mvar_label_set(0, reinterpret_cast<const char *>(0x1234abcd));
+
+  mvar_print("l0", -1);
+
+  ASSERT_STREQ(collected_text(), "0x1234ABCD");
+}
+
 TEST_F(VarsBasic, NvmVarParseVarNameNoName)
 {
   size_t count;

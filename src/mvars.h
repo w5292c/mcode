@@ -32,6 +32,7 @@
 extern "C" {
 #endif
 
+#define MCODE_LABELS_COUNT (4)
 #define PROG_INTVARS_COUNT (16)
 #define PROG_STRVARS_COUNT (16)
 #define PROG_STRVAR_LENGTH (128)
@@ -41,6 +42,7 @@ typedef enum _MVarType {
   VarTypeInt,
   VarTypeNvm,
   VarTypeString,
+  VarTypeLabel,
 } MVarType;
 
 uint32_t mvar_int_get(int index);
@@ -50,6 +52,9 @@ uint16_t mvar_nvm_get(int index);
 void mvar_nvm_set(int index, uint16_t value);
 
 char *mvar_str(int index, int count, size_t *length);
+
+const char *mvar_label(int index);
+const char *mvar_label_set(int index, const char *label);
 
 void mvar_print(const char *var, size_t length);
 
