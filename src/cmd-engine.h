@@ -27,6 +27,7 @@
 
 #include "mcode-config.h"
 
+#include <stddef.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus
@@ -45,6 +46,20 @@ void cmd_engine_init (void);
 void cmd_engine_deinit (void);
 
 void cmd_engine_start (void);
+
+/**
+ * Ececute the program in a RAM buffer
+ * @param[in] prog The pointer to the buffer that holds the program to be executed
+ * @param[in] length The length of the program to be executed
+ */
+void cmd_engine_exec_prog(const char *prog, size_t length);
+
+/**
+ * Execute a single line of program, usually containing a single command (or no commands)
+ * @param[in] line The pointer to the current line of program to be executed
+ * @param[in] length The length of the prgram line to be executed
+ */
+void cmd_engine_exec_line(const char *line, size_t length);
 
 #ifdef MCODE_COMMAND_MODES
 void cmd_engine_set_mode(CmdMode mode);

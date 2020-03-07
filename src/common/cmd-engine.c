@@ -183,7 +183,29 @@ void cmd_engine_show_help(void)
   const TCmdData *const end = &__stop_command_section;
   for (; iter < end; ++ iter) {
     help = pgm_read_ptr_near(&iter->help);
-    mprintstr(help);
-    mprint(MStringNewLine);
+    mprintstrln(help);
   }
+}
+
+/*
+ * Program structure N-lines:
+ * line1
+ * line2
+ * line3
+ * * * *
+ * lineN
+ */
+void cmd_engine_exec_prog(const char *prog, size_t length)
+{
+}
+
+/*
+ * Program line structure:
+ * <label> <<<command <argument1>> <argument2>> . . . <argumentN>>
+ * <label> - Label marking the current program line, it is optional;
+ * <command> - The command name, optional;
+ * <argumentI> - Optional arugment(s) to the command <command>;
+ */
+void cmd_engine_exec_line(const char *line, size_t length)
+{
 }
