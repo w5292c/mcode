@@ -26,6 +26,7 @@ ADD_DEFINITIONS ( -D__STDC_CONSTANT_MACROS )
 
 set ( SRC_LIST
   ${MCODE_TOP}/src/emu/main.cpp
+  ${MCODE_TOP}/src/common/mvars.c
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/hw-lcd.c
   ${MCODE_TOP}/src/common/console.c
