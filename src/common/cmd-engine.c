@@ -35,6 +35,8 @@
 
 static void cmd_engine_show_help(void);
 static void cmd_engine_on_cmd_ready(const char *aString);
+static void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
+                                    const char *args, size_t args_len);
 
 void cmd_engine_init(void)
 {
@@ -116,7 +118,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
   }
 #endif /* MCODE_SWITCH_ENGINE */
 #ifdef MCODE_PROG
-  else if (cmd_engine_prog_exec(aString, &start_uart_editor)) {
+  else if (cmd_engine_prog_run(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_PROG */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
@@ -243,28 +245,51 @@ void cmd_engine_exec_prog(const char *prog, size_t length)
  * <command> - The command name, optional;
  * <argumentI> - Optional arugment(s) to the command <command>;
  */
-#include <stdio.h>
 void cmd_engine_exec_line(const char *line, size_t length)
 {
   uint32_t value;
   TokenType type;
   const char *token;
-  printf("[%.*s], length: %d\n", length, line, length);
 
   do {
     type = next_token(&line, &length, &token, &value);
     if (TokenVariable == type) {
-      uint8_t len = value;
       uint8_t type = value>>8;
       uint8_t index = value>>16;
       if (VarTypeLabel == type) {
         mvar_label_set(index, token);
-printf("set to [%.*s]\n", value&0xff, token);
-printf("here is what we leaft: [%.*s]\n", length, line);
       }
     } else if (TokenId == type) {
-printf("Detected command: [%.*s]\n", value, token);
+      const char *args;
+      size_t args_length;
+      size_t command_length = value;
+      const char *const command = token;
+
+      /* Skip whitespeces */
+      args = command + command_length;
+      args_length = length;
+      while (true) {
+        type = next_token(&line, &length, &token, &value);
+        if (TokenWhitespace == type) {
+          args = line;
+          args_length = length;
+        } else {
+          break;
+        }
+      }
+
+      cmd_engine_exec_command(command, command_length, args, args_length);
       break;
     }
   } while (TokenEnd != type);
+}
+
+void cmd_engine_exec_command(const char *cmd, size_t cmd_len, const char *args, size_t args_len)
+{
+  /* Test code to show what is to be executed */
+  mprintstr("> command: [");
+  mprintbytes(cmd, cmd_len);
+  mprintstr("], args: [");
+  mprintbytes(args, args_len);
+  mprintstrln("]");
 }

@@ -34,7 +34,7 @@
 #include <string.h>
 
 static void cmd_engine_prog_set(const char *args);
-static void cmd_engine_prog_exec1(const char *args);
+static void cmd_engine_prog_exec(const char *args);
 static void cmd_engine_prog_print(const char *args);
 static void cmd_engine_prog_append(const char *args);
 static void cmd_engine_prog_execute(const char *args);
@@ -49,7 +49,7 @@ void cmd_engine_prog_help(void)
   mprintstrln(PSTR("> prog exec sx:c - Execute a program in variable sx:c"));
 }
 
-bool cmd_engine_prog_exec(const char *command, bool *startCmd)
+bool cmd_engine_prog_run(const char *command, bool *startCmd)
 {
   if (!strncmp_P(command, PSTR("prog "), 5)) {
     cmd_engine_prog_execute(command + 5);
@@ -68,7 +68,7 @@ void cmd_engine_prog_execute(const char *args)
   } else if (!strncmp_P(args, PSTR("append "), 7)) {
     cmd_engine_prog_append(args + 7);
   } else if (!strncmp_P(args, PSTR("exec "), 5)) {
-    cmd_engine_prog_exec1(args + 5);
+    cmd_engine_prog_exec(args + 5);
   }
 }
 
@@ -175,9 +175,17 @@ void cmd_engine_prog_append(const char *args)
   }
 }
 
-void cmd_engine_prog_exec1(const char *args)
+void cmd_engine_prog_exec(const char *args)
 {
-  size_t length = 0;
-  char *buffer = mvar_str(0, 2, &length);
-  cmd_engine_exec_prog(buffer, -1);
+  size_t count;
+  size_t index;
+  MVarType type;
+
+  type = var_parse_name(args, strlen(args), &index, &count);
+  if (VarTypeString == type) {
+    const char *buffer = mvar_str(index, count, NULL);
+    if (buffer) {
+      cmd_engine_exec_prog(buffer, -1);
+    }
+  }
 }
