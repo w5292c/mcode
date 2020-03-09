@@ -479,14 +479,9 @@ void gsm_read_sms_handle_header(const char *data, size_t length)
       /* Failed parsing */
       break;
     }
-    /* Parse "CMGR" */
+    /* Parse "CMGR:" */
     type = next_token(&data, &length, &token, &value);
-    if (TokenId != type || !mparser_strcmp(token, length, "CMGR")) {
-      break;
-    }
-    /* Parse ':' */
-    type = next_token(&data, &length, &token, &value);
-    if (TokenPunct != type || ':' != value) {
+    if (TokenId != type || !mparser_strcmp(token, length, "CMGR:")) {
       break;
     }
     /* Parse whitespace after ':' */

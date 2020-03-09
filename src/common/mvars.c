@@ -34,7 +34,7 @@ static char *TheStringPutchPointer = NULL;
 static const char *TheStringPutchPointerEnd = NULL;
 static uint32_t TheIntBuffers[PROG_INTVARS_COUNT] = {0};
 static const char *TheLabelVars[MCODE_LABELS_COUNT] = {NULL};
-static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH] = {0};
+static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH] = {{0}};
 
 uint32_t mvar_int_get(int index)
 {
@@ -71,7 +71,7 @@ const char *mvar_label(int index)
   }
 }
 
-const char *mvar_label_set(int index, const char *label)
+void mvar_label_set(int index, const char *label)
 {
   if (index < MCODE_LABELS_COUNT) {
     TheLabelVars[index] = label;
@@ -140,6 +140,122 @@ void mvar_print(const char *var, size_t length)
     }
     mprint_uintd(value, 1);
   }
+}
+
+typedef struct _VarNameMap {
+  char letter;
+  MVarType type;
+} VarNameMap;
+
+static const VarNameMap TheVarTypes[] = {
+  { 'i', VarTypeInt },
+  { 'n', VarTypeNvm },
+  { 's', VarTypeString },
+  { 'l', VarTypeLabel },
+  { '\0', VarTypeNone }, /*< Map end marker */
+};
+
+MVarType var_parse_type(char ch)
+{
+  const VarNameMap *item = TheVarTypes;
+  while (item->type != VarTypeNone) {
+    if (ch == item->letter) {
+      return item->type;
+    }
+
+    ++item;
+  }
+
+  return VarTypeNone;
+}
+
+/*
+ * Parse the variable name
+ * @param[in] name The variable name to check
+ * @param[in] length The length of the variable name to check
+ * @param[out] index The requested variable index
+ * @param[out] count The requested variable count
+ * @note The variable name follows the following format: <type><index>':'<count>,
+ *       (this can be updated later), here:
+ *       * <type> The variable type/variety, can be: 's', 'i', 'n', and 'l';
+ *       * <index> The variable index: '0'..'9' (0 to 9) and 'a'..'z' (10 to 35);
+ *       * <count> The variable length multiplier: '0'..'9' and 'a'..'z';
+ * @note The format is not final, can be updated soon
+ */
+MVarType var_parse_name(const char *name, size_t length, size_t *index, size_t *count)
+{
+  char ch;
+  bool skip;
+  MVarType type;
+  size_t idx = 0;
+  size_t cnt = 1;
+  if (!name || length < 1 || length > 4) {
+    return VarTypeNone;
+  }
+
+  /* Extract the type of the variable */
+  --length;
+  type = var_parse_type(*name++);
+  if (VarTypeNone == type) {
+    return VarTypeNone;
+  }
+
+  /* Parse the 'index' field */
+  if (length) {
+    ch = *name++;
+    --length;
+    skip = false;
+    if (ch >= '0' && ch <= '9') {
+      idx = ch - '0';
+    } else if (ch >= 'a' && ch <= 'z') {
+      idx = ch - 'a' + 10;
+    } else if (ch != ':') {
+      /* ':' means that the index part is default ('0'), just move on to parsing next part */
+      skip = true;
+    } else {
+      /* Invalid character detected, not a variable name */
+      return VarTypeNone;
+    }
+  }
+
+  /* Parse separator */
+  if (!skip && length) {
+    ch = *name++;
+    --length;
+    if (ch != ':') {
+      /* Invalid character detected, not a variable name */
+      return VarTypeNone;
+    }
+  }
+
+  /* Parse the variable count */
+  if (length) {
+    ch = *name++;
+    --length;
+    if (ch >= '0' && ch <= '9') {
+      cnt = ch - '0';
+    } else if (ch >= 'a' && ch <= 'z') {
+      cnt = ch - 'a' + 10;
+    } else {
+      return VarTypeNone;
+    }
+  }
+  /* The following check must never be true, according to the previous length checks */
+  /*
+  if (count) {
+    return VarTypeNone;
+  }
+  */
+
+  /* Everything is parsed, report what is requested */
+  if (index) {
+    *index = idx;
+  }
+  if (count) {
+    *count = cnt;
+  }
+
+  return type;
 }
 
 MVarType next_var(const char **str, size_t *length,

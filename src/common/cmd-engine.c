@@ -24,7 +24,9 @@
 
 #include "cmd-engine.h"
 
+#include "mvars.h"
 #include "mglobal.h"
+#include "mparser.h"
 #include "mstring.h"
 #include "cmd-iface.h"
 #include "line-editor-uart.h"
@@ -33,6 +35,10 @@
 
 static void cmd_engine_show_help(void);
 static void cmd_engine_on_cmd_ready(const char *aString);
+#ifdef MCODE_NEW_ENGINE
+static void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
+                                    const char *args, size_t args_len);
+#endif /* MCODE_NEW_ENGINE */
 
 void cmd_engine_init(void)
 {
@@ -114,7 +120,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
   }
 #endif /* MCODE_SWITCH_ENGINE */
 #ifdef MCODE_PROG
-  else if (cmd_engine_prog_exec(aString, &start_uart_editor)) {
+  else if (cmd_engine_prog_run(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_PROG */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
@@ -187,6 +193,7 @@ void cmd_engine_show_help(void)
   }
 }
 
+#ifdef MCODE_NEW_ENGINE
 /*
  * Program structure N-lines:
  * line1
@@ -197,6 +204,41 @@ void cmd_engine_show_help(void)
  */
 void cmd_engine_exec_prog(const char *prog, size_t length)
 {
+  const char *next;
+
+  if (!prog) {
+    /* Nothing to execute */
+    return;
+  }
+
+  if (-1 == length) {
+    length = strlen(prog);
+  }
+
+  do {
+    size_t len;
+    /* Extract a program line */
+    next = strpbrk(prog, "\r\n");
+    if (next) {
+      /* Do not include the new-line indications to the executing program line */
+      len = next - prog;
+    } else {
+      /* No new lines, pass all the content to the line executor */
+      len = length;
+    }
+
+    if (len) {
+      /* Execute a line only if it has some content */
+      cmd_engine_exec_line(prog, len);
+    }
+
+    /* Skip the end-of line indication */
+    if (next) {
+      ++len;
+    }
+    length -= len;
+    prog += len;
+  } while (length);
 }
 
 /*
@@ -208,4 +250,50 @@ void cmd_engine_exec_prog(const char *prog, size_t length)
  */
 void cmd_engine_exec_line(const char *line, size_t length)
 {
+  uint32_t value;
+  TokenType type;
+  const char *token;
+
+  do {
+    type = next_token(&line, &length, &token, &value);
+    if (TokenVariable == type) {
+      uint8_t type = value>>8;
+      uint8_t index = value>>16;
+      if (VarTypeLabel == type) {
+        mvar_label_set(index, token);
+      }
+    } else if (TokenId == type) {
+      const char *args;
+      size_t args_length;
+      size_t command_length = value;
+      const char *const command = token;
+
+      /* Skip whitespeces */
+      args = command + command_length;
+      args_length = length;
+      while (true) {
+        type = next_token(&line, &length, &token, &value);
+        if (TokenWhitespace == type) {
+          args = line;
+          args_length = length;
+        } else {
+          break;
+        }
+      }
+
+      cmd_engine_exec_command(command, command_length, args, args_length);
+      break;
+    }
+  } while (TokenEnd != type);
 }
+
+void cmd_engine_exec_command(const char *cmd, size_t cmd_len, const char *args, size_t args_len)
+{
+  /* Test code to show what is to be executed */
+  mprintstr("> command: [");
+  mprintbytes(cmd, cmd_len);
+  mprintstr("], args: [");
+  mprintbytes(args, args_len);
+  mprintstrln("]");
+}
+#endif /* MCODE_NEW_ENGINE */

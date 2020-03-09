@@ -5,6 +5,7 @@ set ( MCODE_TOP ${CMAKE_SOURCE_DIR}/../../ )
 option ( MCODE_PDU "Enable PDU support" ON )
 option ( MCODE_COVERAGE "Enable code coverage" ON )
 option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
+option ( MCODE_NEW_ENGINE "Enable new Command Engine" ON )
 
 # Locate GTest
 find_package(GTest REQUIRED)

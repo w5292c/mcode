@@ -20,9 +20,10 @@ set ( CUNIT_SRC_LIST
   ${MCODE_TOP}/src/emu/persistent-store.c
 )
 
+option ( MCODE_UART2 "Enable UART2" ON )
 option ( MCODE_PDU "Enable PDU support" ON )
 option ( MCODE_RTC "Enable RTC support" ON )
-option ( MCODE_UART2 "Enable UART2" ON )
+option ( MCODE_NEW_ENGINE "Enable new Command Engine" ON )
 set ( MCODE_RANDOM_BYTES_COUNT 16 )
 
 IF ( ${MCODE_RANDOM_BYTES_COUNT} EQUAL 0 )
