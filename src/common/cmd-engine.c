@@ -35,8 +35,10 @@
 
 static void cmd_engine_show_help(void);
 static void cmd_engine_on_cmd_ready(const char *aString);
+#ifdef MCODE_NEW_ENGINE
 static void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
                                     const char *args, size_t args_len);
+#endif /* MCODE_NEW_ENGINE */
 
 void cmd_engine_init(void)
 {
@@ -191,6 +193,7 @@ void cmd_engine_show_help(void)
   }
 }
 
+#ifdef MCODE_NEW_ENGINE
 /*
  * Program structure N-lines:
  * line1
@@ -293,3 +296,4 @@ void cmd_engine_exec_command(const char *cmd, size_t cmd_len, const char *args, 
   mprintbytes(args, args_len);
   mprintstrln("]");
 }
+#endif /* MCODE_NEW_ENGINE */

@@ -34,7 +34,7 @@ static char *TheStringPutchPointer = NULL;
 static const char *TheStringPutchPointerEnd = NULL;
 static uint32_t TheIntBuffers[PROG_INTVARS_COUNT] = {0};
 static const char *TheLabelVars[MCODE_LABELS_COUNT] = {NULL};
-static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH] = {0};
+static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH] = {{0}};
 
 uint32_t mvar_int_get(int index)
 {
