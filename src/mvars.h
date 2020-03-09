@@ -54,13 +54,25 @@ void mvar_nvm_set(int index, uint16_t value);
 char *mvar_str(int index, int count, size_t *length);
 
 const char *mvar_label(int index);
-const char *mvar_label_set(int index, const char *label);
+void mvar_label_set(int index, const char *label);
 
 void mvar_print(const char *var, size_t length);
 
 MVarType next_var(const char **str, size_t *length,
                   const char **token, uint32_t *value,
                   size_t *index, size_t *count);
+
+/**
+ * Parse the string passed in \c name and \c length if it is a variable name
+ * @param[in] name The string to check if it represents
+ * @param[in] length The \c name string length
+ * @param[out] index The index of the variable, may be \c NULL
+ * @param[out] count The count of the variable, may be \c NULL
+ * @return The type of variable or \c VarTypeNone if not a variable name is passed in \c name
+ * @note The out-parameters \c index and \c count only retured,
+ *       if the input data represents a variable name
+ */
+MVarType var_parse_name(const char *name, size_t length, size_t *index, size_t *count);
 
 /**
  * Write the character passed in \c ch to the previously configured string variable

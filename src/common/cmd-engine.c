@@ -24,7 +24,9 @@
 
 #include "cmd-engine.h"
 
+#include "mvars.h"
 #include "mglobal.h"
+#include "mparser.h"
 #include "mstring.h"
 #include "cmd-iface.h"
 #include "line-editor-uart.h"
@@ -197,6 +199,41 @@ void cmd_engine_show_help(void)
  */
 void cmd_engine_exec_prog(const char *prog, size_t length)
 {
+  const char *next;
+
+  if (!prog) {
+    /* Nothing to execute */
+    return;
+  }
+
+  if (-1 == length) {
+    length = strlen(prog);
+  }
+
+  do {
+    size_t len;
+    /* Extract a program line */
+    next = strpbrk(prog, "\r\n");
+    if (next) {
+      /* Do not include the new-line indications to the executing program line */
+      len = next - prog;
+    } else {
+      /* No new lines, pass all the content to the line executor */
+      len = length;
+    }
+
+    if (len) {
+      /* Execute a line only if it has some content */
+      cmd_engine_exec_line(prog, len);
+    }
+
+    /* Skip the end-of line indication */
+    if (next) {
+      ++len;
+    }
+    length -= len;
+    prog += len;
+  } while (length);
 }
 
 /*
@@ -206,6 +243,28 @@ void cmd_engine_exec_prog(const char *prog, size_t length)
  * <command> - The command name, optional;
  * <argumentI> - Optional arugment(s) to the command <command>;
  */
+#include <stdio.h>
 void cmd_engine_exec_line(const char *line, size_t length)
 {
+  uint32_t value;
+  TokenType type;
+  const char *token;
+  printf("[%.*s], length: %d\n", length, line, length);
+
+  do {
+    type = next_token(&line, &length, &token, &value);
+    if (TokenVariable == type) {
+      uint8_t len = value;
+      uint8_t type = value>>8;
+      uint8_t index = value>>16;
+      if (VarTypeLabel == type) {
+        mvar_label_set(index, token);
+printf("set to [%.*s]\n", value&0xff, token);
+printf("here is what we leaft: [%.*s]\n", length, line);
+      }
+    } else if (TokenId == type) {
+printf("Detected command: [%.*s]\n", value, token);
+      break;
+    }
+  } while (TokenEnd != type);
 }

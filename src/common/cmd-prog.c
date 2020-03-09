@@ -34,7 +34,9 @@
 #include <string.h>
 
 static void cmd_engine_prog_set(const char *args);
+static void cmd_engine_prog_exec1(const char *args);
 static void cmd_engine_prog_print(const char *args);
+static void cmd_engine_prog_append(const char *args);
 static void cmd_engine_prog_execute(const char *args);
 
 void cmd_engine_prog_help(void)
@@ -43,6 +45,8 @@ void cmd_engine_prog_help(void)
   mprintstrln(PSTR("> prog print <var> - Print value of <var>"));
   mprintstrln(PSTR("> prog set <var> <value> - Set <var> to <value>"));
   mprintstrln(PSTR(">          <var>: s0 - string, i0 - int, n0 - NVM int"));
+  mprintstrln(PSTR("> prog append sx:c <value> - Append a line of text to string variable"));
+  mprintstrln(PSTR("> prog exec sx:c - Execute a program in variable sx:c"));
 }
 
 bool cmd_engine_prog_exec(const char *command, bool *startCmd)
@@ -61,6 +65,10 @@ void cmd_engine_prog_execute(const char *args)
     cmd_engine_prog_print(args + 6);
   } else if (!strncmp_P(args, PSTR("set "), 4)) {
     cmd_engine_prog_set(args + 4);
+  } else if (!strncmp_P(args, PSTR("append "), 7)) {
+    cmd_engine_prog_append(args + 7);
+  } else if (!strncmp_P(args, PSTR("exec "), 5)) {
+    cmd_engine_prog_exec1(args + 5);
   }
 }
 
@@ -114,4 +122,62 @@ void cmd_engine_prog_set(const char *args)
   } else if (TokenInt == token_type && type == VarTypeNvm) {
     mvar_nvm_set(index, value);
   }
+}
+
+void cmd_engine_prog_append(const char *args)
+{
+  size_t index;
+  size_t count;
+  size_t length;
+  MVarType type;
+  uint32_t value;
+  const char *token;
+  TokenType token_type;
+
+  length = strlen(args);
+  token_type = next_token(&args, &length, &token, &value);
+  if (TokenVariable != token_type) {
+    merror(MStringWrongArgument);
+    return;
+  }
+
+  /* Extract parameters from 'value' */
+  type = (MVarType)((value >> 8)&0xffu);
+  index = (value >> 16)&0xffu;
+  count = (value >> 24)&0xffu;
+
+  token_type = next_token(&args, &length, &token, &value);
+  if (TokenWhitespace != token_type) {
+    merror(MStringWrongArgument);
+    return;
+  }
+  token_type = next_token(&args, &length, &token, &value);
+  if (TokenString == token_type && type == VarTypeString) {
+    size_t length;
+    char *const str = mvar_str(index, count, &length);
+    if (!str || value > length) {
+      /* Either index/count are not correct, or input string is too long */
+      merror(MStringWrongArgument);
+      return;
+    }
+    size_t len = strlen(str);
+    if (len + 3 >= length) {
+      /* No space even for new-line */
+      return;
+    }
+    /* Appending new-line */
+    len += 2;
+    strcat(str, "\r\n");
+    if (length <= len + value) {
+      value = length - len - 1;
+    }
+    strncat(str, token, value);
+  }
+}
+
+void cmd_engine_prog_exec1(const char *args)
+{
+  size_t length = 0;
+  char *buffer = mvar_str(0, 2, &length);
+  cmd_engine_exec_prog(buffer, -1);
 }
