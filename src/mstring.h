@@ -86,6 +86,7 @@ void mprintbytesln(const char *str, size_t length);
 void mprinthexencodedstr16(const char *str, size_t length);
 
 void mprintstr_R(const char *string);
+void mprintbytes_R(const char *str, size_t length);
 
 /**
  * Print expression in \c exprt to the default terminal

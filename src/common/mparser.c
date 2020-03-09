@@ -26,6 +26,7 @@
 
 #include "mvars.h"
 #include "utils.h"
+#include "mglobal.h"
 
 #include <assert.h>
 #include <string.h>
@@ -160,7 +161,18 @@ int mparser_strcmp(const char *str, size_t length, const char *str2)
 {
   const size_t length2 = strlen(str2);
   if (length == length2) {
-    return memcmp(str, str2, length);
+    return strncmp(str, str2, length);
+  } else {
+    /* No more/less for now */
+    return 1;
+  }
+}
+
+int mparser_strcmp_P(const char *str, size_t length, const char *str2)
+{
+  const size_t length2 = strlen_P(str2);
+  if (length == length2) {
+    return strncmp_P(str, str2, length);
   } else {
     /* No more/less for now */
     return 1;

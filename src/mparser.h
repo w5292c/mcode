@@ -70,6 +70,15 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler handler
 int mparser_strcmp(const char *str, size_t length, const char *str2);
 
 /**
+ * Compare strings, first argument may not end with '\0'
+ * @param[in] str The 1st string
+ * @param[in] length The length of the 1st string
+ * @param[in] str2 The 2nd string in the program memory
+ * @return 0 if 2 strings are equal, or something else if not
+ */
+int mparser_strcmp_P(const char *str, size_t length, const char *str2);
+
+/**
  * String parser, version 2 skeleton
  */
 typedef enum _TokenType {

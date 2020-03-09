@@ -184,11 +184,16 @@ void cmd_engine_show_help(void)
 #endif /* MCODE_PROG */
 
   /* New style for commands/help support, using 'command_section' section */
+  const char *base;
   const char *help;
   const TCmdData *iter = &__start_command_section;
   const TCmdData *const end = &__stop_command_section;
   for (; iter < end; ++ iter) {
+    base = pgm_read_ptr_near(&iter->base);
     help = pgm_read_ptr_near(&iter->help);
+    mprintstr(PSTR("> "));
+    mprintstr(base);
+    mprintstr(PSTR(" - "));
     mprintstrln(help);
   }
 }
@@ -289,11 +294,19 @@ void cmd_engine_exec_line(const char *line, size_t length)
 
 void cmd_engine_exec_command(const char *cmd, size_t cmd_len, const char *args, size_t args_len)
 {
-  /* Test code to show what is to be executed */
-  mprintstr("> command: [");
-  mprintbytes(cmd, cmd_len);
-  mprintstr("], args: [");
-  mprintbytes(args, args_len);
-  mprintstrln("]");
+  /* New style for commands/help support, using 'command_section' section */
+  bool start_cmd;
+  const char *help;
+  const TCmdData *iter = &__start_command_section;
+  const TCmdData *const end = &__stop_command_section;
+  for (; iter < end; ++ iter) {
+    const char *const base = pgm_read_ptr_near(&iter->base);
+    if (!mparser_strcmp_P(cmd, cmd_len, base)) {
+      cmd_handler handler = pgm_read_ptr_near(&iter->handler);
+      if (handler) {
+        (*handler)(iter, args, args_len, &start_cmd);
+      }
+    }
+  }
 }
 #endif /* MCODE_NEW_ENGINE */

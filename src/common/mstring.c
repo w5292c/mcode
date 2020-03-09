@@ -212,6 +212,17 @@ void mprintstr_R(const char *string)
   }
 }
 
+void mprintbytes_R(const char *string, size_t length)
+{
+  if (string) {
+    uint8_t ch;
+    size_t bytes = 0;
+    while (0 != (ch = *string++) && (length == -1 || bytes++ < length)) {
+      mputch(ch);
+    }
+  }
+}
+
 void mprintexpr(const char *expr)
 {
   char ch;

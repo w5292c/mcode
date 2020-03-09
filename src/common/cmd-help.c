@@ -25,16 +25,53 @@
 #include "cmd-iface.h"
 
 #include "mglobal.h"
+#include "mparser.h"
+#include "mstring.h"
 
 #include <stddef.h>
 
-static bool cmd_help_command_handler(const char *args, bool *start_cmd);
+static bool cmd_help_command_handler(const TCmdData *data, const char *args,
+                                     size_t args_len, bool *start_cmd);
 
-static const char TheHelpMessage[] PROGMEM = ("> help - Show help for all commands");
+static const char TheHelpMessage[] PROGMEM = ("Show help for all commands");
 
-CMD_ENTRY(help, TheHelpMessage, &cmd_help_command_handler, NULL, 0);
+CMD_ENTRY(PSTR("help"), help, TheHelpMessage, &cmd_help_command_handler, NULL, 0);
 
-bool cmd_help_command_handler(const char *args, bool *start_cmd)
+bool cmd_help_command_handler(const TCmdData *data, const char *args,
+                              size_t args_len, bool *start_cmd)
 {
+  const TCmdData *iter = &__start_command_section;
+  const TCmdData *const end = &__stop_command_section;
+
+  if (!args_len) {
+    /* List all supported commands */
+    bool first_cmd = true;
+    mprintstr(PSTR("Commands: ["));
+    for (; iter < end; ++ iter) {
+      if (!first_cmd) {
+        mprintstr(PSTR(", "));
+      }
+      const char *const base = pgm_read_ptr_near(&iter->base);
+      mprintstr(base);
+      first_cmd = false;
+    }
+    mprintstrln(PSTR("]"));
+  } else {
+    /* Show help for a specific command */
+    mprintstr(PSTR("> "));
+    mprintbytes_R(args, args_len);
+    mprintstr(PSTR(" - "));
+
+    for (; iter < end; ++ iter) {
+      const char *const base = pgm_read_ptr_near(&iter->base);
+      if (!mparser_strcmp_P(args, args_len, base)) {
+        const char *const help = pgm_read_ptr_near(&iter->help);
+        mprintstr(help);
+        break;
+      }
+    }
+    mprint(MStringNewLine);
+  }
+
   return true;
 }

@@ -25,6 +25,7 @@
 #ifndef MCODE_CMD_IFACE_H
 #define MCODE_CMD_IFACE_H
 
+#include <stddef.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus
@@ -34,22 +35,35 @@ extern "C" {
 #define CMD_USED __attribute__((used))
 #define CMD_SECTION __attribute__((section("command_section")))
 
-#define CMD_ENTRY(name, help, handler, init_handler, level) \
+#define CMD_ENTRY(base, name, help, handler, init_handler, level) \
   static const TCmdData name CMD_SECTION CMD_USED = { \
+    base, \
     help, \
     handler, \
     init_handler, \
     level \
   };
 
-typedef void (*cmd_init_handler)(void);
-typedef bool (*cmd_handler)(const char *args, bool *start_cmd);
+typedef struct _TCmdData TCmdData;
 
+typedef void (*cmd_init_handler)(void);
+typedef bool (*cmd_handler)(const TCmdData *data, const char *args,
+                            size_t args_len, bool *start_cmd);
+
+/**
+ * The data type to represent a Command for the Command Engine
+ */
 typedef struct _TCmdData {
+  /** The base command name, for the token to match it */
+  const char *base;
+  /** The help message for this command */
   const char *help;
+  /** The command handler */
   cmd_handler handler;
+  /** The optional initialization handler for the command */
   cmd_init_handler init_handler;
-  int level;
+  /** The initialization level defining the initialization order */
+  int init_level;
 } TCmdData;
 
 /**
