@@ -111,7 +111,7 @@ void mvar_print(const char *var, size_t length)
     length = strlen(var);
   }
 
-  type = next_var(&var, &length, &token, &token_length, &idx, &cnt);
+  type = var_parse_name(var, length, &idx, &cnt);
   if (VarTypeNone == type) {
     /* The variable name is not correct/not found */
     return;
@@ -209,7 +209,7 @@ MVarType var_parse_name(const char *name, size_t length, size_t *index, size_t *
       idx = ch - '0';
     } else if (ch >= 'a' && ch <= 'z') {
       idx = ch - 'a' + 10;
-    } else if (ch != ':') {
+    } else if (ch == ':') {
       /* ':' means that the index part is default ('0'), just move on to parsing next part */
       skip = true;
     } else {

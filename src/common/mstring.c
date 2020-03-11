@@ -24,6 +24,7 @@
 
 #include "mstring.h"
 
+#include "mvars.h"
 #include "utils.h"
 #include "mglobal.h"
 #include "hw-uart.h"
@@ -226,7 +227,9 @@ void mprintbytes_R(const char *string, size_t length)
 void mprintexpr(const char *expr)
 {
   char ch;
+  char chs[5];
   bool escape = false;
+  bool variable = false;
 
   if (!expr) {
     /* Nothing to print */
@@ -235,8 +238,35 @@ void mprintexpr(const char *expr)
 
   do {
     ch = pgm_read_byte(expr++);
+    if (variable) {
+      size_t len;
+      MVarType type;
+
+      strncat(chs, &ch, 1);
+      len = strlen(chs);
+      type = var_parse_name(chs, len, NULL, NULL);
+      if (VarTypeNone == type) {
+        if (len > 1) {
+          /* We reached the end of the variable name, print it */
+          mvar_print(chs, len - 1);
+        }
+        variable = false;
+        /* Fall through (no continue), so, we can handle the current character */
+      } else if (VarTypeNone != type && 4 == len) {
+        mvar_print(chs, len);
+        variable = false;
+        continue;
+      } else {
+        continue;
+      }
+    }
     if (!ch) {
       break;
+    }
+    if (!variable && !escape && '$' == ch) {
+      variable = true;
+      memset(chs, 0, sizeof (chs));
+      continue;
     }
     if (!escape && '\\' == ch) {
       escape = true;
