@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "mvars.h"
 #include "mstring.h"
 #include "wrap-mocks.h"
 
@@ -77,6 +78,37 @@ protected:
   // Longer buffer to test accessing memory outside permitted range
   char _buffer[64];
   const static size_t _buffer_length = 32;
+};
+
+class StringWithVars : public StringBasic
+{
+protected:
+  void SetUp() override {
+    StringBasic::SetUp();
+
+    int i;
+    for (i = 0; i < PROG_INTVARS_COUNT; ++i) {
+      mvar_nvm_set(i, i + _diff_nvm);
+      mvar_int_set(i, i + _diff_int);
+    }
+    char buffer[PROG_STRVAR_LENGTH];
+    for (i = 0; i < PROG_STRVARS_COUNT; ++i) {
+      snprintf(buffer, sizeof (buffer), "string #%d", i + _diff_str);
+      strncpy(mvar_str(i, 1, NULL), buffer, sizeof (buffer));
+    }
+  }
+  void TearDown() override {
+    ;
+
+    StringBasic::TearDown();
+  }
+
+protected:
+  enum {
+    _diff_int = 10,
+    _diff_nvm = 40,
+    _diff_str = 70,
+  };
 };
 
 class StringWithIds : public TestWithParam<int>
@@ -416,6 +448,62 @@ TEST_F(StringBasic, MPrintExprNull)
 {
   mprintexpr(NULL);
   ASSERT_STREQ(collected_text(), "");
+}
+
+TEST_F(StringWithVars, ExprWithStringVar)
+{
+  mprintexpr("prefix $s0:1 postfix");
+
+  ASSERT_STREQ(collected_text(), "prefix string #70 postfix");
+}
+
+TEST_F(StringWithVars, ExprWithIntVar)
+{
+  mprintexpr("prefix $i0:1 postfix");
+
+  ASSERT_STREQ(collected_text(), "prefix 10 postfix");
+}
+
+TEST_F(StringWithVars, ExprWithNvmVar)
+{
+  mprintexpr("prefix $n0:1 postfix");
+
+  ASSERT_STREQ(collected_text(), "prefix 40 postfix");
+}
+
+TEST_F(StringWithVars, ExprWithIntNoCount)
+{
+  mprintexpr("prefix $i1: postfix");
+
+  ASSERT_STREQ(collected_text(), "prefix 11 postfix");
+}
+
+TEST_F(StringWithVars, ExprWithIntNoCountNoSeparator)
+{
+  mprintexpr("prefix $i2 postfix");
+
+  ASSERT_STREQ(collected_text(), "prefix 12 postfix");
+}
+
+TEST_F(StringWithVars, ExprWithIntNakedName)
+{
+  mprintexpr("prefix $i postfix");
+
+  ASSERT_STREQ(collected_text(), "prefix 10 postfix");
+}
+
+TEST_F(StringWithVars, ExprWithIntNoVariable)
+{
+  mprintexpr("prefix $$ postfix");
+
+  ASSERT_STREQ(collected_text(), "prefix $ postfix");
+}
+
+TEST_F(StringBasic, MPrintBytesR)
+{
+  mprintbytes_R("hello", -1);
+
+  ASSERT_STREQ(collected_text(), "hello");
 }
 
 TEST_F(StringBasic, MPrintDumpBufferBasicNullNoAddress)

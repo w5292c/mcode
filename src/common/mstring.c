@@ -249,6 +249,8 @@ void mprintexpr(const char *expr)
         if (len > 1) {
           /* We reached the end of the variable name, print it */
           mvar_print(chs, len - 1);
+        } else if ('$' == ch) {
+          escape = true;
         }
         variable = false;
         /* Fall through (no continue), so, we can handle the current character */
