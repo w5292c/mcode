@@ -444,6 +444,16 @@ TEST_F(StringBasic, MPrintExprBasicEscapes)
   ASSERT_STREQ(collected_text(), expected);
 }
 
+TEST_F(StringBasic, MPrintExprMoreEscapes)
+{
+  const char *const expected = "\a\b\e\f\n\r\t\v\0";
+  const char *const original = "\\a\\b\\e\\f\\n\\r\\t\\v\\0";
+
+  mprintexpr(original);
+  ASSERT_STREQ(collected_text(), expected);
+  ASSERT_EQ(collected_text_length(), strlen(expected) + 1);
+}
+
 TEST_F(StringBasic, MPrintExprNull)
 {
   mprintexpr(NULL);

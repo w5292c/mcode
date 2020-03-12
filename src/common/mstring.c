@@ -277,6 +277,21 @@ void mprintexpr(const char *expr)
     if (escape) {
       escape = false;
       switch (ch) {
+      case '0':
+        ch = '\0';
+        break;
+      case 'a':
+        ch = '\a';
+        break;
+      case 'b':
+        ch = '\b';
+        break;
+      case 'e':
+        ch = '\e';
+        break;
+      case 'f':
+        ch = '\f';
+        break;
       case 'n':
         ch = '\n';
         break;
@@ -285,6 +300,9 @@ void mprintexpr(const char *expr)
         break;
       case 't':
         ch = '\t';
+        break;
+      case 'v':
+        ch = '\v';
         break;
       default:
         break;
