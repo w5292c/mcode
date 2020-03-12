@@ -219,7 +219,18 @@ TEST_F(VarsBasic, StringVarPrintOnlyIndexWithLetter)
   char *const v0 = mvar_str(0, 0, &length);
   strcpy(v0, "test string");
 
-  mvar_print("s0x", -1);
+  mvar_print("s0:x", -1);
+
+  ASSERT_STREQ(collected_text(), "test string");
+}
+
+TEST_F(VarsBasic, StringVarPrintOnlyCount)
+{
+  size_t length = 0;
+  char *const v0 = mvar_str(0, 0, &length);
+  strcpy(v0, "test string");
+
+  mvar_print("s:1", -1);
 
   ASSERT_STREQ(collected_text(), "test string");
 }
@@ -308,29 +319,99 @@ TEST_F(VarsBasic, NvmVarPrintShortLabel)
   ASSERT_STREQ(collected_text(), "0x1234ABCD");
 }
 
+TEST_F(VarsBasic, NvmVarPrintLabelWrongIndex)
+{
+  mvar_label_set(0, reinterpret_cast<const char *>(0x1234abcd));
+  mvar_label_set(1, reinterpret_cast<const char *>(0x1234abcd));
+  mvar_label_set(2, reinterpret_cast<const char *>(0x1234abcd));
+  mvar_label_set(3, reinterpret_cast<const char *>(0x1234abcd));
+
+  mvar_print("lz", -1);
+
+  ASSERT_STREQ(collected_text(), "0x0");
+}
+
 TEST_F(VarsBasic, NvmVarParseVarNameNoName)
 {
-  size_t count;
-  size_t index;
-  size_t length;
-  uint32_t value;
-  const char *token;
-  MVarType type = next_var(NULL, &length, &token, &value, &index, &count);
+  MVarType type;
+  type = var_parse_name(NULL, 10, NULL, NULL);
 
   ASSERT_EQ(type, VarTypeNone);
 }
 
-TEST_F(VarsBasic, NvmVarParseVarNameNullName)
+TEST_F(VarsBasic, NvmVarParseVarNameNoLength)
 {
-  size_t count;
-  size_t index;
-  size_t length;
-  uint32_t value;
-  const char *token;
-  const char *var_name = NULL;
-  MVarType type = next_var(&var_name, &length, &token, &value, &index, &count);
+  MVarType type;
+
+  type = var_parse_name("s0:1", 0, NULL, NULL);
 
   ASSERT_EQ(type, VarTypeNone);
+}
+
+TEST_F(VarsBasic, NvmVarParseVarNameWrongCountSeparator)
+{
+  MVarType type;
+
+  type = var_parse_name("s0%1", 4, NULL, NULL);
+
+  ASSERT_EQ(type, VarTypeNone);
+}
+
+TEST_F(VarsBasic, NvmVarParseVarNameWrongCount)
+{
+  MVarType type;
+
+  type = var_parse_name("s0:&", 4, NULL, NULL);
+
+  ASSERT_EQ(type, VarTypeNone);
+}
+
+TEST_F(VarsBasic, NvmVarParseVarNameWrongIndex)
+{
+  MVarType type;
+
+  type = var_parse_name("s@", 2, NULL, NULL);
+
+  ASSERT_EQ(type, VarTypeNone);
+}
+
+TEST_F(VarsBasic, NvmVarParseVarNameFullString)
+{
+  MVarType type;
+  size_t index = 0;
+  size_t count = 0;
+
+  type = var_parse_name("s3:7", 4, &index, &count);
+
+  ASSERT_EQ(index, 3);
+  ASSERT_EQ(count, 7);
+  ASSERT_EQ(type, VarTypeString);
+}
+
+TEST_F(VarsBasic, NvmVarParseVarNameFullInt)
+{
+  MVarType type;
+  size_t index = 0;
+  size_t count = 0;
+
+  type = var_parse_name("i3:7", 4, &index, &count);
+
+  ASSERT_EQ(index, 3);
+  ASSERT_EQ(count, 7);
+  ASSERT_EQ(type, VarTypeInt);
+}
+
+TEST_F(VarsBasic, NvmVarParseVarNameFullNvm)
+{
+  MVarType type;
+  size_t index = 0;
+  size_t count = 0;
+
+  type = var_parse_name("n1:2", 4, &index, &count);
+
+  ASSERT_EQ(index, 1);
+  ASSERT_EQ(count, 2);
+  ASSERT_EQ(type, VarTypeNvm);
 }
 
 TEST_F(PutchStrBasic_s0_1, MVarPutchBasic)
