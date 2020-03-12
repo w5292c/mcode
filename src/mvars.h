@@ -58,10 +58,6 @@ void mvar_label_set(int index, const char *label);
 
 void mvar_print(const char *var, size_t length);
 
-MVarType next_var(const char **str, size_t *length,
-                  const char **token, uint32_t *value,
-                  size_t *index, size_t *count);
-
 /**
  * Parse the string passed in \c name and \c length if it is a variable name
  * @param[in] name The string to check if it represents
