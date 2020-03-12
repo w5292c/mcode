@@ -43,6 +43,7 @@ set (
   ${MCODE_TOP}/src/emu/persistent-store.c
   ${MCODE_TOP}/src/gtest/test-mvars-basic.cpp
   ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
+  ${MCODE_TOP}/src/gtest/test-mparser-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-basic.cpp
   ${MCODE_TOP}/src/gtest/test-strings-mocked.cpp
   ${MCODE_TOP}/src/gtest/test-gsm-engine-basic.cpp

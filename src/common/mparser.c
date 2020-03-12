@@ -277,8 +277,8 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
   if (mparser_is_number(ch)) {
     addr = ptr;
     val = ch - '0';
-    /* Search for the closing '"' */
-    for (++ptr; len > 0; --len, ++ptr) {
+    /* Search for the closing the current number */
+    for (++ptr, --len; len > 0; --len, ++ptr) {
       const char next_ch = *ptr;
       if (mparser_is_number(next_ch)) {
         val *= 10;
@@ -287,7 +287,7 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
                                   '\n' == next_ch || '\r' == next_ch || !next_ch) {
         /* Expected closing of a number */
         *value = val;
-        *length -= ptr - *str;
+        *length -= ptr - addr;
         *str = ptr;
         return TokenInt;
       } else {
@@ -309,7 +309,7 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
 
     /* Looks like a number in the end of the input text */
     *value = val;
-    *length -= ptr - *str;
+    *length -= ptr - addr;
     *str = ptr;
     return TokenInt;
   }

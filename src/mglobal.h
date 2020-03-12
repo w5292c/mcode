@@ -43,6 +43,8 @@
 #define pgm_read_ptr_near(ptr) (*((const void **)ptr))
 #endif /* __AVR__ */
 
+#define MNULL ((const void *)NULL)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
