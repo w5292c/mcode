@@ -35,12 +35,22 @@ static char *TheStringPutchPointer = NULL;
 static const char *TheStringPutchPointerEnd = NULL;
 static ostream_handler TheOutputHandler = NULL;
 
+static size_t TheOutputStackCount = 0;
+static ostream_handler TheOutputStack[MCODE_OUTPUT_STACK_COUNT] = {NULL};
+
 void mputch(char ch)
 {
   /* Check if we have a custom output stream handler */
   if (TheOutputHandler) {
     /* If we have a custom output stream handler, use it */
     (*TheOutputHandler)(ch);
+    return;
+  }
+
+  /* If the output handler is not set, check the output handlers stack */
+  if (TheOutputStackCount) {
+    ostream_handler handler = TheOutputStack[TheOutputStackCount - 1];
+    (*handler)(ch);
     return;
   }
 
@@ -66,6 +76,20 @@ void mputch_str_config(char *buffer, size_t length)
 void io_set_ostream_handler(ostream_handler handler)
 {
   TheOutputHandler = handler;
+}
+
+void io_ostream_handler_push(ostream_handler handler)
+{
+  if (TheOutputStackCount < MCODE_OUTPUT_STACK_COUNT - 1) {
+    TheOutputStack[TheOutputStackCount++] = handler;
+  }
+}
+
+void io_ostream_handler_pop(void)
+{
+  if (TheOutputStackCount) {
+    --TheOutputStackCount;
+  }
 }
 
 void merror(uint8_t id)

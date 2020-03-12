@@ -58,6 +58,21 @@ protected:
   }
 };
 
+class AltStringStackBasic : public StringBasic
+{
+protected:
+  void SetUp() override {
+    StringBasic::SetUp();
+
+    io_ostream_handler_push(alt_uart_write_char);
+  }
+  void TearDown() override {
+    io_ostream_handler_pop();
+
+    StringBasic::TearDown();
+  }
+};
+
 class StringPutchBasic : public StringBasic
 {
 protected:
@@ -233,6 +248,14 @@ TEST_F(AltStringBasic, MAltPutchSimple)
   ASSERT_STREQ(collected_alt_text(), "abc");
 }
 
+TEST_F(AltStringStackBasic, MAltPutchSimple)
+{
+  mprintstr("abc");
+
+  ASSERT_EQ(collected_alt_text_length(), 3);
+  ASSERT_STREQ(collected_alt_text(), "abc");
+}
+
 TEST_F(StringBasic, MStringRSimple)
 {
   mprintstr_R("abc");
@@ -278,6 +301,14 @@ TEST_F(StringBasic, PrintHexEncodedString16BasicWithWrongChars)
 }
 
 TEST_F(AltStringBasic, MAltStringRSimple)
+{
+  mprintstr_R("abc");
+
+  ASSERT_EQ(collected_alt_text_length(), 3);
+  ASSERT_STREQ(collected_alt_text(), "abc");
+}
+
+TEST_F(AltStringStackBasic, MAltStringRSimple)
 {
   mprintstr_R("abc");
 

@@ -33,6 +33,8 @@
 extern "C" {
 #endif
 
+#define MCODE_OUTPUT_STACK_COUNT (4)
+
 typedef enum {
   MStringNull,
   MStringNewLine,
@@ -57,6 +59,9 @@ typedef void (*ostream_handler)(char ch);
  * @note The default handler sends the output stream to UART1 device (can be overridden)
  */
 void io_set_ostream_handler(ostream_handler handler);
+
+void io_ostream_handler_push(ostream_handler handler);
+void io_ostream_handler_pop(void);
 
 const char *mstring(uint8_t id);
 
