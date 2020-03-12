@@ -36,6 +36,7 @@ static inline bool mparser_is_punct(char ch);
 static inline bool mparser_is_number(char ch);
 static inline bool mparser_is_whitespace(char ch);
 
+#ifdef MCODE_OLD_PARSER
 void mparser_parse(const char *str, size_t length, mparser_event_handler handler)
 {
   enum {
@@ -156,6 +157,7 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler handler
   /* Report parsing end, ingore return value */
   (*handler)(EParserEventEnd, str, length, 0);
 }
+#endif /* MCODE_OLD_PARSER */
 
 int mparser_strcmp(const char *str, size_t length, const char *str2)
 {

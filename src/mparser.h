@@ -25,12 +25,16 @@
 #ifndef MCODE_PARSER_H
 #define MCODE_PARSER_H
 
+#include "mcode-config.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifdef MCODE_OLD_PARSER
 
 typedef enum {
   EParserEventNull,
@@ -59,6 +63,7 @@ typedef const char *(*mparser_event_handler)(MParserEvent event,
                                              int32_t value);
 
 void mparser_parse(const char *str, size_t length, mparser_event_handler handler);
+#endif /* MCODE_OLD_PARSER */
 
 /**
  * Compare strings, first argument may not end with '\0'
