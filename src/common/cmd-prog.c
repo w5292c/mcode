@@ -34,10 +34,10 @@
 #include <string.h>
 
 static void cmd_engine_prog_set(const char *args);
-static void cmd_engine_prog_exec(const char *args);
 static void cmd_engine_prog_print(const char *args);
 static void cmd_engine_prog_append(const char *args);
-static void cmd_engine_prog_execute(const char *args);
+static void cmd_engine_prog_exec(const char *args, bool *start_cmd);
+static void cmd_engine_prog_execute(const char *args, bool *start_cmd);
 
 void cmd_engine_prog_help(void)
 {
@@ -52,14 +52,14 @@ void cmd_engine_prog_help(void)
 bool cmd_engine_prog_run(const char *command, bool *startCmd)
 {
   if (!strncmp_P(command, PSTR("prog "), 5)) {
-    cmd_engine_prog_execute(command + 5);
+    cmd_engine_prog_execute(command + 5, startCmd);
     return true;
   }
 
   return false;
 }
 
-void cmd_engine_prog_execute(const char *args)
+void cmd_engine_prog_execute(const char *args, bool *start_cmd)
 {
   if (!strncmp_P(args, PSTR("print "), 6)) {
     cmd_engine_prog_print(args + 6);
@@ -68,7 +68,7 @@ void cmd_engine_prog_execute(const char *args)
   } else if (!strncmp_P(args, PSTR("append "), 7)) {
     cmd_engine_prog_append(args + 7);
   } else if (!strncmp_P(args, PSTR("exec "), 5)) {
-    cmd_engine_prog_exec(args + 5);
+    cmd_engine_prog_exec(args + 5, start_cmd);
   }
 }
 
@@ -175,7 +175,7 @@ void cmd_engine_prog_append(const char *args)
   }
 }
 
-void cmd_engine_prog_exec(const char *args)
+void cmd_engine_prog_exec(const char *args, bool *start_cmd)
 {
   size_t count;
   size_t index;
@@ -185,7 +185,7 @@ void cmd_engine_prog_exec(const char *args)
   if (VarTypeString == type) {
     const char *buffer = mvar_str(index, count, NULL);
     if (buffer) {
-      cmd_engine_exec_prog(buffer, -1);
+      cmd_engine_exec_prog(buffer, -1, start_cmd);
     }
   }
 }

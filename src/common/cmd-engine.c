@@ -37,7 +37,7 @@ static void cmd_engine_show_help(void);
 static void cmd_engine_on_cmd_ready(const char *aString);
 #ifdef MCODE_NEW_ENGINE
 static void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
-                                    const char *args, size_t args_len);
+                                    const char *args, size_t args_len, bool *start_cmd);
 #endif /* MCODE_NEW_ENGINE */
 
 void cmd_engine_init(void)
@@ -68,7 +68,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
 {
   bool start_uart_editor = true;
 
-  if (!strcmp_P (aString, PSTR("help"))) {
+  if (!strcmp_P(aString, PSTR("help-old"))) {
     cmd_engine_show_help();
   }
 #ifdef MCODE_PWM
@@ -125,10 +125,11 @@ void cmd_engine_on_cmd_ready(const char *aString)
 #endif /* MCODE_PROG */
   else if (cmd_engine_system_command(aString, &start_uart_editor)) {
   }
+#ifdef MCODE_NEW_ENGINE
   else if (*aString) {
-    /* got unrecognized non-empty command */
-    mprintstrln(PSTR("ENGINE: unrecognized command. Type 'help'."));
+    cmd_engine_exec_prog(aString, -1, &start_uart_editor);
   }
+#endif /* MCODE_NEW_ENGINE */
 
   if (start_uart_editor) {
     line_editor_uart_start();
@@ -207,8 +208,9 @@ void cmd_engine_show_help(void)
  * * * *
  * lineN
  */
-void cmd_engine_exec_prog(const char *prog, size_t length)
+void cmd_engine_exec_prog(const char *prog, size_t length, bool *start_cmd)
 {
+  int i;
   const char *next;
 
   if (!prog) {
@@ -234,7 +236,7 @@ void cmd_engine_exec_prog(const char *prog, size_t length)
 
     if (len) {
       /* Execute a line only if it has some content */
-      cmd_engine_exec_line(prog, len);
+      cmd_engine_exec_line(prog, len, start_cmd);
     }
 
     /* Skip the end-of line indication */
@@ -244,6 +246,11 @@ void cmd_engine_exec_prog(const char *prog, size_t length)
     length -= len;
     prog += len;
   } while (length);
+
+  /* Clear labels */
+  for (i = 0; i < MCODE_LABELS_COUNT; ++i) {
+    mvar_label_set(i, NULL);
+  }
 }
 
 /*
@@ -253,7 +260,7 @@ void cmd_engine_exec_prog(const char *prog, size_t length)
  * <command> - The command name, optional;
  * <argumentI> - Optional arugment(s) to the command <command>;
  */
-void cmd_engine_exec_line(const char *line, size_t length)
+void cmd_engine_exec_line(const char *line, size_t length, bool *start_cmd)
 {
   uint32_t value;
   TokenType type;
@@ -286,16 +293,16 @@ void cmd_engine_exec_line(const char *line, size_t length)
         }
       }
 
-      cmd_engine_exec_command(command, command_length, args, args_length);
+      cmd_engine_exec_command(command, command_length, args, args_length, start_cmd);
       break;
     }
   } while (TokenEnd != type);
 }
 
-void cmd_engine_exec_command(const char *cmd, size_t cmd_len, const char *args, size_t args_len)
+void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
+                             const char *args, size_t args_len, bool *start_cmd)
 {
   /* New style for commands/help support, using 'command_section' section */
-  bool start_cmd;
   const char *help;
   const TCmdData *iter = &__start_command_section;
   const TCmdData *const end = &__stop_command_section;
@@ -304,7 +311,7 @@ void cmd_engine_exec_command(const char *cmd, size_t cmd_len, const char *args, 
     if (!mparser_strcmp_P(cmd, cmd_len, base)) {
       cmd_handler handler = pgm_read_ptr_near(&iter->handler);
       if (handler) {
-        (*handler)(iter, args, args_len, &start_cmd);
+        (*handler)(iter, args, args_len, start_cmd);
       }
     }
   }

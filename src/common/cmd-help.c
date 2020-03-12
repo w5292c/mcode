@@ -58,13 +58,12 @@ bool cmd_help_command_handler(const TCmdData *data, const char *args,
     mprintstrln(PSTR("]"));
   } else {
     /* Show help for a specific command */
-    mprintstr(PSTR("> "));
-    mprintbytes_R(args, args_len);
-    mprintstr(PSTR(" - "));
-
     for (; iter < end; ++ iter) {
       const char *const base = pgm_read_ptr_near(&iter->base);
       if (!mparser_strcmp_P(args, args_len, base)) {
+        mprintstr(PSTR("> "));
+        mprintbytes_R(args, args_len);
+        mprintstr(PSTR(" - "));
         const char *const help = pgm_read_ptr_near(&iter->help);
         mprintstr(help);
         break;
