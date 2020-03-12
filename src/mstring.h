@@ -57,10 +57,27 @@ typedef void (*ostream_handler)(char ch);
  * Set output stream handler
  * @param[in] handler The new output stream handler, or \c NULL to reset to default handler
  * @note The default handler sends the output stream to UART1 device (can be overridden)
+ * @note Use this function to temporary update the output handler in a single function call,
+ *       restore it to \c NULL at exit from any function.
+ * @note Restoring to \c NULL might be implemented in after return from scheduler handlers
  */
 void io_set_ostream_handler(ostream_handler handler);
 
+/**
+ * Push a custom output handler to the stack of output handlers
+ * @param[in] handler The output handler to use for character output in \c mputch
+ * @note This function should have the matching \c io_ostream_handler_pop to restore
+ *       the default output hander
+ * @note The handlers in the output stack will be used if the handler is not set uisng
+ *       \c io_set_ostream_handler function, if it is set, it will be used instead
+ */
 void io_ostream_handler_push(ostream_handler handler);
+
+/**
+ * Pop the last previously pushed output handler activating the previous handler
+ * @note If there are no other output handlers in the stack, default handler will be activated.
+ * @note There are \c MCODE_OUTPUT_STACK_COUNT items exist in the stack
+ */
 void io_ostream_handler_pop(void);
 
 const char *mstring(uint8_t id);
