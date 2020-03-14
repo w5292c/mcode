@@ -264,6 +264,22 @@ TEST_F(StringBasic, MStringRSimple)
   ASSERT_STREQ(collected_text(), "abc");
 }
 
+TEST_F(StringBasic, PrintStringHex16Encoded)
+{
+  const char *const original = "0123ABCD";
+  const char *const expected = "00300031003200330041004200430044";
+
+  mprintstrhex16encoded(original, -1);
+}
+
+TEST_F(StringBasic, PrintStringHex16EncodedWithLength)
+{
+  const char *const original = "0123ABCDEFG";
+  const char *const expected = "00300031003200330041004200430044";
+
+  mprintstrhex16encoded(original, 8);
+}
+
 TEST_F(StringBasic, PrintHexEncodedString16Basic)
 {
   const char *const expected = "0123ABCD";

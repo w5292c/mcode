@@ -371,6 +371,21 @@ void mprint_dump_buffer(uint8_t length, const void *data, bool showAddress)
   }
 }
 
+void mprintstrhex16encoded(const char *str, size_t length)
+{
+  size_t i;
+  char buffer[8];
+
+  if (-1 == length) {
+    length = strlen(str);
+  }
+
+  for (i = 0; i < length; ++i) {
+    const uint16_t ch = *str++;
+    mprint_uint16(ch, false);
+  }
+}
+
 void mprinthexencodedstr16(const char *str, size_t length)
 {
   int i;
