@@ -25,6 +25,7 @@
 #include "main.h"
 #include "mtick.h"
 #include "hw-lcd.h"
+#include "mtimer.h"
 #include "mstring.h"
 #include "console.h"
 #include "hw-uart.h"
@@ -78,6 +79,7 @@ int main(int argc, char **argv)
   /* first, init the scheduler */
   scheduler_init();
   mtick_init();
+  mtimer_init();
   /* now, UART can be initialized */
   hw_uart_init();
   lcd_init(TheWidth, TheHeight);
@@ -101,6 +103,7 @@ int main(int argc, char **argv)
   cmd_engine_deinit();
   line_editor_uart_deinit();
   lcd_deinit();
+  mtimer_deinit();
   mtick_deinit();
   scheduler_deinit();
   hw_uart_deinit();

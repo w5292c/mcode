@@ -29,6 +29,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/mvars.c
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/hw-lcd.c
+  ${MCODE_TOP}/src/common/mtimer.c
   ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/cmd-lcd.c
   ${MCODE_TOP}/src/common/cmd-ssl.c

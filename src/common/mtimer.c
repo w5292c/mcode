@@ -105,7 +105,7 @@ void mtimer_add_handler(mcode_tick task, uint64_t next, uint32_t period)
 {
   TimerNode *ptr = TheTimerNodes;
   const TimerNode *const end = TheTimerNodes + MCODE_TIMER_HANDLERS;
-  while (ptr->next < next) {
+  while (ptr->next && ptr->next < next) {
     if (ptr == end) {
       /* No more room for handlers */
       return;

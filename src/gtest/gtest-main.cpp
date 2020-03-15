@@ -26,6 +26,10 @@
 
 int main(int argc, char **argv)
 {
+  int res;
+
   ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  res = RUN_ALL_TESTS();
+
+  return res;
 }
