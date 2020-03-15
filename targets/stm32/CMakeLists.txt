@@ -21,6 +21,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/stm32/main.c
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/hw-lcd.c
+  ${MCODE_TOP}/src/common/mtimer.c
   ${MCODE_TOP}/src/common/console.c
   ${MCODE_TOP}/src/common/hw-uart.c
   ${MCODE_TOP}/src/common/mstring.c

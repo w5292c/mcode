@@ -21,6 +21,7 @@ set (
   # Source code files
   ${MCODE_TOP}/src/common/mvars.c
   ${MCODE_TOP}/src/common/utils.c
+  ${MCODE_TOP}/src/common/mtimer.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/mstring.c
   ${MCODE_TOP}/src/common/scheduler.c

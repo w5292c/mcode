@@ -98,8 +98,6 @@ void mvar_print(const char *var, size_t length)
 {
   size_t idx = 0;
   size_t cnt = 1;
-  const char *token = NULL;
-  uint32_t token_length = 0;
   MVarType type = VarTypeNone;
 
   if (!var) {
@@ -124,7 +122,7 @@ void mvar_print(const char *var, size_t length)
       mprintbytes(str, length);
     }
   } else if (VarTypeLabel == type) {
-    const uint64_t value = (unsigned long)mvar_label(idx);
+    const uint64_t value = (uint64_t)(uintptr_t)mvar_label(idx);
     mprintstr("0x");
     mprint_uint64(value, true);
   } else {
@@ -133,7 +131,7 @@ void mvar_print(const char *var, size_t length)
       value = mvar_nvm_get(idx);
       if (cnt > 1) {
         /* Combine 2nd 16-bit word in LE style */
-        value |= (mvar_nvm_get(idx + 1) << 16);
+        value |= (((uint32_t)mvar_nvm_get(idx + 1)) << 16);
       }
     } else {
       value = mvar_int_get(idx);
@@ -185,10 +183,10 @@ MVarType var_parse_type(char ch)
 MVarType var_parse_name(const char *name, size_t length, size_t *index, size_t *count)
 {
   char ch;
-  bool skip;
   MVarType type;
   size_t idx = 0;
   size_t cnt = 1;
+  bool skip = false;
   if (!name || length < 1 || length > 4) {
     return VarTypeNone;
   }
@@ -204,7 +202,6 @@ MVarType var_parse_name(const char *name, size_t length, size_t *index, size_t *
   if (length) {
     ch = *name++;
     --length;
-    skip = false;
     if (ch >= '0' && ch <= '9') {
       idx = ch - '0';
     } else if (ch >= 'a' && ch <= 'z') {

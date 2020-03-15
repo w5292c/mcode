@@ -338,8 +338,8 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
         /* Finally, check if the current token is a variable name */
         type = var_parse_name(addr, *value, &index, &count);
         if (VarTypeNone != type) {
-          *value = *value | ((type & 0xffu) << 8) |
-                   ((index & 0xffu) << 16) | ((count & 0xffu) << 24);
+          *value = *value | (((uint32_t)type & 0xffu) << 8) |
+                   (((uint32_t)index & 0xffu) << 16) | (((uint32_t)count & 0xffu) << 24);
           return TokenVariable;
         } else {
           return TokenId;

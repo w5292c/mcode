@@ -303,7 +303,6 @@ void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
                              const char *args, size_t args_len, bool *start_cmd)
 {
   /* New style for commands/help support, using 'command_section' section */
-  const char *help;
   const TCmdData *iter = &__start_command_section;
   const TCmdData *const end = &__stop_command_section;
   for (; iter < end; ++ iter) {

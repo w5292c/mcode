@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2018 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include "hw-rtc.h"
 #include "hw-pwm.h"
 #include "hw-wdt.h"
+#include "mtimer.h"
 #include "mstring.h"
 #include "hw-leds.h"
 #include "hw-uart.h"
@@ -47,6 +48,7 @@ int main (void)
   /* first, init the scheduler */
   scheduler_init();
   mtick_init();
+  mtimer_init();
 
 #ifdef MCODE_TWI
   twi_init();
@@ -131,6 +133,7 @@ int main (void)
   twi_deinit();
 #endif /* MCODE_TWI */
 
+  mtimer_deinit();
   mtick_deinit();
   return 0;
 }

@@ -33,9 +33,10 @@
 static bool cmd_help_command_handler(const TCmdData *data, const char *args,
                                      size_t args_len, bool *start_cmd);
 
+static const char TheBaseHelp[] PROGMEM = ("help");
 static const char TheHelpMessage[] PROGMEM = ("Show help for all commands");
 
-CMD_ENTRY(PSTR("help"), help, TheHelpMessage, &cmd_help_command_handler, NULL, 0);
+CMD_ENTRY(TheBaseHelp, help, TheHelpMessage, &cmd_help_command_handler, NULL, 0);
 
 bool cmd_help_command_handler(const TCmdData *data, const char *args,
                               size_t args_len, bool *start_cmd)

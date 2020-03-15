@@ -32,10 +32,17 @@
 extern "C" {
 #endif
 
+#ifndef __AVR__
 #define MCODE_LABELS_COUNT (4)
 #define PROG_INTVARS_COUNT (16)
 #define PROG_STRVARS_COUNT (16)
 #define PROG_STRVAR_LENGTH (128)
+#else /* __AVR__ */
+#define MCODE_LABELS_COUNT (4)
+#define PROG_INTVARS_COUNT (16)
+#define PROG_STRVARS_COUNT (8)
+#define PROG_STRVAR_LENGTH (32)
+#endif /* __AVR__ */
 
 typedef enum _MVarType {
   VarTypeNone,

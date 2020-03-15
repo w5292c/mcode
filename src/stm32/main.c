@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2018 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include "mtick.h"
 #include "hw-lcd.h"
 #include "hw-rtc.h"
+#include "mtimer.h"
 #include "system.h"
 #include "console.h"
 #include "hw-leds.h"
@@ -47,6 +48,7 @@ int main(void)
   /* first, init the scheduler */
   scheduler_init();
   mtick_init();
+  mtimer_init();
   system_init();
   leds_init();
   hw_uart_init();
@@ -88,6 +90,7 @@ int main(void)
   lcd_deinit();
   leds_deinit();
   system_deinit();
+  mtimer_deinit();
   mtick_deinit();
   scheduler_deinit();
   poweroff();
