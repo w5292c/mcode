@@ -42,6 +42,7 @@ set (
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
   ${MCODE_TOP}/src/emu/persistent-store.c
+  ${MCODE_TOP}/src/gtest/test-scheduler.cpp
   ${MCODE_TOP}/src/gtest/test-mvars-basic.cpp
   ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
   ${MCODE_TOP}/src/gtest/test-mparser-basic.cpp
@@ -56,7 +57,7 @@ configure_file ( ${MCODE_TOP}/mcode-config.h.in
 
 add_library ( console-test.lib STATIC ${SRC_LIST})
 if ( MCODE_COVERAGE )
-  target_compile_options ( console-test.lib PRIVATE "-fprofile-arcs" "-ftest-coverage" )
+  target_compile_options ( console-test.lib PRIVATE "-fprofile-arcs" "-ftest-coverage" "-O0" )
   target_link_libraries ( console-test.lib gcov )
 endif ( MCODE_COVERAGE )
 
