@@ -41,7 +41,7 @@ typedef struct {
     */
   uint64_t next;
   uint32_t period;
-  mcode_tick handler;
+  mcode_exec handler;
 } TimerNode;
 
 /**
@@ -50,9 +50,9 @@ typedef struct {
 static TimerNode TheTimerNodes[MCODE_TIMER_HANDLERS] = {0};
 
 static void mtimer_scheduler_tick(void);
-static void mtimer_postprocess_top_node(void);
+static void mtimer_postprocess_top_node(bool more_work);
 
-static void mtimer_add_handler(mcode_tick task, uint64_t next, uint32_t period);
+static void mtimer_add_handler(mcode_exec task, uint64_t next, uint32_t period);
 
 void mtimer_init(void)
 {
@@ -63,12 +63,12 @@ void mtimer_deinit(void)
 {
 }
 
-void mtimer_add(mcode_tick task, uint32_t start)
+void mtimer_add(mcode_exec task, uint32_t start)
 {
   mtimer_add_handler(task, mtick_count() + start, MCODE_INCORRECT_PERIOD);
 }
 
-void mtimer_add_periodic(mcode_tick task, uint32_t start, uint32_t period)
+void mtimer_add_periodic(mcode_exec task, uint32_t start, uint32_t period)
 {
   mtimer_add_handler(task, mtick_count() + start, period);
 }
@@ -80,15 +80,16 @@ void mtimer_scheduler_tick(void)
     return;
   }
 
+  bool more_work;
   enum { count = sizeof (TheTimerNodes)/sizeof (*TheTimerNodes) };
   const uint64_t time = mtick_count();
   while (TheTimerNodes->next && TheTimerNodes->next <= time) {
-    (*TheTimerNodes->handler)();
-    mtimer_postprocess_top_node();
+    more_work = (*TheTimerNodes->handler)();
+    mtimer_postprocess_top_node(more_work);
   }
 }
 
-void mtimer_postprocess_top_node(void)
+void mtimer_postprocess_top_node(bool more_work)
 {
   /* Store the top node in a temporary memory */
   TimerNode node;
@@ -96,12 +97,12 @@ void mtimer_postprocess_top_node(void)
   node = *TheTimerNodes;
   memmove(TheTimerNodes, TheTimerNodes + 1, sizeof (TimerNode) * (MCODE_TIMER_HANDLERS - 1));
 
-  if (MCODE_INCORRECT_PERIOD != node.period) {
+  if (MCODE_INCORRECT_PERIOD != node.period && more_work) {
     mtimer_add_handler(node.handler, node.next + node.period, node.period);
   }
 }
 
-void mtimer_add_handler(mcode_tick task, uint64_t next, uint32_t period)
+void mtimer_add_handler(mcode_exec task, uint64_t next, uint32_t period)
 {
   TimerNode *ptr = TheTimerNodes;
   const TimerNode *const end = TheTimerNodes + MCODE_TIMER_HANDLERS;

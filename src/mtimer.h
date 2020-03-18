@@ -27,8 +27,6 @@
 
 #include "mglobal.h"
 
-#include <stdbool.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,16 +48,19 @@ void mtimer_deinit(void);
  * Add a new task to the timer to be invoked in the future
  * @param[in] handler The timer callback to be invoked after \msec milliseconds
  * @param[in] start The number of milliseconds to wait before the \c handler is called
+ * @note The return value of the task is ingored for a non-periodic handle/task
  */
-void mtimer_add(mcode_tick task, uint32_t start);
+void mtimer_add(mcode_exec task, uint32_t start);
 
 /**
  * Add a new periodic timer task to start in \c start msecs and \c period
  * @param[in] task The timer handler
  * @param[in] start The start time in milliseconds
  * @param[in] period The period for the task in milliseconds
+ * @note If the periodic task handler returns \c false, it will be cancelled/removed,
+ *       if it returns \c true, the handler will be called again after \c period milliseconds.
  */
-void mtimer_add_periodic(mcode_tick task, uint32_t start, uint32_t period);
+void mtimer_add_periodic(mcode_exec task, uint32_t start, uint32_t period);
 
 #ifdef __cplusplus
 } /* extern "C" */

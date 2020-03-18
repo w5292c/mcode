@@ -57,6 +57,12 @@ extern "C" {
 typedef void (*mcode_tick)(void);
 
 /**
+ * Execution handler that may return a flag
+ * @return A flag to be handled in the client code
+ */
+typedef bool (*mcode_exec)(void);
+
+/**
  * Generic function to report result of an async process
  */
 typedef void (*mcode_done)(bool success);
