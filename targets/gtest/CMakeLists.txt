@@ -8,13 +8,23 @@ option ( MCODE_UART2 "Enable UART2 module in SoC" ON )
 option ( MCODE_NEW_ENGINE "Enable new Command Engine" ON )
 
 # Locate GTest
-find_package(GTest REQUIRED)
+find_package ( GTest REQUIRED )
+find_package ( Qt4       REQUIRED )
+find_package ( PkgConfig REQUIRED )
+
+pkg_check_modules ( GLIB2_0       glib-2.0        REQUIRED )
+
 include_directories(
   ${GTEST_INCLUDE_DIRS}
+  ${GLIB2_0_INCLUDE_DIRS}
+  ${QT4_INCLUDE_DIRS}
   ${MCODE_TOP}/src
   ${MCODE_TOP}/src/common
   ${PROJECT_BINARY_DIR}/include
 )
+
+INCLUDE ( ${QT_USE_FILE} )
+ADD_DEFINITIONS ( ${QT_DEFINITIONS} )
 
 set (
   SRC_LIST
@@ -24,7 +34,6 @@ set (
   ${MCODE_TOP}/src/common/mtimer.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/mstring.c
-  ${MCODE_TOP}/src/common/scheduler.c
   ${MCODE_TOP}/src/common/gsm-engine-uart2.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
 )
@@ -37,11 +46,14 @@ set_source_files_properties (
 set (
   TEST_SRC_LIST
   # Test source code files
+  ${MCODE_TOP}/src/emu/mtick.c
   ${MCODE_TOP}/src/emu/hw-nvm.c
   ${MCODE_TOP}/src/emu/hw-uart.c
+  ${MCODE_TOP}/src/emu/scheduler.c
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
   ${MCODE_TOP}/src/emu/persistent-store.c
+  ${MCODE_TOP}/src/gtest/test-mtimer.cpp
   ${MCODE_TOP}/src/gtest/test-scheduler.cpp
   ${MCODE_TOP}/src/gtest/test-mvars-basic.cpp
   ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
@@ -63,7 +75,14 @@ endif ( MCODE_COVERAGE )
 
 add_executable(console-test.test ${TEST_SRC_LIST})
 
-target_link_libraries(console-test.test ${GTEST_LIBRARIES} gmock pthread console-test.lib "-Wl,--wrap,uart_write_char,--wrap,uart2_write_char")
+target_link_libraries(
+  console-test.test
+  ${QT_LIBRARIES}
+  ${GTEST_LIBRARIES}
+  ${GLIB2_0_LIBRARIES}
+  gmock pthread console-test.lib
+  "-Wl,--wrap,uart_write_char,--wrap,uart2_write_char"
+)
 
 add_custom_target (
   cov
