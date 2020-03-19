@@ -61,6 +61,7 @@ void mtimer_init(void)
 
 void mtimer_deinit(void)
 {
+  memset(TheTimerNodes, 0, sizeof (TheTimerNodes));
 }
 
 void mtimer_add(mcode_exec task, uint32_t start)
