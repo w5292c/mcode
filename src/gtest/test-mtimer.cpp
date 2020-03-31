@@ -27,7 +27,6 @@
 #include "scheduler.h"
 
 #include <gtest/gtest.h>
-#include <QCoreApplication>
 
 using namespace testing;
 
@@ -52,15 +51,12 @@ protected:
 
   static bool handler1(void) {
     ++_handler1_count;
-//    QCoreApplication::quit();
 
     return false;
   }
   static bool handler2(void) {
     ++_handler2_count;
     if (_handler2_count == 3) {
-      QCoreApplication::quit();
-//      scheduler_stop();
       return false;
     }
 
@@ -121,10 +117,6 @@ int TimerTestAddHandler::_handler2_count = 0;
 
 TEST_F(TimerTestBasic, MPrintStrSimple)
 {
-printf("before start\n");
-  QCoreApplication::exec();
-//  scheduler_start();
-printf("after start\n");
 }
 
 TEST_F(TimerTestAddHandler, MPrintStrSimple)
