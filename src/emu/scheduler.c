@@ -26,8 +26,6 @@
 
 #include "mstring.h"
 
-#include <glib.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
