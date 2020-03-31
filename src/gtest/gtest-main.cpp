@@ -23,13 +23,10 @@
  */
 
 #include <gtest/gtest.h>
-#include <QCoreApplication>
 
 int main(int argc, char **argv)
 {
   int res;
-
-  QCoreApplication app(argc, argv);
 
   ::testing::InitGoogleTest(&argc, argv);
   res = RUN_ALL_TESTS();
