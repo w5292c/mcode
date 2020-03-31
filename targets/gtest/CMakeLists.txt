@@ -11,11 +11,8 @@ option ( MCODE_NEW_ENGINE "Enable new Command Engine" ON )
 find_package ( GTest REQUIRED )
 find_package ( PkgConfig REQUIRED )
 
-pkg_check_modules ( GLIB2_0       glib-2.0        REQUIRED )
-
 include_directories(
   ${GTEST_INCLUDE_DIRS}
-  ${GLIB2_0_INCLUDE_DIRS}
   ${MCODE_TOP}/src
   ${MCODE_TOP}/src/common
   ${PROJECT_BINARY_DIR}/include
@@ -73,7 +70,6 @@ add_executable(console-test.test ${TEST_SRC_LIST})
 target_link_libraries(
   console-test.test
   ${GTEST_LIBRARIES}
-  ${GLIB2_0_LIBRARIES}
   gmock pthread console-test.lib
   "-Wl,--wrap,uart_write_char,--wrap,uart2_write_char"
 )
