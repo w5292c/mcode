@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "cmd-engine.h"
+#include "cmd-iface.h"
 
 #include "main.h"
 #include "hw-ir.h"
@@ -37,6 +37,14 @@
 
 #include <string.h>
 
+static bool cmd_system_ut(const TCmdData *data, const char *args,
+                          size_t args_len, bool *start_cmd);
+
+static const char TheSystemUt[] PROGMEM = ("ut");
+static const char TheSystemUtHelp[] PROGMEM = ("Show uptime");
+
+CMD_ENTRY(TheSystemUt, TheCmdUt, TheSystemUtHelp, &cmd_system_ut, NULL, 0);
+
 #ifdef __AVR__
 /** @todo move to AVR-specific code */
 static void cmd_engine_call(const char *args, bool *startCmd);
@@ -48,7 +56,6 @@ static void cmd_engine_system_test(const char *args, bool *startCmd);
 
 void cmd_engine_system_help(void)
 {
-  mprintstrln(PSTR("> ut - Show uptime"));
   mprintstrln(PSTR("> reboot - Initiate a system reboot"));
   mprintstrln(PSTR("> poweroff - Shut down the system"));
 #ifdef MCODE_BOOTLOADER
@@ -71,37 +78,6 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     return cmd_engine_echo(args + 4, startCmd);
   } else if (!strncmp_P(args, PSTR("expr "), 5)) {
     mprintexpr(args + 5);
-    return true;
-  } else if (!strcmp_P(args, PSTR("ut"))) {
-#ifdef MCODE_WDT
-    mprintstr(PSTR("Reset reason: 0x"));
-    mprint_uint8(wdt_reset_reason(), false);
-    mprint(MStringNewLine);
-#endif /* MCODE_WDT */
-    const uint64_t tickCount = mtick_count();
-    uint64_t count = tickCount;
-    const uint32_t milliSeconds = count%1000;
-    count = count/1000;
-    const uint32_t seconds = count%60;
-    count = count/60;
-    const uint32_t minutes = count%60;
-    count = count/60;
-    const uint32_t hours = count%24;
-    count = count/24;
-    const uint32_t days = count;
-    mprintstr(PSTR("Uptime: 0x"));
-    mprint_uint64(tickCount, true);
-    mprintstr(PSTR("; days: "));
-    mprint_uintd(days, 0);
-    mprintstr(PSTR(", hours: "));
-    mprint_uintd(hours, 0);
-    mprintstr(PSTR(", minutes: "));
-    mprint_uintd(minutes, 0);
-    mprintstr(PSTR(", seconds: "));
-    mprint_uintd(seconds, 0);
-    mprintstr(PSTR(", milli-seconds: "));
-    mprint_uintd(milliSeconds, 0);
-    mprint(MStringNewLine);
     return true;
   } else if (!strcmp_P(args, PSTR("reboot"))) {
     reboot();
@@ -209,6 +185,41 @@ void cmd_engine_call(const char *args, bool *startCmd)
 #endif /* MCODE_WDT */
 }
 #endif /* __AVR__ */
+
+bool cmd_system_ut(const TCmdData *data, const char *args,
+                   size_t args_len, bool *start_cmd)
+{
+#ifdef MCODE_WDT
+  mprintstr(PSTR("Reset reason: 0x"));
+  mprint_uint8(wdt_reset_reason(), false);
+  mprint(MStringNewLine);
+#endif /* MCODE_WDT */
+  const uint64_t tickCount = mtick_count();
+  uint64_t count = tickCount;
+  const uint32_t milliSeconds = count%1000;
+  count = count/1000;
+  const uint32_t seconds = count%60;
+  count = count/60;
+  const uint32_t minutes = count%60;
+  count = count/60;
+  const uint32_t hours = count%24;
+  count = count/24;
+  const uint32_t days = count;
+  mprintstr(PSTR("Uptime: 0x"));
+  mprint_uint64(tickCount, true);
+  mprintstr(PSTR("; days: "));
+  mprint_uintd(days, 0);
+  mprintstr(PSTR(", hours: "));
+  mprint_uintd(hours, 0);
+  mprintstr(PSTR(", minutes: "));
+  mprint_uintd(minutes, 0);
+  mprintstr(PSTR(", seconds: "));
+  mprint_uintd(seconds, 0);
+  mprintstr(PSTR(", milli-seconds: "));
+  mprint_uintd(milliSeconds, 0);
+  mprint(MStringNewLine);
+  return true;
+}
 
 void cmd_engine_system_test(const char *args, bool *startCmd)
 {

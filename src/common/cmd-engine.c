@@ -305,7 +305,7 @@ void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
   /* New style for commands/help support, using 'command_section' section */
   const TCmdData *iter = &__start_command_section;
   const TCmdData *const end = &__stop_command_section;
-  for (; iter < end; ++ iter) {
+  for (; iter < end; ++iter) {
     const char *const base = pgm_read_ptr_near(&iter->base);
     if (!mparser_strcmp_P(cmd, cmd_len, base)) {
       cmd_handler handler = pgm_read_ptr_near(&iter->handler);

@@ -36,7 +36,7 @@ extern "C" {
 #define CMD_SECTION __attribute__((section("command_section")))
 
 #define CMD_ENTRY(base, name, help, handler, init_handler, level) \
-  static const TCmdData name CMD_SECTION CMD_USED = { \
+  static const TCmdData name CMD_SECTION CMD_USED __attribute__ ((aligned (4))) = { \
     base, \
     help, \
     handler, \
