@@ -33,7 +33,6 @@
 
 #include <string.h>
 
-static void cmd_engine_show_help(void);
 static void cmd_engine_on_cmd_ready(const char *aString);
 #ifdef MCODE_NEW_ENGINE
 static void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
@@ -68,8 +67,7 @@ void cmd_engine_on_cmd_ready(const char *aString)
 {
   bool start_uart_editor = true;
 
-  if (!strcmp_P(aString, PSTR("help-old"))) {
-    cmd_engine_show_help();
+  if (false) {
   }
 #ifdef MCODE_PWM
   else if (cmd_engine_pwm_command(aString, &start_uart_editor)) {
@@ -133,69 +131,6 @@ void cmd_engine_on_cmd_ready(const char *aString)
 
   if (start_uart_editor) {
     line_editor_uart_start();
-  }
-}
-
-void cmd_engine_show_help(void)
-{
-  mprintstrln(PSTR("Supported cmds:"));
-#ifdef MCODE_TEST_IMAGES
-  cmd_engine_images_help();
-#endif /* MCODE_TEST_IMAGES */
-#ifdef MCODE_PWM
-  cmd_engine_pwm_help();
-#endif /* MCODE_PWM */
-#ifdef MCODE_LEDS
-  cmd_engine_led_help();
-#endif /* MCODE_LEDS */
-#ifdef MCODE_LCD
-  cmd_engine_lcd_help();
-#endif /* MCODE_LCD */
-#ifdef MCODE_SECURITY
-  cmd_engine_ssl_help();
-#endif /* MCODE_SECURITY */
-#ifdef MCODE_COMMAND_MODES
-  mprintstrln(PSTR("> su [MODE(1|2|3)] - Set the command engine mode"));
-  mprintstrln(PSTR("> passwd - change the device password"));
-#endif /* MCODE_COMMAND_MODES */
-#ifdef MCODE_TWI
-  cmd_engine_twi_help();
-#endif /* MCODE_TWI */
-#ifdef MCODE_RTC
-  cmd_engine_rtc_help();
-#endif /* MCODE_RTC */
-  cmd_engine_system_help();
-#ifdef MCODE_TV
-  cmd_engine_tv_help();
-#endif /* MCODE_TV */
-#ifdef MCODE_CONSOLE_ENABLED
-  cmd_engine_console_help();
-#endif /* MCODE_CONSOLE_ENABLED */
-#ifdef MCODE_SOUND
-  cmd_engine_sound_help();
-#endif /* MCODE_SOUND */
-#ifdef MCODE_GSM
-  cmd_engine_gsm_help();
-#endif /* MCODE_GSM */
-#ifdef MCODE_SWITCH_ENGINE
-  cmd_engine_switch_help();
-#endif /* MCODE_SWITCH_ENGINE */
-#ifdef MCODE_PROG
-  cmd_engine_prog_help();
-#endif /* MCODE_PROG */
-
-  /* New style for commands/help support, using 'command_section' section */
-  const char *base;
-  const char *help;
-  const TCmdData *iter = &__start_command_section;
-  const TCmdData *const end = &__stop_command_section;
-  for (; iter < end; ++ iter) {
-    base = pgm_read_ptr_near(&iter->base);
-    help = pgm_read_ptr_near(&iter->help);
-    mprintstr(PSTR("> "));
-    mprintstr(base);
-    mprintstr(PSTR(" - "));
-    mprintstrln(help);
   }
 }
 
