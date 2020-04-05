@@ -24,6 +24,7 @@
 
 #include "customwidget.h"
 
+#include <QTimer>
 #include <QDebug>
 #include <QPainter>
 
@@ -32,11 +33,14 @@ AcCustomWidget::AcCustomWidget(uint width, uint height, QWidget *pParent) :
   m_on(false),
   m_width(width),
   m_height(height),
-  m_scrollPosition(0)
+  m_scrollPosition(0),
+  nOutstandingRequestToUpdate(false)
 {
   qDebug() << "AcCustomWidget::AcCustomWidget: " << (const void *)this;
   m_pScreenData = (quint32 *)malloc (4*width*height);
   resize(width, height);
+
+  connect(this, SIGNAL(updateSignal()), this, SLOT(xupdate()), Qt::QueuedConnection);
 }
 
 AcCustomWidget::~AcCustomWidget()
@@ -50,13 +54,13 @@ void AcCustomWidget::reset()
   turn(false);
 
   memset(m_pScreenData, 0, sizeof(quint32)*m_width*m_height);
-  update();
+  requestUpdate();
 }
 
 void AcCustomWidget::turn(bool on)
 {
   m_on = on;
-  update();
+  requestUpdate();
 }
 
 void AcCustomWidget::setPixel (uint x, uint y, QRgb color)
@@ -64,7 +68,7 @@ void AcCustomWidget::setPixel (uint x, uint y, QRgb color)
   if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
     m_pScreenData[m_width*y+x] = color;
     if (m_on) {
-      update();
+      requestUpdate();
     }
   } else {
     printf("AcCustomWidget::setPixel: wrong request: at (%u, %u), color: %u\r\n", x, y, color);
@@ -101,7 +105,7 @@ void AcCustomWidget::setSize(uint width, uint height)
 void AcCustomWidget::setScrollPosition(uint scrollPosition)
 {
   m_scrollPosition = (scrollPosition % m_height);
-  update();
+  requestUpdate();
 }
 
 void AcCustomWidget::paintEvent(QPaintEvent *pEvent)
@@ -132,4 +136,18 @@ void AcCustomWidget::paintEvent(QPaintEvent *pEvent)
   }
 
   QWidget::paintEvent(pEvent);
+}
+
+void AcCustomWidget::requestUpdate()
+{
+  if (!nOutstandingRequestToUpdate) {
+    nOutstandingRequestToUpdate = true;
+    emit updateSignal();
+  }
+}
+
+void AcCustomWidget::xupdate()
+{
+  update();
+  nOutstandingRequestToUpdate = false;
 }

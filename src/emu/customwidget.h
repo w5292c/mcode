@@ -46,7 +46,14 @@ public:
   void setScrollPosition(uint scrollPosition);
 
 protected:
+  void requestUpdate();
   void paintEvent(QPaintEvent *pEvent);
+
+protected slots:
+  void xupdate();
+
+signals:
+  void updateSignal();
 
 private:
   bool m_on;
@@ -54,6 +61,7 @@ private:
   uint m_height;
   uint m_scrollPosition;
   quint32 *m_pScreenData;
+  bool nOutstandingRequestToUpdate;
 };
 
 #endif /* AC_CUSTOM_WIDGET_H */
