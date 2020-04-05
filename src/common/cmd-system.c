@@ -40,15 +40,25 @@
 
 static bool cmd_system_ut(const TCmdData *data, const char *args,
                           size_t args_len, bool *start_cmd);
+static bool cmd_system_echo(const TCmdData *data, const char *args,
+                            size_t args_len, bool *start_cmd);
+static bool cmd_system_expr(const TCmdData *data, const char *args,
+                            size_t args_len, bool *start_cmd);
 static bool cmd_system_errno(const TCmdData *data, const char *args,
                              size_t args_len, bool *start_cmd);
 
 static const char TheSystemUtBase[] PROGMEM = ("ut");
+static const char TheSystemEchoBase[] PROGMEM = ("echo");
+static const char TheSystemExprBase[] PROGMEM = ("expr");
 static const char TheSystemErrnoBase[] PROGMEM = ("errno");
 static const char TheSystemUtHelp[] PROGMEM = ("Show uptime");
-static const char TheSystemErrnoHelp[] PROGMEM = ("Show the error code for the last command");
+static const char TheSystemEchoHelp[] PROGMEM = ("Echo input string");
+static const char TheSystemExprHelp[] PROGMEM = ("Resolve/print input string");
+static const char TheSystemErrnoHelp[] PROGMEM = ("Show error code for last command");
 
 CMD_ENTRY(TheSystemUtBase, TheCmdUt, TheSystemUtHelp, &cmd_system_ut, NULL, 0);
+CMD_ENTRY(TheSystemEchoBase, TheCmdEcho, TheSystemEchoHelp, &cmd_system_echo, NULL, 0);
+CMD_ENTRY(TheSystemExprBase, TheCmdExpr, TheSystemExprHelp, &cmd_system_expr, NULL, 0);
 CMD_ENTRY(TheSystemErrnoBase, TheCmdErrno, TheSystemErrnoHelp, &cmd_system_errno, NULL, 0);
 
 #ifdef __AVR__
@@ -56,7 +66,6 @@ CMD_ENTRY(TheSystemErrnoBase, TheCmdErrno, TheSystemErrnoHelp, &cmd_system_errno
 static void cmd_engine_call(const char *args, bool *startCmd);
 #endif /* __AVR__ */
 
-static bool cmd_engine_echo(const char *args, bool *startCmd);
 static bool cmd_engine_sleep(const char *args, bool *startCmd);
 static void cmd_engine_system_test(const char *args, bool *startCmd);
 
@@ -70,8 +79,6 @@ void cmd_engine_system_help(void)
 #ifdef __AVR__
   mprintstrln(PSTR("> call <addr> - Call a program at <addr>"));
 #endif /* __AVR__ */
-  mprintstrln(PSTR("> echo <string> - Echo <string> to console"));
-  mprintstrln(PSTR("> expr <expression> - print <expression> to console"));
   mprintstrln(PSTR("> sleep <msec> - Suspend execution for <msec> milli-seconds"));
   mprintstrln(PSTR("> test [<args>] - Usually empty placeholder for temparary experiments"));
 }
@@ -80,11 +87,6 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
 {
   if (!strncmp_P(args, PSTR("sleep"), 5)) {
     return cmd_engine_sleep(args + 5, startCmd);
-  } else if (!strncmp_P(args, PSTR("echo"), 4)) {
-    return cmd_engine_echo(args + 4, startCmd);
-  } else if (!strncmp_P(args, PSTR("expr "), 5)) {
-    mprintexpr(args + 5);
-    return true;
   } else if (!strcmp_P(args, PSTR("reboot"))) {
     reboot();
     return true;
@@ -124,17 +126,6 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
 #endif /* __linux__ */
 
   return false;
-}
-
-bool cmd_engine_echo(const char *args, bool *startCmd)
-{
-  if (*args) {
-    ++args;
-    mprintstr_R(args);
-  }
-
-  mprint(MStringNewLine);
-  return true;
 }
 
 bool cmd_engine_sleep(const char *args, bool *startCmd)
@@ -223,6 +214,21 @@ bool cmd_system_ut(const TCmdData *data, const char *args,
   mprint_uintd(seconds, 0);
   mprintstr(PSTR(", milli-seconds: "));
   mprint_uintd(milliSeconds, 0);
+  mprint(MStringNewLine);
+  return true;
+}
+
+bool cmd_system_echo(const TCmdData *data, const char *args,
+                     size_t args_len, bool *start_cmd)
+{
+  mprintbytes_R(args, args_len);
+  mprint(MStringNewLine);
+}
+
+bool cmd_system_expr(const TCmdData *data, const char *args,
+                     size_t args_len, bool *start_cmd)
+{
+  mprintexpr(args);
   mprint(MStringNewLine);
   return true;
 }
