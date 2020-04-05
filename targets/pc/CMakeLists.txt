@@ -34,6 +34,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/cmd-lcd.c
   ${MCODE_TOP}/src/common/cmd-ssl.c
   ${MCODE_TOP}/src/common/hw-uart.c
+  ${MCODE_TOP}/src/common/mstatus.c
   ${MCODE_TOP}/src/common/mstring.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/cmd-help.c

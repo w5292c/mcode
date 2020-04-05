@@ -31,6 +31,7 @@
 #include "hw-wdt.h"
 #include "system.h"
 #include "mglobal.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "scheduler.h"
 #include "mcode-config.h"
@@ -39,11 +40,16 @@
 
 static bool cmd_system_ut(const TCmdData *data, const char *args,
                           size_t args_len, bool *start_cmd);
+static bool cmd_system_errno(const TCmdData *data, const char *args,
+                             size_t args_len, bool *start_cmd);
 
-static const char TheSystemUt[] PROGMEM = ("ut");
+static const char TheSystemUtBase[] PROGMEM = ("ut");
+static const char TheSystemErrnoBase[] PROGMEM = ("errno");
 static const char TheSystemUtHelp[] PROGMEM = ("Show uptime");
+static const char TheSystemErrnoHelp[] PROGMEM = ("Show the error code for the last command");
 
-CMD_ENTRY(TheSystemUt, TheCmdUt, TheSystemUtHelp, &cmd_system_ut, NULL, 0);
+CMD_ENTRY(TheSystemUtBase, TheCmdUt, TheSystemUtHelp, &cmd_system_ut, NULL, 0);
+CMD_ENTRY(TheSystemErrnoBase, TheCmdErrno, TheSystemErrnoHelp, &cmd_system_errno, NULL, 0);
 
 #ifdef __AVR__
 /** @todo move to AVR-specific code */
@@ -217,6 +223,14 @@ bool cmd_system_ut(const TCmdData *data, const char *args,
   mprint_uintd(seconds, 0);
   mprintstr(PSTR(", milli-seconds: "));
   mprint_uintd(milliSeconds, 0);
+  mprint(MStringNewLine);
+  return true;
+}
+
+bool cmd_system_errno(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
+{
+  mprintstr(PSTR("errno: "));
+  mprint_uintd(mcode_errno(), 0);
   mprint(MStringNewLine);
   return true;
 }
