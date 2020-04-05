@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <pthread.h>
 
 #define MCODE_TICKS_COUNT (8)
@@ -64,6 +65,7 @@ void scheduler_deinit(void)
 void *emu_core_scheduler_thread(void *threadid)
 {
   (void)threadid;
+  nice(19);
 
   scheduler_start();
   return NULL;
