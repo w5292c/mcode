@@ -29,6 +29,17 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef enum {
+  ESuccess = 0,
+  ENotFound = 1,
+  EGeneral = 2,
+  EArgument = 6,
+} TStatus;
+
+/**
+ * Returns the error code for the last operation
+ * @return One of the codes in \c TStatus
+ */
 int mcode_errno(void);
 void mcode_errno_set(int errno);
 
