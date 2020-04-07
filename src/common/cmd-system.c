@@ -49,14 +49,22 @@ static bool cmd_system_errno(const TCmdData *data, const char *args,
                              size_t args_len, bool *start_cmd);
 static bool cmd_system_sleep(const TCmdData *data, const char *args,
                              size_t args_len, bool *start_cmd);
+static bool cmd_system_reboot(const TCmdData *data, const char *args,
+                              size_t args_len, bool *start_cmd);
+static bool cmd_system_poweroff(const TCmdData *data, const char *args,
+                                size_t args_len, bool *start_cmd);
 
 static const char TheSystemUtBase[] PROGMEM = ("ut");
 static const char TheSystemEchoBase[] PROGMEM = ("echo");
 static const char TheSystemExprBase[] PROGMEM = ("expr");
 static const char TheSystemErrnoBase[] PROGMEM = ("errno");
 static const char TheSystemSleepBase[] PROGMEM = ("sleep");
+static const char TheSystemRebootBase[] PROGMEM = ("reboot");
+static const char TheSystemPoweroffBase[] PROGMEM = ("poweroff");
 static const char TheSystemUtHelp[] PROGMEM = ("Show uptime");
+static const char TheSystemRebootHelp[] PROGMEM = ("Reboot system");
 static const char TheSystemEchoHelp[] PROGMEM = ("Echo input string");
+static const char TheSystemPoweroffHelp[] PROGMEM = ("Power off system");
 static const char TheSystemSleepHelp[] PROGMEM = ("Sleep for milli-seconds");
 static const char TheSystemExprHelp[] PROGMEM = ("Resolve/print input string");
 static const char TheSystemErrnoHelp[] PROGMEM = ("Show and reset error code for last command");
@@ -66,35 +74,28 @@ CMD_ENTRY(TheSystemEchoBase, TheCmdEcho, TheSystemEchoHelp, &cmd_system_echo, NU
 CMD_ENTRY(TheSystemExprBase, TheCmdExpr, TheSystemExprHelp, &cmd_system_expr, NULL, 0);
 CMD_ENTRY(TheSystemErrnoBase, TheCmdErrno, TheSystemErrnoHelp, &cmd_system_errno, NULL, 0);
 CMD_ENTRY(TheSystemSleepBase, TheCmdSleep, TheSystemSleepHelp, &cmd_system_sleep, NULL, 0);
+CMD_ENTRY(TheSystemRebootBase, TheCmdReboot, TheSystemRebootHelp, &cmd_system_reboot, NULL, 0);
+CMD_ENTRY(TheSystemPoweroffBase, TheCmdPoweroff,
+          TheSystemPoweroffHelp, &cmd_system_poweroff, NULL, 0);
 
 #ifdef __AVR__
 /** @todo move to AVR-specific code */
 static void cmd_engine_call(const char *args, bool *startCmd);
 #endif /* __AVR__ */
 
-static void cmd_engine_system_test(const char *args, bool *startCmd);
-
 void cmd_engine_system_help(void)
 {
-  mprintstrln(PSTR("> reboot - Initiate a system reboot"));
-  mprintstrln(PSTR("> poweroff - Shut down the system"));
 #ifdef MCODE_BOOTLOADER
   mprintstrln(PSTR("> bootloader - Reboot to bootloader mode"));
 #endif /* MCODE_BOOTLOADER */
 #ifdef __AVR__
   mprintstrln(PSTR("> call <addr> - Call a program at <addr>"));
 #endif /* __AVR__ */
-  mprintstrln(PSTR("> test [<args>] - Usually empty placeholder for temparary experiments"));
 }
 
 bool cmd_engine_system_command(const char *args, bool *startCmd)
 {
-  if (!strcmp_P(args, PSTR("reboot"))) {
-    reboot();
-    return true;
-  } else if (!strcmp_P(args, PSTR("poweroff"))) {
-    scheduler_stop();
-    return true;
+  if (false) {
 #ifdef MCODE_BOOTLOADER
   } else if (!strcmp_P(args, PSTR("bootloader"))) {
 #ifdef MCODE_COMMAND_MODES
@@ -106,26 +107,12 @@ bool cmd_engine_system_command(const char *args, bool *startCmd)
     bootloader();
     return true;
 #endif /* MCODE_BOOTLOADER */
-  } else if (!strcmp_P(args, PSTR("test"))) {
-    cmd_engine_system_test(NULL, startCmd);
-    return true;
-  } else if (!strncmp_P(args, PSTR("test "), 5)) {
-    cmd_engine_system_test(args + 5, startCmd);
-    return true;
-  }
 #ifdef __AVR__
-  else if (!strncmp_P(args, PSTR("call "), 5)) {
+  } else if (!strncmp_P(args, PSTR("call "), 5)) {
     cmd_engine_call(args + 5, startCmd);
     return true;
-  }
 #endif /* __AVR__ */
-#ifdef __linux__
-  else if (!strcmp_P(args, PSTR("quit")) || !strcmp_P(args, PSTR("exit"))) {
-    main_request_exit();
-    *startCmd = false;
-    return true;
   }
-#endif /* __linux__ */
 
   return false;
 }
@@ -248,6 +235,21 @@ bool cmd_system_sleep(const TCmdData *data, const char *args, size_t args_len, b
   return true;
 }
 
-void cmd_engine_system_test(const char *args, bool *startCmd)
+bool cmd_system_reboot(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
 {
+  reboot();
+  *start_cmd = false;
+  return true;
+}
+
+bool cmd_system_poweroff(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
+{
+#ifndef __linux__
+  scheduler_stop();
+#else /* !__linux__ */
+  main_request_exit();
+#endif /* !__linux__ */
+
+  *start_cmd = false;
+  return true;
 }
