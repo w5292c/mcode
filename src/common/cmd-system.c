@@ -35,6 +35,7 @@
 #include "mstatus.h"
 #include "mstring.h"
 #include "scheduler.h"
+#include "cmd-engine.h"
 #include "mcode-config.h"
 
 #include <string.h>
@@ -196,6 +197,7 @@ bool cmd_system_echo(const TCmdData *data, const char *args,
 {
   mprintbytes_R(args, args_len);
   mprint(MStringNewLine);
+  return true;
 }
 
 bool cmd_system_expr(const TCmdData *data, const char *args,

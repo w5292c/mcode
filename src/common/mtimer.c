@@ -47,7 +47,7 @@ typedef struct {
 /**
  * This array stors the timer handlers in sorted order, the handlers to be invoked first go first
  */
-static TimerNode TheTimerNodes[MCODE_TIMER_HANDLERS] = {0};
+static TimerNode TheTimerNodes[MCODE_TIMER_HANDLERS] = {{0}};
 
 static void mtimer_scheduler_tick(void);
 static void mtimer_postprocess_top_node(bool more_work);

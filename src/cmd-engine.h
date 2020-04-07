@@ -68,9 +68,6 @@ void cmd_engine_set_mode(CmdMode mode);
 CmdMode cmd_engine_get_mode(void);
 #endif /* MCODE_COMMAND_MODES */
 
-void cmd_engine_system_help(void);
-bool cmd_engine_system_command(const char *args, bool *startCmd);
-
 #ifdef MCODE_TWI
 void cmd_engine_twi_help(void);
 bool cmd_engine_twi_command(const char *args, bool *startCmd);

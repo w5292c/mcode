@@ -107,7 +107,6 @@ bool cmd_old_help(const TCmdData *data, const char *args, size_t args_len, bool 
 #ifdef MCODE_RTC
   cmd_engine_rtc_help();
 #endif /* MCODE_RTC */
-  cmd_engine_system_help();
 #ifdef MCODE_TV
   cmd_engine_tv_help();
 #endif /* MCODE_TV */

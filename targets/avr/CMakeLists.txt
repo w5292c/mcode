@@ -36,6 +36,7 @@ set (SRC_LIST
   ${MCODE_TOP}/src/avr/hw-nvm.c
   ${MCODE_TOP}/src/avr/system.c
   ${MCODE_TOP}/src/avr/hw-uart.c
+  ${MCODE_TOP}/src/avr/cmd-system.c
 )
 
 option ( MCODE_TV "Enable TV control" ON )

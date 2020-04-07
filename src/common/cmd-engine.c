@@ -121,8 +121,6 @@ void cmd_engine_on_cmd_ready(const char *aString)
   else if (cmd_engine_prog_run(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_PROG */
-  else if (cmd_engine_system_command(aString, &start_uart_editor)) {
-  }
 #ifdef MCODE_NEW_ENGINE
   else if (*aString) {
     cmd_engine_exec_prog(aString, -1, &start_uart_editor);

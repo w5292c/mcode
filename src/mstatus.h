@@ -34,6 +34,7 @@ typedef enum {
   ENotFound = 1,
   EGeneral = 2,
   EArgument = 6,
+  EAccessDenied = 21,
 } TStatus;
 
 /**
