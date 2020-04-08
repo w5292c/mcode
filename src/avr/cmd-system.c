@@ -32,18 +32,10 @@
 #include "cmd-engine.h"
 #include "mcode-config.h"
 
-static bool cmd_system_call(const TCmdData *data, const char *args,
-                            size_t args_len, bool *start_cmd);
-static const char TheCallBase[] PROGMEM = ("call");
-static const char TheCallHelp[] PROGMEM = ("Call code at <address>");
-CMD_ENTRY(TheCallBase, TheCmdCall, TheCallHelp, &cmd_system_call, NULL, 0);
+CMD_IMPL("call", TheCall, "Call code at <address>", cmd_system_call, NULL, 0);
 
 #ifdef MCODE_BOOTLOADER
-static bool cmd_system_bootloader(const TCmdData *data, const char *args,
-                                  size_t args_len, bool *start_cmd);
-static const char TheBootloaderBase[] PROGMEM = ("bootloader");
-static const char TheBootloaderHelp[] PROGMEM = ("Enter bootloader mode");
-CMD_ENTRY(TheBootloaderBase, TheCmdBootloader, TheBootloaderHelp, &cmd_system_bootloader, NULL, 0);
+CMD_IMPL("bootloader", TheBootloader, "Enter bootloader mode", cmd_system_bootloader, NULL, 0);
 #endif /* MCODE_BOOTLOADER */
 
 bool cmd_system_call(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)

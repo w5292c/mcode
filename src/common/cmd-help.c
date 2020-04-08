@@ -31,16 +31,8 @@
 
 #include <stddef.h>
 
-static bool cmd_help(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd);
-static bool cmd_old_help(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd);
-
-static const char TheBaseHelp[] PROGMEM = ("help");
-static const char TheBaseOldHelp[] PROGMEM = ("help-old");
-static const char TheHelpMessage[] PROGMEM = ("Show help for all commands");
-static const char TheOldHelpMessage[] PROGMEM = ("Show help for old commands");
-
-CMD_ENTRY(TheBaseHelp, TheHelp, TheHelpMessage, &cmd_help, NULL, 0);
-CMD_ENTRY(TheBaseOldHelp, TheOldHelp, TheOldHelpMessage, &cmd_old_help, NULL, 0);
+CMD_IMPL("help", TheHelp, "Show help for all commands", cmd_help, NULL, 0);
+CMD_IMPL("help-old", TheOldHelp, "Show help for old commands", cmd_old_help, NULL, 0);
 
 bool cmd_help(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
 {
