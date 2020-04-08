@@ -25,6 +25,8 @@
 #ifndef MCODE_CMD_IFACE_H
 #define MCODE_CMD_IFACE_H
 
+#include "mglobal.h"
+
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -43,6 +45,13 @@ extern "C" {
     init_handler, \
     level \
   };
+
+#define CMD_IMPL(base, name, help, handler, init_handler, level) \
+  static bool handler(const TCmdData *data, const char *args, \
+                      size_t args_len, bool *start_cmd); \
+  static const char name##Base[] PROGMEM = (base); \
+  static const char name##Help[] PROGMEM = (help); \
+  CMD_ENTRY(name##Base, name, name##Help, handler, init_handler, level);
 
 typedef struct _TCmdData TCmdData;
 

@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
+#include "mcode-config.h"
 #include "cmd-iface.h"
 
 #include "main.h"
-#include "hw-ir.h"
 #include "mtick.h"
 #include "utils.h"
 #include "hw-wdt.h"
@@ -36,126 +36,14 @@
 #include "mstring.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
-#include "mcode-config.h"
 
-#include <string.h>
-
-static bool cmd_system_ut(const TCmdData *data, const char *args,
-                          size_t args_len, bool *start_cmd);
-static bool cmd_system_echo(const TCmdData *data, const char *args,
-                            size_t args_len, bool *start_cmd);
-static bool cmd_system_expr(const TCmdData *data, const char *args,
-                            size_t args_len, bool *start_cmd);
-static bool cmd_system_errno(const TCmdData *data, const char *args,
-                             size_t args_len, bool *start_cmd);
-static bool cmd_system_sleep(const TCmdData *data, const char *args,
-                             size_t args_len, bool *start_cmd);
-static bool cmd_system_reboot(const TCmdData *data, const char *args,
-                              size_t args_len, bool *start_cmd);
-static bool cmd_system_poweroff(const TCmdData *data, const char *args,
-                                size_t args_len, bool *start_cmd);
-
-static const char TheSystemUtBase[] PROGMEM = ("ut");
-static const char TheSystemEchoBase[] PROGMEM = ("echo");
-static const char TheSystemExprBase[] PROGMEM = ("expr");
-static const char TheSystemErrnoBase[] PROGMEM = ("errno");
-static const char TheSystemSleepBase[] PROGMEM = ("sleep");
-static const char TheSystemRebootBase[] PROGMEM = ("reboot");
-static const char TheSystemPoweroffBase[] PROGMEM = ("poweroff");
-static const char TheSystemUtHelp[] PROGMEM = ("Show uptime");
-static const char TheSystemRebootHelp[] PROGMEM = ("Reboot system");
-static const char TheSystemEchoHelp[] PROGMEM = ("Echo input string");
-static const char TheSystemPoweroffHelp[] PROGMEM = ("Power off system");
-static const char TheSystemSleepHelp[] PROGMEM = ("Sleep for milli-seconds");
-static const char TheSystemExprHelp[] PROGMEM = ("Resolve/print input string");
-static const char TheSystemErrnoHelp[] PROGMEM = ("Show and reset error code for last command");
-
-CMD_ENTRY(TheSystemUtBase, TheCmdUt, TheSystemUtHelp, &cmd_system_ut, NULL, 0);
-CMD_ENTRY(TheSystemEchoBase, TheCmdEcho, TheSystemEchoHelp, &cmd_system_echo, NULL, 0);
-CMD_ENTRY(TheSystemExprBase, TheCmdExpr, TheSystemExprHelp, &cmd_system_expr, NULL, 0);
-CMD_ENTRY(TheSystemErrnoBase, TheCmdErrno, TheSystemErrnoHelp, &cmd_system_errno, NULL, 0);
-CMD_ENTRY(TheSystemSleepBase, TheCmdSleep, TheSystemSleepHelp, &cmd_system_sleep, NULL, 0);
-CMD_ENTRY(TheSystemRebootBase, TheCmdReboot, TheSystemRebootHelp, &cmd_system_reboot, NULL, 0);
-CMD_ENTRY(TheSystemPoweroffBase, TheCmdPoweroff,
-          TheSystemPoweroffHelp, &cmd_system_poweroff, NULL, 0);
-
-#ifdef __AVR__
-/** @todo move to AVR-specific code */
-static void cmd_engine_call(const char *args, bool *startCmd);
-#endif /* __AVR__ */
-
-void cmd_engine_system_help(void)
-{
-#ifdef MCODE_BOOTLOADER
-  mprintstrln(PSTR("> bootloader - Reboot to bootloader mode"));
-#endif /* MCODE_BOOTLOADER */
-#ifdef __AVR__
-  mprintstrln(PSTR("> call <addr> - Call a program at <addr>"));
-#endif /* __AVR__ */
-}
-
-bool cmd_engine_system_command(const char *args, bool *startCmd)
-{
-  if (false) {
-#ifdef MCODE_BOOTLOADER
-  } else if (!strcmp_P(args, PSTR("bootloader"))) {
-#ifdef MCODE_COMMAND_MODES
-    if (CmdModeRoot != cmd_engine_get_mode()) {
-      merror(MStringWrongMode);
-      return true;
-    }
-#endif /* MCODE_COMMAND_MODES */
-    bootloader();
-    return true;
-#endif /* MCODE_BOOTLOADER */
-#ifdef __AVR__
-  } else if (!strncmp_P(args, PSTR("call "), 5)) {
-    cmd_engine_call(args + 5, startCmd);
-    return true;
-#endif /* __AVR__ */
-  }
-
-  return false;
-}
-
-#ifdef __AVR__
-void cmd_engine_call(const char *args, bool *startCmd)
-{
-  uint16_t address = 0x0000u;
-  args = string_skip_whitespace(args);
-  if (!args) {
-    merror(MStringWrongArgument);
-    return;
-  }
-  args = string_next_number(args, &address);
-  if (string_skip_whitespace(args)) {
-    merror(MStringWrongArgument);
-    return;
-  }
-
-#ifdef MCODE_COMMAND_MODES
-  /* Make bootloader address available in non-root mode */
-  if ((CmdModeRoot != cmd_engine_get_mode()) &&
-      (CmdModeUser != cmd_engine_get_mode() || 0x7c00u != address)) {
-    merror(MStringWrongMode);
-    return;
-  }
-#endif /* MCODE_COMMAND_MODES */
-
-  mprintstr(PSTR("Calling program at address: 0x"));
-  mprint_uint64(address, true);
-  mprint(MStringNewLine);
-
-  const mcode_tick program = (mcode_tick)address;
-#ifdef MCODE_WDT
-  wdt_stop();
-#endif /* MCODE_WDT */
-  program();
-#ifdef MCODE_WDT
-  wdt_start();
-#endif /* MCODE_WDT */
-}
-#endif /* __AVR__ */
+CMD_IMPL("ut", TheUt, "Show uptime", cmd_system_ut, NULL, 0);
+CMD_IMPL("echo", TheEcho, "Echo input string", cmd_system_echo, NULL, 0);
+CMD_IMPL("expr", TheExpr, "Resolve/print input string", cmd_system_expr, NULL, 0);
+CMD_IMPL("errno", TheErrno, "Print/reset error code", cmd_system_errno, NULL, 0);
+CMD_IMPL("sleep", TheSleep, "Sleep for <milli-seconds>", cmd_system_sleep, NULL, 0);
+CMD_IMPL("reboot", TheReboot, "Reboot system", cmd_system_reboot, NULL, 0);
+CMD_IMPL("poweroff", ThePoweroff, "Power off system", cmd_system_poweroff, NULL, 0);
 
 bool cmd_system_ut(const TCmdData *data, const char *args,
                    size_t args_len, bool *start_cmd)
