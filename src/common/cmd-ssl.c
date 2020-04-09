@@ -22,13 +22,15 @@
  * SOFTWARE.
  */
 
+#include "cmd-iface.h"
 #include "cmd-engine.h"
 
 #include "mtick.h"
 #include "utils.h"
 #include "sha256.h"
 #include "hw-uart.h"
-#include "mglobal.h"
+#include "mparser.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "scheduler.h"
 #include "line-editor-uart.h"
@@ -46,7 +48,7 @@ static void cmd_engine_on_pass(const char *string);
 static void cmd_engine_set_cmd_mode(const char *params, bool *startCmd);
 #endif /* MCODE_COMMAND_MODES */
 
-static void cmd_engine_sha256(const char *aParams);
+CMD_IMPL("sha", TheSha, "Print sha256 for <DATA>", cmd_ssl_sha256, NULL, 0);
 
 void cmd_engine_ssl_init(void)
 {
@@ -59,7 +61,6 @@ void cmd_engine_ssl_init(void)
 
 void cmd_engine_ssl_help(void)
 {
-  mprintstrln(PSTR("> sha256 <DATA> - calculate SHA256 hash"));
 #ifdef MCODE_COMMAND_MODES
   mprintstrln(PSTR("> su [MODE(1|2|3)] - Set the command engine mode"));
   mprintstrln(PSTR("> passwd - change the device password"));
@@ -68,12 +69,8 @@ void cmd_engine_ssl_help(void)
 
 bool cmd_engine_ssl_command(const char *command, bool *startCmd)
 {
-  if (!strncmp_P(command, PSTR("sha256 "), 7)) {
-    cmd_engine_sha256(command + 7);
-    return true;
-  }
 #ifdef MCODE_COMMAND_MODES
-  else if (!strncmp_P(command, PSTR("su "), 3)) {
+  if (!strncmp_P(command, PSTR("su "), 3)) {
     cmd_engine_set_cmd_mode(command + 3, startCmd);
     return true;
   } else if (!strcmp_P(command, PSTR("passwd"))) {
@@ -88,20 +85,27 @@ bool cmd_engine_ssl_command(const char *command, bool *startCmd)
   return false;
 }
 
-void cmd_engine_sha256(const char *aParams)
+bool cmd_ssl_sha256(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
 {
-  const uint16_t n = strlen(aParams);
-  mprintstr(PSTR("Calculating sha256 hash, string: '"));
-  mprintstr_R(aParams);
-  mprintstr(PSTR("', length: "));
-  mprint_uintd(n, 0);
-  mprint(MStringNewLine);
-
-  uint8_t byteResultHash[MD_LENGTH_SHA256];
-  sha256((const unsigned char *)aParams, n, byteResultHash);
-
   uint8_t i;
-  uint8_t *ptr = byteResultHash;
+  TokenType type;
+  uint32_t value;
+  const char *token;
+  const uint8_t *ptr;
+  uint8_t byteResultHash[MD_LENGTH_SHA256];
+
+  /* Parse the input, should be a string */
+  type = next_token(&args, &args_len, &token, &value);
+  if (TokenString != type) {
+    mcode_errno_set(EArgument);
+    return true;
+  }
+
+  /* Calculate the SHA256 hash */
+  sha256((const unsigned char *)token, value, byteResultHash);
+
+  /* Print the result */
+  ptr = byteResultHash;
   for (i = 0; i < MD_LENGTH_SHA256; i += 2, ptr += 2) {
     uint16_t data = ((*ptr) << 8) | (*(ptr + 1) << 0);
     mprint_uint16(data, false);
