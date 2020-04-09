@@ -89,10 +89,6 @@ bool cmd_old_help(const TCmdData *data, const char *args, size_t args_len, bool 
 #ifdef MCODE_SECURITY
   cmd_engine_ssl_help();
 #endif /* MCODE_SECURITY */
-#ifdef MCODE_COMMAND_MODES
-  mprintstrln(PSTR("> su [MODE(1|2|3)] - Set the command engine mode"));
-  mprintstrln(PSTR("> passwd - change the device password"));
-#endif /* MCODE_COMMAND_MODES */
 #ifdef MCODE_TWI
   cmd_engine_twi_help();
 #endif /* MCODE_TWI */

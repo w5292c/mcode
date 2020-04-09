@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015-2018 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,10 @@ void cmd_engine_ssl_init(void)
 void cmd_engine_ssl_help(void)
 {
   mprintstrln(PSTR("> sha256 <DATA> - calculate SHA256 hash"));
+#ifdef MCODE_COMMAND_MODES
+  mprintstrln(PSTR("> su [MODE(1|2|3)] - Set the command engine mode"));
+  mprintstrln(PSTR("> passwd - change the device password"));
+#endif /* MCODE_COMMAND_MODES */
 }
 
 bool cmd_engine_ssl_command(const char *command, bool *startCmd)
