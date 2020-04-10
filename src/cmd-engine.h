@@ -135,11 +135,6 @@ void cmd_engine_gsm_help(void);
 bool cmd_engine_gsm_command(const char *cmd, bool *startCmd);
 #endif /* MCODE_GSM */
 
-#ifdef MCODE_SWITCH_ENGINE
-void cmd_engine_switch_help(void);
-bool cmd_engine_led_command(const char *command, bool *startCmd);
-#endif /* MCODE_SWITCH_ENGINE */
-
 #ifdef MCODE_PROG
 void cmd_engine_prog_help(void);
 bool cmd_engine_prog_run(const char *command, bool *startCmd);

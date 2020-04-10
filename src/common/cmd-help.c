@@ -107,9 +107,6 @@ bool cmd_old_help(const TCmdData *data, const char *args, size_t args_len, bool 
 #ifdef MCODE_GSM
   cmd_engine_gsm_help();
 #endif /* MCODE_GSM */
-#ifdef MCODE_SWITCH_ENGINE
-  cmd_engine_switch_help();
-#endif /* MCODE_SWITCH_ENGINE */
 #ifdef MCODE_PROG
   cmd_engine_prog_help();
 #endif /* MCODE_PROG */

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Alexander Chumakov
+ * Copyright (c) 2017-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,64 +22,64 @@
  * SOFTWARE.
  */
 
+#include "cmd-iface.h"
 #include "cmd-engine.h"
 
-#include "utils.h"
 #include "mglobal.h"
+#include "mparser.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "switch-engine.h"
 
-#include <string.h>
+CMD_IMPL("switch", TheSwitch, "Turn <on/off> switch <num> for <seconds>", cmd_switch, NULL, 0);
 
-static void cmd_engine_switch_turn_on(const char *args);
-static void cmd_engine_switch_turn_off(const char *args);
-
-void cmd_engine_switch_help(void)
+bool cmd_switch(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
 {
-  mprintstrln(PSTR("> switch-off <IND> - Turn OFF the switch #IND"));
-  mprintstrln(PSTR("> switch-on <IND> <TIMEOUT> - Turn the switch #IND ON for TIMEOUT seconds"));
-}
+  bool on;
+  TokenType type;
+  uint32_t index;
+  uint32_t value;
+  const char *token;
 
-bool cmd_engine_led_command(const char *command, bool *startCmd)
-{
-  if (!strncmp_P(command, PSTR("switch-on "), 10)) {
-    cmd_engine_switch_turn_on(command + 10);
-    return true;
-  } else if (!strncmp_P(command, PSTR("switch-off "), 11)) {
-    cmd_engine_switch_turn_off(command + 11);
+  /* Check the 1st argument, it should be either 'on' or 'off' */
+  type = next_token(&args, &args_len, &token, &value);
+  if (TokenString != type) {
+    mcode_errno_set(EArgument);
     return true;
   }
 
-  return false;
-}
-
-void cmd_engine_switch_turn_on(const char *args)
-{
-  uint16_t index = -1;
-  uint16_t seconds = 0;
-  args = string_skip_whitespace(args);
-  args = string_next_number(args, &index);
-  args = string_skip_whitespace(args);
-  string_next_number(args, &seconds);
-
-  if (index > 1u) {
-    merror(MStringWrongArgument);
-    return;
+  /* Check the value of the 1st argument */
+  if (!mparser_strcmp_P(token, value, PSTR("on"))) {
+    on = true;
+  } else if (mparser_strcmp_P(token, value, PSTR("off"))) {
+    mcode_errno_set(EArgument);
+    return true;
   }
 
-  switch_engine_turn_on(index, seconds);
-}
+  /* Parse the 2nd parameter - the switch index, skip the whitespeces first */
+  do {
+    type = next_token(&args, &args_len, &token, &index);
+  } while (TokenWhitespace == type);
 
-void cmd_engine_switch_turn_off(const char *args)
-{
-  uint16_t index = -1;
-  args = string_skip_whitespace(args);
-  args = string_next_number(args, &index);
-
-  if (index > 1u) {
-    merror(MStringWrongArgument);
-    return;
+  if (TokenInt != type) {
+    mcode_errno_set(EArgument);
+    return true;
   }
 
-  switch_engine_turn_off(index);
+  if (on) {
+    /* Skip whitespeces */
+    do {
+      type = next_token(&args, &args_len, &token, &value);
+    } while (TokenWhitespace == type);
+
+    /* For the 'on' case, we need to have the 3rd parameter - amount of time for on-state */
+    if (TokenInt != type) {
+      mcode_errno_set(EArgument);
+      return true;
+    }
+
+    switch_engine_turn_on(index, value);
+  } else {
+    switch_engine_turn_off(index);
+  }
 }

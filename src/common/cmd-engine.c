@@ -113,10 +113,6 @@ void cmd_engine_on_cmd_ready(const char *aString)
   else if (cmd_engine_gsm_command(aString, &start_uart_editor)) {
   }
 #endif /* MCODE_GSM */
-#ifdef MCODE_SWITCH_ENGINE
-  else if (cmd_engine_led_command(aString, &start_uart_editor)) {
-  }
-#endif /* MCODE_SWITCH_ENGINE */
 #ifdef MCODE_PROG
   else if (cmd_engine_prog_run(aString, &start_uart_editor)) {
   }

@@ -38,6 +38,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/common/mstring.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/cmd-help.c
+  ${MCODE_TOP}/src/common/cmd-switch.c
   ${MCODE_TOP}/src/common/cmd-system.c
   ${MCODE_TOP}/src/common/cmd-console.c
   ${MCODE_TOP}/src/common/cmd-engine.c
@@ -50,6 +51,7 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/emu/hw-leds.c
   ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/emu/scheduler.c
+  ${MCODE_TOP}/src/emu/switch-engine.c
   ${MCODE_TOP}/src/emu/hw-lcd-s95513.cpp
 )
 
