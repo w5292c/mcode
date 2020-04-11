@@ -111,6 +111,7 @@ bool cmd_ssl_sha256(const TCmdData *data, const char *args, size_t args_len, boo
     mprint_uint16(data, false);
   }
   mprint(MStringNewLine);
+  return true;
 }
 
 #ifdef MCODE_COMMAND_MODES
