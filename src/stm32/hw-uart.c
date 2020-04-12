@@ -24,12 +24,8 @@
 
 #include "hw-uart.h"
 
-#include "mtick.h"
-#include "mstring.h"
 #include "scheduler.h"
 
-#include <stddef.h>
-#include <string.h>
 #include <stm32f10x.h>
 
 #if !defined (STM32F10X_MD) && !defined (STM32F10X_HD)
@@ -61,8 +57,6 @@ typedef struct _TLineReaderState {
 
 volatile static TLineReaderState TheUart2State = {{0}};
 
-static uint64_t TheLastCharTimestamp = 0;
-static hw_uart_handler TheUart2Callback = NULL;
 #endif /* MCODE_UART2 */
 
 static void hw_uart_tick(void);
@@ -145,11 +139,6 @@ void uart_write_char(char ch)
 }
 
 #ifdef MCODE_UART2
-void hw_uart2_set_callback(hw_uart_handler cb)
-{
-  TheUart2Callback = cb;
-}
-
 void uart2_write_char(char ch)
 {
   /* Wait until USART1 DR register is empty */
@@ -170,7 +159,7 @@ static void hw_uart_tick(void)
   }
 
 #ifdef MCODE_UART2
-  uart2_handle_new_sample();
+  uart2_report_new_sample();
 #endif /* MCODE_UART2 */
 }
 

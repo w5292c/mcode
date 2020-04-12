@@ -82,4 +82,6 @@ bool cmd_switch(const TCmdData *data, const char *args, size_t args_len, bool *s
   } else {
     switch_engine_turn_off(index);
   }
+
+  return true;
 }

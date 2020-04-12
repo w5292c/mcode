@@ -42,7 +42,6 @@ static pthread_t TheWriteThread = 0;
 
 static char TheInBuffer[256] = {0};
 static char TheOutBuffer[1024] = {0};
-static size_t TheInBufferRdIndex = 0;
 static size_t TheInBufferWrIndex = 0;
 static size_t TheOutBufferRdIndex = 0;
 static size_t TheOutBufferWrIndex = 0;
@@ -119,9 +118,6 @@ void *sim_write_thread(void *args)
   TheOutPipe = open("/var/tmp/sim-to-mcode", O_WRONLY | O_NONBLOCK);
 
   char ch;
-  char buffer[100];
-  int iter = 1;
-  int l = 0;
   while (true) {
     if (TheOutBufferWrIndex != TheOutBufferRdIndex) {
       if (TheOutBufferRdIndex == sizeof (TheOutBuffer)) {

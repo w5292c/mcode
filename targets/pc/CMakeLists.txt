@@ -22,7 +22,7 @@ include_directories (
 
 INCLUDE ( ${QT_USE_FILE} )
 ADD_DEFINITIONS ( ${QT_DEFINITIONS} )
-ADD_DEFINITIONS ( -D__STDC_CONSTANT_MACROS )
+ADD_DEFINITIONS ( -D__STDC_CONSTANT_MACROS -Wreturn-type -Wall -Werror )
 
 set ( SRC_LIST
   ${MCODE_TOP}/src/emu/main.cpp

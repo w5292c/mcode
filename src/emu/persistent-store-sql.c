@@ -69,8 +69,8 @@ void persist_store_load(uint8_t id, void *data, uint8_t length)
       break;
     }
 
-    const gchar *value = sqlite3_column_text(res, 0);
-    decoded = g_base64_decode(sqlite3_column_text(res, 0), &decodedLength);
+    const gchar *value = (const gchar *)sqlite3_column_text(res, 0);
+    decoded = g_base64_decode(value, &decodedLength);
   } while (0);
   sqlite3_finalize(res);
   sqlite3_close(db);

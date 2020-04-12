@@ -46,14 +46,13 @@ static uint16_t TheHeight = 320;
 
 static void main_at_exit (void);
 static void main_sigint_handler (int signo);
-static void main_line_callback (const char *aString);
 
 int main(int argc, char **argv)
 {
   QApplication app(argc, argv);
   const QStringList &arguments = QCoreApplication::arguments();
   // Parsing arguments
-  const uint sizeIndex = arguments.indexOf("-s");
+  const int sizeIndex = arguments.indexOf("-s");
   if (sizeIndex >= 0 && argc >= sizeIndex + 2) {
     const QString &sizeString = arguments[sizeIndex + 1];
     const QStringList &sizes = sizeString.split("x");
