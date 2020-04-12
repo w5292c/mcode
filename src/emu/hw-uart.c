@@ -35,11 +35,35 @@
 #include <unistd.h>
 #include <termios.h>
 #include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-static char TheBuffer[1] = {0};
+#include <fcntl.h>
+#include <errno.h>
+
+static bool TheQuitRequest = false;
+static char TheBuffer[128] = {0};
+static size_t TheBufferWrIndex = 0;
+static size_t TheBufferRdIndex = 0;
 static int running_request = 0;
 static pthread_t TheKeyEventThread = 0;
 static struct termios TheStoredTermIos;
+
+#ifdef MCODE_UART2
+static int TheInPipe = 0;
+static int TheOutPipe = 0;
+static char TheUart2InBuffer[256] = {0};
+static char TheUart2OutBuffer[256] = {0};
+static size_t TheUart2InBufferRdIndex = 0;
+static size_t TheUart2InBufferWrIndex = 0;
+static size_t TheUart2OutBufferRdIndex = 0;
+static size_t TheUart2OutBufferWrIndex = 0;
+static pthread_t TheUart2ReadThreadId = 0;
+static pthread_t TheUart2WriteThreadId = 0;
+
+static void *emu_hw_uart2_read_thread(void *arg);
+static void *emu_hw_uart2_write_thread(void *args);
+#endif /* MCODE_UART2 */
 
 static void emu_hw_uart_tick(void);
 /** The UART emulation thread */
@@ -47,27 +71,45 @@ static void *emu_hw_uart_thread(void *threadid);
 
 void hw_uart_init(void)
 {
+  int res;
+
   if (!TheKeyEventThread) {
     /* get the original termios information */
     tcgetattr(STDIN_FILENO, &TheStoredTermIos);
 
     long t = 0;
     running_request = 1;
-    const int failed = pthread_create(&TheKeyEventThread, NULL, emu_hw_uart_thread, (void *)t);
-    if (failed) {
+    res = pthread_create(&TheKeyEventThread, NULL, emu_hw_uart_thread, (void *)t);
+    if (res) {
       running_request = 0;
       mprintstr(PSTR("Error: cannot create key-event thread, code: "));
-      mprint_uintd(failed, 0);
+      mprint_uintd(res, 0);
       mprint(MStringNewLine);
       exit(-1);
     }
 
     scheduler_add(emu_hw_uart_tick);
   }
+
+#ifdef MCODE_UART2
+  if (!TheUart2ReadThreadId) {
+    res = pthread_create(&TheUart2ReadThreadId, NULL, emu_hw_uart2_read_thread, NULL);
+    if (res) {
+      exit(-1);
+    }
+  }
+  if (!TheUart2WriteThreadId) {
+    res = pthread_create(&TheUart2WriteThreadId, NULL, emu_hw_uart2_write_thread, NULL);
+    if (res) {
+      exit(-1);
+    }
+  }
+#endif /* MCODE_UART2 */
 }
 
 void hw_uart_deinit(void)
 {
+  TheQuitRequest = true;
   if (TheKeyEventThread) {
     int failed = pthread_cancel (TheKeyEventThread);
     if (failed) {
@@ -76,9 +118,8 @@ void hw_uart_deinit(void)
       mprint(MStringNewLine);
       exit(-1);
     }
-    void *status;
     running_request = 0;
-    failed = pthread_join(TheKeyEventThread, &status);
+    failed = pthread_join(TheKeyEventThread, NULL);
     if (failed) {
       mprintstr(PSTR("Error: cannot join key-event thread, code: "));
       mprint_uintd(failed, 0);
@@ -90,6 +131,15 @@ void hw_uart_deinit(void)
     tcsetattr( STDIN_FILENO, TCSANOW, &TheStoredTermIos);
     TheKeyEventThread = 0;
   }
+
+#ifdef MCODE_UART2
+  if (TheUart2ReadThreadId) {
+    pthread_join(TheUart2ReadThreadId, NULL);
+  }
+  if (TheUart2WriteThreadId) {
+    pthread_join(TheUart2WriteThreadId, NULL);
+  }
+#endif /* MCODE_UART2 */
 }
 
 static hw_uart_char_event TheCallback = NULL;
@@ -127,13 +177,17 @@ void *emu_hw_uart_thread(void *threadid)
     }
 
     if (TheCallback && (escIndex == 3 || (!escIndex))) {
-      assert(!*TheBuffer);
+      if (TheBufferWrIndex == sizeof (TheBuffer)) {
+        TheBufferWrIndex = 0;
+      }
       if (escIndex) {
-        TheBuffer[0] = escChar;
+        TheBuffer[TheBufferWrIndex] = escChar;
         escIndex = 0;
       } else {
-        TheBuffer[0] = ch;
+        TheBuffer[TheBufferWrIndex] = ch;
       }
+
+      ++TheBufferWrIndex;
     }
   }
 
@@ -147,9 +201,78 @@ void *emu_hw_uart_thread(void *threadid)
 
 void emu_hw_uart_tick(void)
 {
-  if (*TheBuffer) {
-    const char ch = *TheBuffer;
-    *TheBuffer = 0;
+  if (TheBufferWrIndex != TheBufferRdIndex) {
+    if (TheBufferRdIndex == sizeof (TheBuffer)) {
+      TheBufferRdIndex = 0;
+    }
+    const char ch = TheBuffer[TheBufferRdIndex];
+    TheBuffer[TheBufferRdIndex] = 0;
+    ++TheBufferRdIndex;
     TheCallback(ch);
   }
+
+#ifdef MCODE_UART2
+  /* Handle the input data */
+  uart2_report_new_sample();
+#endif /* MCODE_UART2 */
 }
+
+#ifdef MCODE_UART2
+void uart2_write_char(char ch)
+{
+  if (TheUart2OutBufferWrIndex >= sizeof (TheUart2OutBuffer)) {
+    TheUart2OutBufferWrIndex = 0;
+  }
+  TheUart2OutBuffer[TheUart2OutBufferWrIndex++] = ch;
+}
+
+void *emu_hw_uart2_read_thread(void *arg)
+{
+  int res;
+
+  res = mkfifo("/var/tmp/sim-to-mcode", S_IRUSR | S_IWUSR);
+  if (-1 == res && EEXIST != errno) exit(1);
+
+  TheInPipe = open("/var/tmp/sim-to-mcode", O_RDONLY | O_NONBLOCK);
+  if (-1 == TheInPipe) {
+    exit(1);
+  }
+
+  char buf;
+  while (!TheQuitRequest) {
+    res = read(TheInPipe, &buf, 1);
+    if (1 == res) {
+      uart2_handle_new_sample(buf);
+    }
+  }
+
+  close(TheInPipe);
+  return NULL;
+}
+
+void *emu_hw_uart2_write_thread(void *args)
+{
+  int res;
+
+  res = mkfifo("/var/tmp/mcode-to-sim", S_IRUSR | S_IWUSR);
+  if (-1 == res && EEXIST != errno) exit(1);
+
+  TheOutPipe = open("/var/tmp/mcode-to-sim", O_WRONLY);
+  if (-1 == TheOutPipe) {
+    exit(1);
+  }
+  while (!TheQuitRequest) {
+    char ch;
+    if (TheUart2OutBufferWrIndex != TheUart2OutBufferRdIndex) {
+      if (TheUart2OutBufferRdIndex >= sizeof (TheUart2OutBuffer)) {
+        TheUart2OutBufferWrIndex = 0;
+      }
+      ch = TheUart2OutBuffer[TheUart2OutBufferRdIndex++];
+      write(TheOutPipe, &ch, 1);
+    }
+  }
+
+  close(TheOutPipe);
+  return NULL;
+}
+#endif /* MCODE_UART2 */

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2020 Alexander Chumakov
+ * Copyright (c) 2017-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,56 +22,19 @@
  * SOFTWARE.
  */
 
-#ifndef MCODE_HW_UART_H
-#define MCODE_HW_UART_H
 
-#include "mcode-config.h"
+#include "gsm-engine.h"
 
-#include <stddef.h>
-#include <stdint.h>
+void hw_gsm_init(void)
+{
+  /* Turn GSM power ON on default */
+  hw_gsm_power(true);
+}
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void hw_gsm_deinit(void)
+{
+}
 
-typedef void (*hw_uart_char_event)(char aChar);
-typedef void (*hw_uart_handler)(const char *data, size_t length);
-
-void hw_uart_init(void);
-void hw_uart_deinit(void);
-
-void hw_uart_set_callback(hw_uart_char_event aCallback);
-
-void uart_write_char(char ch);
-
-#ifdef MCODE_UART2
-/**
- * Set the callback for receiving data from UART2
- */
-void hw_uart2_set_callback(hw_uart_handler cb);
-
-/**
- * Send 'ch' to UART2
- * @param[in] ch The character to be sent
- */
-void uart2_write_char(char ch);
-
-/**
- * Handle the newly read from UART2 sample
- * @param[in] data The new sample to handle
- * @note Should be safe to use in an ISR-context
- */
-void uart2_handle_new_sample(uint16_t data);
-
-/**
- * Report the collected line of text for UART2 device
- */
-void uart2_report_new_sample(void);
-
-#endif /* MCODE_UART2 */
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* MCODE_HW_UART_H */
+void hw_gsm_power(bool on)
+{
+}

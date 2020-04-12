@@ -170,26 +170,7 @@ static void hw_uart_tick(void)
   }
 
 #ifdef MCODE_UART2
-  /* Check if we have a ready line to handle */
-  const uint8_t readyFlag = (1u << TheUart2State.readIndex);
-  if (!(TheUart2State.ready & readyFlag)) {
-    /* No ready data detected, check if we are 'idle' for too long (10ms) */
-    if (!TheLastCharTimestamp || (mtick_count() - TheLastCharTimestamp) < 10 ||
-        !TheUart2State.lineBufferLength[TheUart2State.readIndex]) {
-      return;
-    }
-  }
-
-  /* Report the currently read line */
-  (*TheUart2Callback)((const char *)TheUart2State.lineBuffer[TheUart2State.readIndex],
-    TheUart2State.lineBufferLength[TheUart2State.readIndex]);
-
-  /* Reset the reported buffer */
-  memset((char *)TheUart2State.lineBuffer[TheUart2State.readIndex], 0, MCODE_UART2_READ_BUFFER_LENGTH);
-  TheUart2State.lineBufferLength[TheUart2State.readIndex] = 0;
-  /* Ready to read a line in the next buffer, reset the 'ready' flag for the current line */
-  ++TheUart2State.readIndex;
-  TheUart2State.ready &= ~readyFlag;
+  uart2_handle_new_sample();
 #endif /* MCODE_UART2 */
 }
 
@@ -199,53 +180,7 @@ void USART2_IRQHandler(void)
 {
   if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
     const uint16_t data = USART_ReceiveData(USART2);
-    TheLastCharTimestamp = mtick_count();
-    size_t size = TheUart2State.lineBufferLength[TheUart2State.writeIndex];
-    volatile char *const buffer = TheUart2State.lineBuffer[TheUart2State.writeIndex];
-    switch (TheUart2State.state) {
-    case ELineReaderStateIdle:
-      size = 0;
-      TheUart2State.lineBufferLength[TheUart2State.writeIndex] = 0;
-      TheUart2State.state = ELineReaderStateReadingLine;
-      /* Fall through to the next state */
-    case ELineReaderStateReadingLine:
-      if ('\r' == data) {
-        /* We are reading the line, and get '\r' as another read character */
-        TheUart2State.state = ELineReaderStateWaitingN;
-        if (size < MCODE_UART2_READ_BUFFER_LENGTH - 1) {
-          /* Check if we have enough space in the buffer for storing the new character */
-          /* We reserve 1 byte for the end-of-line indication '\0' */
-          buffer[size] = 0;
-        } else {
-          buffer[MCODE_UART2_READ_BUFFER_LENGTH - 1] = 0;
-        }
-      } else if (size < MCODE_UART2_READ_BUFFER_LENGTH - 1) {
-        /* Check if we have enough space in the buffer for storing the new character */
-        /* We reserve 1 byte for the end-of-line indication '\0' */
-        buffer[size] = data;
-      }
-      ++TheUart2State.lineBufferLength[TheUart2State.writeIndex];
-      break;
-    case ELineReaderStateWaitingN:
-      if ('\n' == data) {
-        /* Got the right character, switch the buffers, read another line of text */
-        /* assert: begin */
-        if (TheUart2State.ready & (1u << TheUart2State.writeIndex)) {
-          mprintstrln("E: not ready");
-        }
-        /* assert: end */
-        TheUart2State.ready |= (1u << TheUart2State.writeIndex);
-        TheUart2State.state = ELineReaderStateIdle;
-        ++TheUart2State.writeIndex;
-      } else {
-        /* Wrong new-line sequence received, reset to idle state, report error */
-        mprintstr("E:");
-        mprint_uint16(data, true);
-        mprint(MStringNewLine);
-        TheUart2State.state = ELineReaderStateIdle;
-      }
-      break;
-    }
+    uart2_handle_new_sample(data);
   }
 }
 #endif /* MCODE_UART2 */

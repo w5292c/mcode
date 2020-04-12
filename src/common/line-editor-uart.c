@@ -56,7 +56,6 @@ void line_editor_uart_deinit(void)
   if (line_editor_initialized) {
     line_editor_initialized = 0;
     hw_uart_set_callback (0);
-    hw_uart_deinit ();
   }
 }
 

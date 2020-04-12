@@ -32,6 +32,7 @@
 #include "hw-leds.h"
 #include "scheduler.h"
 #include "cmd-engine.h"
+#include "gsm-engine.h"
 #include "line-editor-uart.h"
 
 #include <QDebug>
@@ -96,6 +97,10 @@ int main(int argc, char **argv)
   mprintstrln(PSTR("]"));
   /* start the command engine, and switch to the scheduler, it never exits */
   cmd_engine_start();
+
+#ifdef MCODE_GSM
+  gsm_init();
+#endif /* MCODE_GSM */
 
   /* Start the QT4 event loop in the main thread */
   const int res = app.exec();

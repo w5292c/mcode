@@ -55,6 +55,10 @@ set ( SRC_LIST
   ${MCODE_TOP}/src/emu/hw-lcd-s95513.cpp
 )
 
+set ( SRC_LIST_SIM
+  ${MCODE_TOP}/src/emu/main-sim.c
+)
+
 set ( SRC_LIST_QT
   ${MCODE_TOP}/src/emu/customwidget.cpp
 )
@@ -65,6 +69,8 @@ set ( HEADERS_LIST_QT
 
 QT4_WRAP_CPP ( HEADERS_MOC ${HEADERS_LIST_QT} )
 
+option ( MCODE_UART2 "Enable UART2" ON )
+option ( MCODE_GSM "Enable GSM Engine" ON )
 option ( MCODE_LCD "Enable LCD support" ON )
 option ( MCODE_PROG "Enable programming commands" ON )
 option ( MCODE_SECURITY "Enable security support" ON )
@@ -97,6 +103,14 @@ if ( MCODE_PERSIST_STORE_SQL )
   )
 endif ( MCODE_PERSIST_STORE_SQL )
 
+if ( MCODE_GSM )
+  set ( SRC_LIST ${SRC_LIST}
+    ${MCODE_TOP}/src/common/cmd-gsm.c
+    ${MCODE_TOP}/src/emu/gsm-engine-uart2.c
+    ${MCODE_TOP}/src/common/gsm-engine-uart2.c
+  )
+endif ( MCODE_GSM )
+
 if ( MCODE_PROG )
   set ( SRC_LIST ${SRC_LIST}
     ${MCODE_TOP}/src/common/cmd-prog.c
@@ -112,6 +126,9 @@ target_link_libraries ( console-test ${CMAKE_THREAD_LIBS_INIT} )
 target_link_libraries ( console-test  ${QT_LIBRARIES} )
 
 include_directories ( "${PROJECT_BINARY_DIR}/include/" )
+
+add_executable ( mcode-simulator ${SRC_LIST_SIM} )
+target_link_libraries ( mcode-simulator ${CMAKE_THREAD_LIBS_INIT} )
 
 add_custom_command (
   TARGET console-test
