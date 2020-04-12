@@ -52,6 +52,7 @@ static struct termios TheStoredTermIos;
 #ifdef MCODE_UART2
 static int TheInPipe = 0;
 static int TheOutPipe = 0;
+static bool TheOutPipeOpened = false;
 static char TheUart2InBuffer[256] = {0};
 static char TheUart2OutBuffer[256] = {0};
 static size_t TheUart2InBufferRdIndex = 0;
@@ -137,6 +138,9 @@ void hw_uart_deinit(void)
     pthread_join(TheUart2ReadThreadId, NULL);
   }
   if (TheUart2WriteThreadId) {
+    if (!TheOutPipeOpened) {
+      pthread_cancel(TheUart2WriteThreadId);
+    }
     pthread_join(TheUart2WriteThreadId, NULL);
   }
 #endif /* MCODE_UART2 */
@@ -261,6 +265,7 @@ void *emu_hw_uart2_write_thread(void *args)
   if (-1 == TheOutPipe) {
     exit(1);
   }
+  TheOutPipeOpened = true;
   while (!TheQuitRequest) {
     char ch;
     if (TheUart2OutBufferWrIndex != TheUart2OutBufferRdIndex) {
