@@ -63,14 +63,23 @@ int main(int argc, char **argv)
   res = pthread_create(&TheWriteThread, NULL, sim_write_thread, NULL);
   if (-1 == res) exit(1);
 
+  /*
+  READY event
+  Full-functionality event
+  PIN-READY event
+  Call-READY event
+  SMS-READY event
+  */
   sleep(1);
   sim_send("RDY\r\n");
+  sleep(1);
+  sim_send("+CFUN: 1");
+  sleep(1);
+  sim_send("+CPIN: READY\r\n");
   sleep(1);
   sim_send("Call Ready\r\n");
   sleep(1);
   sim_send("SMS Ready\r\n");
-  sleep(1);
-  sim_send("+CPIN: READY\r\n");
 
   pthread_join(TheReadThread, NULL);
   pthread_join(TheWriteThread, NULL);
