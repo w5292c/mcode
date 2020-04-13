@@ -52,6 +52,8 @@ static void *sim_write_thread(void *args);
 static void sim_send(const char *rsp);
 static void sim_handle_command(const char *cmd);
 
+static void sim_dump(const char *str);
+
 int main(int argc, char **argv)
 {
   int res;
@@ -101,6 +103,8 @@ void *sim_read_thread(void *args)
     } else if (-1 == res && EAGAIN != errno) {
       fprintf(stderr, "Error: %d, %d\n", res, errno);
     }
+
+    usleep(10000);
   }
 
   close(TheInPipe);
@@ -140,6 +144,10 @@ void *sim_write_thread(void *args)
 void sim_send(const char *rsp)
 {
   char ch;
+
+  fprintf(stdout, ">>> \"");
+  sim_dump(rsp);
+  fprintf(stdout, "\"\n");
   while ((ch = *rsp++)) {
     if (TheOutBufferWrIndex == sizeof (TheOutBuffer)) {
       TheOutBufferWrIndex = 0;
@@ -151,16 +159,28 @@ void sim_send(const char *rsp)
 
 void sim_handle_command(const char *cmd)
 {
+  fprintf(stdout, "<<< \"");
+  sim_dump(cmd);
+  fprintf(stdout, "\"\n");
   if (!strcmp(cmd, "AT")) {
-    printf("AT cmd, sending OK\n");
     sim_send("OK\r\n");
   } else if (!strcmp(cmd, "AT+CMGS=\"+70001112233\"")) {
     sim_send("> ");
   } else if (!strcmp(cmd, "hello\x1a")) {
-    printf("Got SMS body, sending OK\n");
     sim_send("OK\r\n");
   } else {
-    printf("Unknown cmd: [%s], sending ERROR\n", cmd);
     sim_send("ERROR\r\n");
+  }
+}
+
+void sim_dump(const char *str)
+{
+  char ch;
+  while ((ch = *str++)) {
+    if (ch >= 32) {
+      fprintf(stdout, "%c", ch);
+    } else {
+      fprintf(stdout, "[0x%02X]", (unsigned int)ch);
+    }
   }
 }
