@@ -120,6 +120,9 @@ void lcd_deinit(void)
 
 void lcd_reset(void)
 {
+  int i;
+  uint32_t id;
+
   /* HW reset */
 #ifdef STM32F10X_HD
   GPIO_WriteBit(GPIOD, GPIO_Pin_5, Bit_RESET);
@@ -135,7 +138,17 @@ void lcd_reset(void)
   mtick_sleep(10);
 
   /* wait for LCD ready */
-  while (0x00009341 != lcd_read_id());
+  for (i = 0; i < 3; ++i) {
+    id = lcd_read_id();
+    if (0x00009341 == id) {
+      break;
+    } else {
+      mprintstr("Error: failed reading LCD ID, got: ");
+      mprint_uint32(id, false);
+      mprint(MStringNewLine);
+      mtick_sleep(500);
+    }
+  }
 
   /* initialize the LCD module */
   lcd_device_init();
