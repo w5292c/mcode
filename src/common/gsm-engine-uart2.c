@@ -188,9 +188,11 @@ bool gsm_send_sms(const char *address, const char *body)
   TheMsgBuffer[length] = 0;
 
   /* Send first line of '+CMGS' command */
-  gsm_send_string("AT+CMGS=\"");
-  gsm_send_string(address);
-  gsm_send_string(PSTR("\"\r"));
+  io_ostream_handler_push(uart2_write_char);
+  mprintstr(PSTR("AT+CMGS=\""));
+  mprintstrhex16encoded(address, strlen(address));
+  mprintstr(PSTR("\"\r"));
+  io_ostream_handler_pop();
   TheGsmState = EGsmStateSendingSmsAddress;
 
   return true;
@@ -301,10 +303,12 @@ void gsm_uart2_handler(const char *data, size_t length)
 void gsm_sms_send_body(void)
 {
   TheGsmState = EGsmStateIdle;
-  gsm_send_string(TheMsgBuffer);
+  io_ostream_handler_push(uart2_write_char);
+  mprintstrhex16encoded(TheMsgBuffer, strlen(TheMsgBuffer));
   memset(TheMsgBuffer, 0, sizeof (TheMsgBuffer));
   uart2_write_char(0x1a);
   uart2_write_char('\r');
+  io_ostream_handler_pop();
 }
 
 void gsm_send_string(const char *str)
