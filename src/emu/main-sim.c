@@ -145,7 +145,7 @@ void sim_send(const char *rsp)
 {
   char ch;
 
-  fprintf(stdout, ">>> \"");
+  fprintf(stdout, "<<< \"");
   sim_dump(rsp);
   fprintf(stdout, "\"\n");
   while ((ch = *rsp++)) {
@@ -159,7 +159,7 @@ void sim_send(const char *rsp)
 
 void sim_handle_command(const char *cmd)
 {
-  fprintf(stdout, "<<< \"");
+  fprintf(stdout, ">>> \"");
   sim_dump(cmd);
   fprintf(stdout, "\"\n");
   if (!strcasecmp(cmd, "AT")) {
