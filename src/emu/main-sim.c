@@ -167,6 +167,8 @@ void sim_handle_command(const char *cmd)
   } else if (!strcasecmp(cmd, "AT+CMGS=\"+70001112233\"")) {
     sim_send("> ");
   } else if (!strcmp(cmd, "hello\x1a")) {
+    sim_send("+CMGS: 2\r\n");
+    usleep(10000);
     sim_send("OK\r\n");
   } else if (!strcasecmp(cmd, "AT+CMGR=1")) {
     sim_send("+CMGR: \"REC READ\",\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:27:04+12\"\r\n");

@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015-2017 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,11 @@ static void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *
 void cmd_engine_gsm_init(void)
 {
   gsm_set_callback(cmd_gsm_event_handler);
+
+#ifdef __linux__
+  /* Set the test phone number for Emulator target */
+  cmd_gsm_store_phone_number("+70001112233");
+#endif /* __linux__ */
 }
 
 void cmd_engine_gsm_deinit(void)

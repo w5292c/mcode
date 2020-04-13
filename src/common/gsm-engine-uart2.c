@@ -504,7 +504,7 @@ void gsm_read_sms_handle_header(const char *data, size_t length)
     if (TokenString != type) {
       break;
     }
-    /* At this point we have the phone number UCS2-engoded in 'token'/'value'(length)
+    /* At this point we have the phone number UCS2-encoded in 'token'/'value'(length)
      * Need to check the phone number at this point */
     mprintstr("Phone: ");
     mprinthexencodedstr16(token, value);
