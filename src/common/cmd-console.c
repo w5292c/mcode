@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Alexander Chumakov
+ * Copyright (c) 2015-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ static void cmd_engine_set_bg (const char *aParams);
 static void cmd_engine_set_color (const char *aParams);
 static void cmd_engine_set_scroll_start (const char *aParams);
 
+#ifdef MCODE_TEST_STRINGS
 static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
   "lack\033[m. This is \033[32;40mgreen on black\033[m. This is \033[33;40myellow o"
@@ -93,6 +94,7 @@ static const char TheLongTestText[] PROGMEM =
   "the string_table variable, the array itself, in the Program Space. This DOES NOT"
   " put the actual strings themselves into Program Space. At this point, the string"
   "s are still in the Data Space, which is probably not what you want.";
+#endif /* MCODE_TEST_STRINGS */
 
 void cmd_engine_console_help(void)
 {
@@ -101,9 +103,11 @@ void cmd_engine_console_help(void)
   mprintstrln(PSTR("> ch - Print a single character"));
   mprintstrln(PSTR("> line - Print a string with a new-line"));
   mprintstrln(PSTR("> scroll <xxxx> - Scroll image"));
+#ifdef MCODE_TEST_STRINGS
   mprintstrln(PSTR("> tstr - Show long string"));
   mprintstrln(PSTR("> esc-pos - Show positioned test"));
   mprintstrln(PSTR("> esc-color - Show colored strings"));
+#endif /* MCODE_TEST_STRINGS */
   mprintstrln(PSTR("> color xxxx - set text color"));
   mprintstrln(PSTR("> bg xxxx - set background color"));
   mprintstrln(PSTR("> cls - Clear screen"));
@@ -123,6 +127,7 @@ bool cmd_engine_console_command(const char *command, bool *startCmd)
   } else if (!strncmp_P(command, PSTR("scroll "), 7)) {
     cmd_engine_set_scroll_start(&command[7]);
     return true;
+#ifdef MCODE_TEST_STRINGS
   } else if (!strcmp_P(command, PSTR("tstr"))) {
     console_write_string_P(TheLongTestText);
     console_write_string_P(TheLongTestText);
@@ -133,6 +138,7 @@ bool cmd_engine_console_command(const char *command, bool *startCmd)
   } else if (!strcmp_P(command, PSTR("esc-pos"))) {
     console_write_string_P(TheTestEscPositionManagement);
     return true;
+#endif /* MCODE_TEST_STRINGS */
   } else if (!strcmp_P(command, PSTR("bs"))) {
     console_write_string_P(PSTR ("\010"));
     return true;
