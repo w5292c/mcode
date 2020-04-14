@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   sleep(1);
   sim_send("RDY\r\n");
   sleep(1);
-  sim_send("+CFUN: 1");
+  sim_send("+CFUN: 1\r\n");
   sleep(1);
   sim_send("+CPIN: READY\r\n");
   sleep(1);
@@ -173,9 +173,9 @@ void sim_handle_command(const char *cmd)
   fprintf(stdout, "\"\n");
   if (!strcasecmp(cmd, "AT")) {
     sim_send("OK\r\n");
-  } else if (!strcasecmp(cmd, "AT+CMGS=\"+70001112233\"")) {
+  } else if (!strcasecmp(cmd, "AT+CMGS=\"002B00370030003000300031003100310032003200330033\"")) {
     sim_send("> ");
-  } else if (!strcmp(cmd, "hello\x1a")) {
+  } else if (!strcmp(cmd, "00680065006C006C006F\x1a")) {
     sim_send("+CMGS: 2\r\n");
     usleep(10000);
     sim_send("OK\r\n");
