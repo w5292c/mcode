@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ void console_deinit (void);
 
 void console_clear_screen (void);
 
-void console_write_byte (uint8_t byte);
+void console_write_byte(char byte);
 void console_write_string (const char *pString);
 void console_write_string_P (const char *pString);
 

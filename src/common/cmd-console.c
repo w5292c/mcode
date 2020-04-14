@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "cmd-iface.h"
 #include "cmd-engine.h"
 
 #include "utils.h"
@@ -31,6 +32,8 @@
 #include "mstring.h"
 
 #include <string.h>
+
+CMD_IMPL("lcd-print", TheLcdPrint, "Print expression in LCD console", cmd_lcd_print, NULL, 0);
 
 static void cmd_engine_set_bg (const char *aParams);
 static void cmd_engine_set_color (const char *aParams);
@@ -191,4 +194,13 @@ void cmd_engine_set_scroll_start(const char *args)
   } else {
     merror(MStringWrongArgument);
   }
+}
+
+bool cmd_lcd_print(const TCmdData *data, const char *args,
+                   size_t args_len, bool *start_cmd)
+{
+  io_ostream_handler_push(console_write_byte);
+  mprintexpr(args);
+  io_ostream_handler_pop();
+  return true;
 }
