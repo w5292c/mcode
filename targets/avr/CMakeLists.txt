@@ -213,3 +213,10 @@ add_custom_target(flash
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   COMMENT "Flashing..."
 )
+
+add_custom_target ( sizes
+  COMMAND avr-nm --print-size --size-sort --radix=d ${PROJECT_BINARY_DIR}/console-test
+  DEPENDS console-test
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  COMMENT "Show detailed information about sizes in the executable per simbols"
+)
