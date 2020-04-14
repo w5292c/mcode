@@ -26,7 +26,10 @@
 
 #include "mtick.h"
 #include "hw-uart.h"
+#include "mstring.h"
 #include "scheduler.h"
+#include "cmd-engine.h"
+#include "line-editor-uart.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,8 +67,17 @@ int main(int argc, char **argv)
 {
   int res;
 
+  /* first, init the scheduler */
   scheduler_init();
   mtick_init();
+  /* now, UART can be initialized */
+  hw_uart_init();
+  /* init the line editor and the command engine */
+  line_editor_uart_init();
+  cmd_engine_init();
+
+  /* start the command engine */
+  cmd_engine_start();
 
   res = pthread_create(&TheReadThread, NULL, sim_read_thread, NULL);
   if (-1 == res) exit(1);
@@ -210,9 +222,4 @@ void sim_dump(const char *str)
       fprintf(stdout, "[0x%02X]", (unsigned int)ch);
     }
   }
-}
-
-void uart_write_char(char ch)
-{
-  printf("%c", ch);
 }

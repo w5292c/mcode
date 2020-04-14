@@ -21,3 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+/* Enable using the new Command Engine */
+#cmakedefine MCODE_NEW_ENGINE
