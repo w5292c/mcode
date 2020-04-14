@@ -24,6 +24,10 @@
 
 #include "mcode-config.h"
 
+#include "mtick.h"
+#include "hw-uart.h"
+#include "scheduler.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,6 +64,9 @@ int main(int argc, char **argv)
 {
   int res;
 
+  scheduler_init();
+  mtick_init();
+
   res = pthread_create(&TheReadThread, NULL, sim_read_thread, NULL);
   if (-1 == res) exit(1);
   res = pthread_create(&TheWriteThread, NULL, sim_write_thread, NULL);
@@ -85,6 +92,9 @@ int main(int argc, char **argv)
 
   pthread_join(TheReadThread, NULL);
   pthread_join(TheWriteThread, NULL);
+
+  mtick_deinit();
+  scheduler_deinit();
 
   return 0;
 }
@@ -200,4 +210,9 @@ void sim_dump(const char *str)
       fprintf(stdout, "[0x%02X]", (unsigned int)ch);
     }
   }
+}
+
+void uart_write_char(char ch)
+{
+  printf("%c", ch);
 }
