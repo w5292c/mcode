@@ -24,6 +24,13 @@
 
 #include "mcode-config.h"
 
+#include "mtick.h"
+#include "hw-uart.h"
+#include "mstring.h"
+#include "scheduler.h"
+#include "cmd-engine.h"
+#include "line-editor-uart.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,6 +67,18 @@ int main(int argc, char **argv)
 {
   int res;
 
+  /* first, init the scheduler */
+  scheduler_init();
+  mtick_init();
+  /* now, UART can be initialized */
+  hw_uart_init();
+  /* init the line editor and the command engine */
+  line_editor_uart_init();
+  cmd_engine_init();
+
+  /* start the command engine */
+  cmd_engine_start();
+
   res = pthread_create(&TheReadThread, NULL, sim_read_thread, NULL);
   if (-1 == res) exit(1);
   res = pthread_create(&TheWriteThread, NULL, sim_write_thread, NULL);
@@ -85,6 +104,9 @@ int main(int argc, char **argv)
 
   pthread_join(TheReadThread, NULL);
   pthread_join(TheWriteThread, NULL);
+
+  mtick_deinit();
+  scheduler_deinit();
 
   return 0;
 }

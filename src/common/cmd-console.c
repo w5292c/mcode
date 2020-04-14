@@ -36,8 +36,8 @@ static void cmd_engine_set_bg (const char *aParams);
 static void cmd_engine_set_color (const char *aParams);
 static void cmd_engine_set_scroll_start (const char *aParams);
 
-static const char TheTestTextWithEscapeSequences[] PROGMEM =
-  "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
+static const char TheTestTextWithEscapeSequences[] PROGMEM = "";
+/*  "Color tests. This is \033[30;40mblack on black\033[m.This is \033[31;40mred on b"
   "lack\033[m. This is \033[32;40mgreen on black\033[m. This is \033[33;40myellow o"
   "n black\033[m. This is \033[34;40mblue on black\033[m. This is \033[35;40mmagent"
   "a on black\033[m. This is \033[36;40mcyan on black\033[m. This is \033[37;40mwhi"
@@ -45,10 +45,10 @@ static const char TheTestTextWithEscapeSequences[] PROGMEM =
   "lack on red\033[m. This is \033[30;42mblack on green\033[m. This is \033[30;43mb"
   "lack on yellow\033[m. This is \033[37;44mwhite on blue\033[m. This is \033[30;45"
   "mblack on magenta\033[m. This is \033[30;46mblack on cyan\033[m. This is \033[30"
-  ";47mblack on white\033[m.";
+  ";47mblack on white\033[m.";*/
 
-static const char TheTestEscPositionManagement[] PROGMEM =
-  "Hello world!!! This text will be erased in the next escape command, cool.\033[2J"
+static const char TheTestEscPositionManagement[] PROGMEM = "";
+/*  "Hello world!!! This text will be erased in the next escape command, cool.\033[2J"
   "Initial text.\033[10;3HThis line starts at 10x3.\033[12;2fAnd this line starts a"
   "t 12x2.\033[30;10HSTART, 3U\033[3AUP, 6D\033[6BDOWN, 30B\033[30DBACK, 10F/3D\033"
   "[10C\033[3BFINAL!!!"
@@ -59,10 +59,10 @@ static const char TheTestEscPositionManagement[] PROGMEM =
   "\033[u\033[s\033[4B2. Line 4 of the menu;"
   "\033[u\033[s\033[5B2. Line 5 of the menu;"
   "\033[u\033[7B\033[3DErase line test: \033[s1234567890\033[s123456789012345678901"
-  "\033[u\033[KZ";
+  "\033[u\033[KZ";*/
 
-static const char TheLongTestText[] PROGMEM =
-  "That's it! Now your data is in the Program Space. You can compile, link, and che"
+static const char TheLongTestText[] PROGMEM = "";
+/*  "That's it! Now your data is in the Program Space. You can compile, link, and che"
   "ck the map file to verify that mydata is placed in the correct section. Now that"
   " your data resides in the Program Space, your code to access (read) the data wil"
   "l no longer work. The code that gets generated will retrieve the data that is lo"
@@ -92,7 +92,7 @@ static const char TheLongTestText[] PROGMEM =
   "the declaration that they are attached to. So in this case, we successfully put "
   "the string_table variable, the array itself, in the Program Space. This DOES NOT"
   " put the actual strings themselves into Program Space. At this point, the string"
-  "s are still in the Data Space, which is probably not what you want.";
+  "s are still in the Data Space, which is probably not what you want.";*/
 
 void cmd_engine_console_help(void)
 {
