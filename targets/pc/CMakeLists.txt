@@ -119,16 +119,21 @@ if ( MCODE_PROG )
 endif ( MCODE_PROG )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
+configure_file ( ${MCODE_TOP}/msim-config.h.in ${PROJECT_BINARY_DIR}/include-simulator/mcode-config.h )
 
 add_executable( console-test ${SRC_LIST} ${HEADERS_MOC} ${SRC_LIST_QT} )
 target_link_libraries ( console-test ${GLIB2_0_LIBRARIES} ${SQLITE_LIBRARIES} )
 target_link_libraries ( console-test ${CMAKE_THREAD_LIBS_INIT} )
 target_link_libraries ( console-test  ${QT_LIBRARIES} )
-
-include_directories ( "${PROJECT_BINARY_DIR}/include/" )
+target_include_directories ( console-test
+  PRIVATE "${PROJECT_BINARY_DIR}/include/"
+)
 
 add_executable ( mcode-simulator ${SRC_LIST_SIM} )
 target_link_libraries ( mcode-simulator ${CMAKE_THREAD_LIBS_INIT} )
+target_include_directories ( mcode-simulator
+  PRIVATE "${PROJECT_BINARY_DIR}/include-simulator/"
+)
 
 add_custom_command (
   TARGET console-test
