@@ -71,6 +71,7 @@ void hw_uart2_set_callback(hw_uart_handler cb)
 
 void uart2_report_new_sample(void)
 {
+  bool timeout = false;
   /* Check if we have a ready line to handle */
   const uint8_t readyFlag = (1u << TheUart2State.readIndex);
   if (!(TheUart2State.ready & readyFlag)) {
@@ -78,6 +79,8 @@ void uart2_report_new_sample(void)
     if (!TheLastCharTimestamp || (mtick_count() - TheLastCharTimestamp) < 10 ||
         !TheUart2State.lineBufferLength[TheUart2State.readIndex]) {
       return;
+    } else {
+      timeout = true;
     }
   }
 
@@ -89,7 +92,9 @@ void uart2_report_new_sample(void)
   memset((char *)TheUart2State.lineBuffer[TheUart2State.readIndex], 0, MCODE_UART2_READ_BUFFER_LENGTH);
   TheUart2State.lineBufferLength[TheUart2State.readIndex] = 0;
   /* Ready to read a line in the next buffer, reset the 'ready' flag for the current line */
-  ++TheUart2State.readIndex;
+  if (!timeout) {
+    ++TheUart2State.readIndex;
+  }
   TheUart2State.ready &= ~readyFlag;
 }
 
