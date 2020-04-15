@@ -60,9 +60,11 @@ set ( SRC_LIST_SIM
   ${MCODE_TOP}/src/common/mvars.c
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/mparser.c
+  ${MCODE_TOP}/src/common/mstatus.c
   ${MCODE_TOP}/src/common/mstring.c
   ${MCODE_TOP}/src/common/cmd-help.c
   ${MCODE_TOP}/src/common/cmd-engine.c
+  ${MCODE_TOP}/src/common/cmd-system.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
   ${MCODE_TOP}/src/emu/mtick.c
   ${MCODE_TOP}/src/emu/hw-nvm.c

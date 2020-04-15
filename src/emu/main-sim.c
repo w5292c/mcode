@@ -43,6 +43,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+static bool TheRunRequest = false;
+
 static int TheInPipe = 0;
 static int TheOutPipe = 0;
 
@@ -79,6 +81,7 @@ int main(int argc, char **argv)
   /* start the command engine */
   cmd_engine_start();
 
+  TheRunRequest = true;
   res = pthread_create(&TheReadThread, NULL, sim_read_thread, NULL);
   if (-1 == res) exit(1);
   res = pthread_create(&TheWriteThread, NULL, sim_write_thread, NULL);
@@ -105,6 +108,9 @@ int main(int argc, char **argv)
   pthread_join(TheReadThread, NULL);
   pthread_join(TheWriteThread, NULL);
 
+  cmd_engine_deinit();
+  line_editor_uart_deinit();
+  hw_uart_deinit();
   mtick_deinit();
   scheduler_deinit();
 
@@ -122,7 +128,7 @@ void *sim_read_thread(void *args)
   TheInPipe = open("/var/tmp/mcode-to-sim", O_RDONLY | O_NONBLOCK);
   if (-1 == TheInPipe) exit(1);
 
-  while (true) {
+  while (TheRunRequest) {
     res = read(TheInPipe, &ch, 1);
     if (1 == res) {
       if ('\r' != ch) {
@@ -155,7 +161,7 @@ void *sim_write_thread(void *args)
   TheOutPipe = open("/var/tmp/sim-to-mcode", O_WRONLY | O_NONBLOCK);
 
   char ch;
-  while (true) {
+  while (TheRunRequest) {
     if (TheOutBufferWrIndex != TheOutBufferRdIndex) {
       if (TheOutBufferRdIndex == sizeof (TheOutBuffer)) {
         TheOutBufferRdIndex = 0;
@@ -222,4 +228,9 @@ void sim_dump(const char *str)
       fprintf(stdout, "[0x%02X]", (unsigned int)ch);
     }
   }
+}
+
+void main_request_exit(void)
+{
+  TheRunRequest = false;
 }
