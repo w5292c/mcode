@@ -76,7 +76,7 @@ void uart2_report_new_sample(void)
   const uint8_t readyFlag = (1u << TheUart2State.readIndex);
   if (!(TheUart2State.ready & readyFlag)) {
     /* No ready data detected, check if we are 'idle' for too long (10ms) */
-    if (!TheLastCharTimestamp || (mtick_count() - TheLastCharTimestamp) < 10 ||
+    if (!TheLastCharTimestamp || (mtick_count() - TheLastCharTimestamp) < 50 ||
         !TheUart2State.lineBufferLength[TheUart2State.readIndex]) {
       return;
     } else {
@@ -105,6 +105,12 @@ void uart2_handle_new_sample(uint16_t data)
   volatile char *const buffer = TheUart2State.lineBuffer[TheUart2State.writeIndex];
   switch (TheUart2State.state) {
   case ELineReaderStateIdle:
+    /* assert: begin */
+    if (TheUart2State.ready & (1u << TheUart2State.writeIndex)) {
+      mprintstrln("E: not ready");
+      return;
+    }
+    /* assert: end */
     size = 0;
     TheUart2State.lineBufferLength[TheUart2State.writeIndex] = 0;
     TheUart2State.state = ELineReaderStateReadingLine;
@@ -120,12 +126,14 @@ void uart2_handle_new_sample(uint16_t data)
       } else {
         buffer[MCODE_UART2_READ_BUFFER_LENGTH - 1] = 0;
       }
-    } else if (size < MCODE_UART2_READ_BUFFER_LENGTH - 1) {
-      /* Check if we have enough space in the buffer for storing the new character */
-      /* We reserve 1 byte for the end-of-line indication '\0' */
-      buffer[size] = data;
+    } else {
+      if (size < MCODE_UART2_READ_BUFFER_LENGTH - 1) {
+        /* Check if we have enough space in the buffer for storing the new character */
+        /* We reserve 1 byte for the end-of-line indication '\0' */
+        buffer[size] = data;
+      }
+      ++TheUart2State.lineBufferLength[TheUart2State.writeIndex];
     }
-    ++TheUart2State.lineBufferLength[TheUart2State.writeIndex];
     break;
   case ELineReaderStateWaitingN:
     if ('\n' == data) {

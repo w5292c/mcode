@@ -102,7 +102,3 @@ void hw_gsm_init(void)
 void hw_gsm_power(bool on)
 {
 }
-
-void hw_uart2_set_callback(hw_uart_handler cb)
-{
-}

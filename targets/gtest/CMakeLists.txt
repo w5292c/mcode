@@ -26,6 +26,7 @@ set (
   ${MCODE_TOP}/src/common/mtimer.c
   ${MCODE_TOP}/src/common/mparser.c
   ${MCODE_TOP}/src/common/mstring.c
+  ${MCODE_TOP}/src/common/hw-uart.c
   ${MCODE_TOP}/src/common/gsm-engine-uart2.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
 )
@@ -46,6 +47,7 @@ set (
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
   ${MCODE_TOP}/src/emu/persistent-store.c
   ${MCODE_TOP}/src/gtest/test-mtimer.cpp
+  ${MCODE_TOP}/src/gtest/test-hw-uart.cpp
   ${MCODE_TOP}/src/gtest/test-scheduler.cpp
   ${MCODE_TOP}/src/gtest/test-mvars-basic.cpp
   ${MCODE_TOP}/src/gtest/test-utils-basic.cpp
