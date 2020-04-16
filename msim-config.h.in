@@ -24,3 +24,6 @@
 
 /* Enable using the new Command Engine */
 #cmakedefine MCODE_NEW_ENGINE
+
+/* Enable programming engine */
+#cmakedefine MCODE_PROG
