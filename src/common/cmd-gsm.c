@@ -22,15 +22,19 @@
  * SOFTWARE.
  */
 
+#include "cmd-iface.h"
 #include "cmd-engine.h"
 
 #include "mglobal.h"
 #include "mparser.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "gsm-engine.h"
 #include "line-editor-uart.h"
 
 #include <string.h>
+
+CMD_IMPL("sms-read", TheRd, "Read SMS to s0:1 (phone) and s1:2 (body)", cmd_gsm_read_sms, NULL, 0);
 
 #define MCODE_GSM_RSP_BUFFER_MAX_LENGTH (80)
 #define MCODE_GSM_PHONE_NUMBER_MAX_LENGTH (16)
@@ -43,7 +47,6 @@ static void cmd_gsm_send_sms(const char *body);
 static void cmd_engine_send_at_command(const char *args);
 static void cmd_gsm_store_phone_number(const char *number);
 static void cmd_engine_send_raw_at_command(const char *args);
-static void cmd_gsm_read_sms(const char *body, bool *startCmd);
 static void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *body);
 
 void cmd_engine_gsm_init(void)
@@ -65,7 +68,6 @@ void cmd_engine_gsm_help(void)
 {
   mprintstrln(PSTR("> gsm-power <on/off> - Turn GSM power ON/OFF"));
   mprintstrln(PSTR("> at <AT-COMMAND> - Send generic AT-command to GSM module"));
-  mprintstrln(PSTR("> sms-read <idx> - Read SMS at <idx>"));
   mprintstrln(PSTR("> send-sms <MSG-BODY> - Send SMS with <MSG-BODY> text"));
   mprintstrln(PSTR("> phone - Show the current phone number for sending SMSes"));
   mprintstrln(PSTR("> phone-set <PHONE-NUMBER> - Store the phone number for sending SMS"));
@@ -78,9 +80,6 @@ bool cmd_engine_gsm_command(const char *command, bool *startCmd)
     return true;
   } else if (!strncmp_P(command, PSTR("rat "), 4)) {
     cmd_engine_send_raw_at_command(command + 4);
-    return true;
-  } else if (!strncmp_P(command, PSTR("sms-read "), 9)) {
-    cmd_gsm_read_sms(command + 9, startCmd);
     return true;
   } else if (!strncmp_P(command, PSTR("send-sms "), 9)) {
     cmd_gsm_send_sms(command + 9);
@@ -113,27 +112,24 @@ void cmd_engine_send_raw_at_command(const char *args)
   gsm_send_cmd_raw(args);
 }
 
-void cmd_gsm_read_sms(const char *body, bool *startCmd)
+bool cmd_gsm_read_sms(const TCmdData *data, const char *args,
+                      size_t args_len, bool *start_cmd)
 {
   TokenType type;
   uint32_t value;
   const char *token;
-  size_t length = strlen(body);
 
-  type = next_token(&body, &length, &token, &value);
+  type = next_token(&args, &args_len, &token, &value);
   if (TokenInt != type) {
-    merror(MStringWrongArgument);
-    return;
+    mcode_errno_set(EArgument);
+    return true;
   }
-  mprintstr("Reading SMS at index: ");
-  mprint_uintd(value, 1);
-  mprint(MStringNewLine);
 
-  if (!gsm_read_sms(value)) {
-    merror(MStringInternalError);
-  } else {
-    startCmd = false;
+  if (gsm_read_sms(value)) {
+    start_cmd = false;
   }
+
+  return true;
 }
 
 void cmd_gsm_send_sms(const char *body)
