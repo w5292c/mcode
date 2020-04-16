@@ -231,6 +231,7 @@ void *emu_hw_uart2_read_thread(void *arg)
 {
   int res;
 
+  nice(-10);
   res = mkfifo("/var/tmp/sim-to-mcode", S_IRUSR | S_IWUSR);
   if (-1 == res && EEXIST != errno) exit(1);
 
