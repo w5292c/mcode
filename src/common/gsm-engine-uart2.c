@@ -447,7 +447,6 @@ bool gsm_read_sms(int index)
   mprint_uintd(index, 1);
   mprintstr("\r");
   io_set_ostream_handler(NULL);
-  mvar_putch_config(0, 2);
 
   return true;
 }
@@ -510,9 +509,10 @@ void gsm_read_sms_handle_header(const char *data, size_t length)
     }
     /* At this point we have the phone number UCS2-encoded in 'token'/'value'(length)
      * Need to check the phone number at this point */
-    mprintstr("Phone: ");
+    mvar_putch_config(0, 1);
+    io_ostream_handler_push(mvar_putch);
     mprinthexencodedstr16(token, value);
-    mprint(MStringNewLine);
+    io_ostream_handler_pop();
 
     /* Wait for the SMS body */
     TheGsmState = EGsmStateReadingSmsBody;
@@ -527,9 +527,10 @@ void gsm_read_sms_handle_body(const char *data, size_t length)
    * Example body:
    * > 005400650073007400200053004D0053003A00200061006200630064
    */
-  mprintstr("SMS body [");
+  mvar_putch_config(1, 2);
+  io_ostream_handler_push(mvar_putch);
   mprinthexencodedstr16(data, length);
-  mprintstrln("]");
+  io_ostream_handler_pop();
 
   /* Finished handling the SMS */
   TheGsmState = EGsmStateIdle;
