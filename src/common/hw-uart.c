@@ -24,13 +24,10 @@
 
 #include "hw-uart.h"
 
-#include "mtick.h"
-#include "mstring.h"
-
 #include <string.h>
+#include <stdbool.h>
 
 #ifdef MCODE_UART2
-#define MCODE_UART_READ_TIMEOUT (100) /*< 100ms */
 #define UART2_READ_BUFFERS_COUNT (4)
 #define MCODE_UART2_READ_BUFFER_LENGTH (512)
 
@@ -55,7 +52,6 @@ typedef struct _TLineReaderState {
 
 volatile static TLineReaderState TheUart2State = {{0}};
 
-static uint64_t TheLastCharTimestamp = 0;
 static hw_uart_handler TheUart2Callback = NULL;
 #endif /* MCODE_UART2 */
 
