@@ -27,6 +27,7 @@
 #include "mstring.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <pthread.h>
 
 static uint64_t TheMSecCounter = 0;
@@ -74,6 +75,7 @@ void *mtick_thread(void *args)
   int res;
   struct timespec ts = {0};
 
+  nice(-15);
   /* Get the current time and calculate the next timer expiration time,
      aligned to millisecond grid */
   res = clock_gettime(CLOCK_TAI, &ts);

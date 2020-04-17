@@ -67,6 +67,7 @@ void *emu_core_scheduler_thread(void *threadid)
   (void)threadid;
   nice(19);
 
+  nice(-18);
   scheduler_start();
   return NULL;
 }
