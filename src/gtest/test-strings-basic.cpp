@@ -482,12 +482,39 @@ TEST_P(StringNumeric, SimpleUint64NoSkip)
   ASSERT_STREQ(collected_text(), buffer);
 }
 
+TEST_F(StringBasic, MPrintExprBasicNoLength)
+{
+  const char *const expected = "abcdefgh";
+  const char *const original = "abcdefgh";
+
+  mprintexpr(original, -1);
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, MPrintExprBasicWithLength)
+{
+  const char *const expected = "abcd";
+  const char *const original = "abcdefgh";
+
+  mprintexpr(original, 4);
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, MPrintExprBasicZeroCharInside)
+{
+  const char *const expected = "abcd";
+  const char *const original = "abcd\0efgh";
+
+  mprintexpr(original, 9);
+  ASSERT_STREQ(collected_text(), expected);
+}
+
 TEST_F(StringBasic, MPrintExprBasicEscapes)
 {
   const char *const expected = "abc\r\ndef\t\t\tghi\r\r\n\nq\\wezxrty";
   const char *const original = "abc\\r\\ndef\\t\\t\\tghi\\r\\r\\n\\nq\\\\we\\z\\xrty";
 
-  mprintexpr(original);
+  mprintexpr(original, -1);
   ASSERT_STREQ(collected_text(), expected);
 }
 
@@ -496,62 +523,62 @@ TEST_F(StringBasic, MPrintExprMoreEscapes)
   const char *const expected = "\a\b\e\f\n\r\t\v\0";
   const char *const original = "\\a\\b\\e\\f\\n\\r\\t\\v\\0";
 
-  mprintexpr(original);
+  mprintexpr(original, -1);
   ASSERT_STREQ(collected_text(), expected);
   ASSERT_EQ(collected_text_length(), strlen(expected) + 1);
 }
 
 TEST_F(StringBasic, MPrintExprNull)
 {
-  mprintexpr(NULL);
+  mprintexpr(NULL, -1);
   ASSERT_STREQ(collected_text(), "");
 }
 
 TEST_F(StringWithVars, ExprWithStringVar)
 {
-  mprintexpr("prefix $s0:1 postfix");
+  mprintexpr("prefix $s0:1 postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix string #70 postfix");
 }
 
 TEST_F(StringWithVars, ExprWithIntVar)
 {
-  mprintexpr("prefix $i0:1 postfix");
+  mprintexpr("prefix $i0:1 postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix 10 postfix");
 }
 
 TEST_F(StringWithVars, ExprWithNvmVar)
 {
-  mprintexpr("prefix $n0:1 postfix");
+  mprintexpr("prefix $n0:1 postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix 40 postfix");
 }
 
 TEST_F(StringWithVars, ExprWithIntNoCount)
 {
-  mprintexpr("prefix $i1: postfix");
+  mprintexpr("prefix $i1: postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix 11 postfix");
 }
 
 TEST_F(StringWithVars, ExprWithIntNoCountNoSeparator)
 {
-  mprintexpr("prefix $i2 postfix");
+  mprintexpr("prefix $i2 postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix 12 postfix");
 }
 
 TEST_F(StringWithVars, ExprWithIntNakedName)
 {
-  mprintexpr("prefix $i postfix");
+  mprintexpr("prefix $i postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix 10 postfix");
 }
 
 TEST_F(StringWithVars, ExprWithIntNoVariable)
 {
-  mprintexpr("prefix $$ postfix");
+  mprintexpr("prefix $$ postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix $ postfix");
 }

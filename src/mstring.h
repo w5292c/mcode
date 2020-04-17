@@ -117,10 +117,11 @@ void mprintstr_R(const char *string);
 void mprintbytes_R(const char *str, size_t length);
 
 /**
- * Print expression in \c exprt to the default terminal
- * @param[in] expr The string with possible escape sequences and variables
+ * Print the expression in RAM pointed by \c str to the default terminal
+ * @param[in] str The string with possible escape sequences and variables
+ * @param[in] length The length of the string or may be \c -1 if it is NULL-terminated
  */
-void mprintexpr(const char *expr);
+void mprintexpr(const char *str, size_t length);
 
 void mprint_uint8(uint8_t value, bool skipZeros);
 void mprint_uint16(uint16_t value, bool skipZeros);

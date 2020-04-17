@@ -200,7 +200,7 @@ bool cmd_lcd_print(const TCmdData *data, const char *args,
                    size_t args_len, bool *start_cmd)
 {
   io_ostream_handler_push(console_write_byte);
-  mprintexpr(args);
+  mprintexpr(args, -1);
   io_ostream_handler_pop();
   return true;
 }

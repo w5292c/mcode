@@ -91,7 +91,7 @@ bool cmd_system_echo(const TCmdData *data, const char *args,
 bool cmd_system_expr(const TCmdData *data, const char *args,
                      size_t args_len, bool *start_cmd)
 {
-  mprintexpr(args);
+  mprintexpr(args, -1);
   mprint(MStringNewLine);
   return true;
 }

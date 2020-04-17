@@ -248,20 +248,27 @@ void mprintbytes_R(const char *string, size_t length)
   }
 }
 
-void mprintexpr(const char *expr)
+void mprintexpr(const char *str, size_t length)
 {
   char ch;
   char chs[5];
   bool escape = false;
   bool variable = false;
 
-  if (!expr) {
+  /* Check the inputs */
+  if (!str || !length) {
     /* Nothing to print */
     return;
   }
+  if (-1 ==length) {
+    length = strlen(str);
+  }
 
-  do {
-    ch = pgm_read_byte(expr++);
+  while (length) {
+    /* Get another character */
+    ch =*str++;
+    --length;
+
     if (variable) {
       size_t len;
       MVarType type;
@@ -333,7 +340,7 @@ void mprintexpr(const char *expr)
       }
     }
     mputch(ch);
-  } while (true);
+  };
 }
 
 void mprint_dump_buffer(uint8_t length, const void *data, bool showAddress)
