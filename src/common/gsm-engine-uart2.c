@@ -103,8 +103,6 @@ static char TheMsgBuffer[MCODE_SMS_MAX_LENGTH] = {0};
 static TGsmStateFlags TheGsmFlags = EGsmStateFlagNone;
 
 static void gsm_sms_send_body(void);
-static void gsm_send_string(const char *str);
-static void gsm_send_fstring(const char *str);
 static void gsm_uart2_handler(const char *data, size_t length);
 static void gsm_handle_new_sms(const char *args, size_t length);
 static void gsm_read_sms_handle_body(const char *data, size_t length);
@@ -156,16 +154,21 @@ bool gsm_send_cmd(const char *cmd)
 
   TheGsmState = EGsmStateSendingAtCmd;
 
-  gsm_send_string(cmd);
-  uart2_write_char('\r');
+  io_ostream_handler_push(uart2_write_char);
+  mprintexpr(cmd, -1);
+  io_ostream_handler_pop();
 
+  uart2_write_char('\r');
   return true;
 }
 
 void gsm_send_cmd_raw(const char *cmd)
 {
   /* No state check for RAW variant */
-  gsm_send_fstring(cmd);
+  io_ostream_handler_push(uart2_write_char);
+  mprintexpr(cmd, -1);
+  io_ostream_handler_pop();
+
   uart2_write_char('\r');
 }
 
@@ -309,63 +312,6 @@ void gsm_sms_send_body(void)
   uart2_write_char(0x1a);
   uart2_write_char('\r');
   io_ostream_handler_pop();
-}
-
-void gsm_send_string(const char *str)
-{
-  char ch;
-  while ((ch = *str++)) {
-    uart2_write_char(ch);
-  }
-}
-
-/**
- * Send formatted string with some escape sequences support
- * @param[in] str The string with probably eacape sequences to be sent to the GSM module
- */
-void gsm_send_fstring(const char *str)
-{
-  char ch;
-  bool escape = false;
-  while ((ch = *str++)) {
-    if (!escape && '\\' == ch) {
-      escape = true;
-    } else if (escape) {
-      escape = false;
-      switch (ch) {
-      case 'r':
-        ch = '\r';
-        break;
-      case 'n':
-        ch = '\n';
-        break;
-      case 't':
-        ch = '\t';
-        break;
-      case '0':
-        ch = '\0';
-        break;
-      case 'a':
-        ch = '\a';
-        break;
-      case 'b':
-        ch = '\b';
-        break;
-      case 'v':
-        ch = '\v';
-        break;
-      case 'f':
-        ch = '\f';
-        break;
-      case 'e':
-        ch = '\e';
-        break;
-      }
-    }
-    if (!escape) {
-      uart2_write_char(ch);
-    }
-  }
 }
 
 const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args)

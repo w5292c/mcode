@@ -41,8 +41,6 @@ typedef enum {
 } TGsmState;
 
 void gsm_sms_send_body(void);
-void gsm_send_string(const char *str);
-void gsm_send_fstring(const char *str);
 void gsm_uart2_handler(const char *data, size_t length);
 void gsm_handle_new_sms(const char *args, size_t length);
 void gsm_read_sms_handle_body(const char *data, size_t length);
