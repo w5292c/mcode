@@ -132,6 +132,7 @@ void gsm_deinit(void)
   }
 
   hw_uart2_set_callback(NULL);
+  TheGsmState = EGsmStateNull;
 }
 
 void gsm_set_callback(gsm_callback callback)

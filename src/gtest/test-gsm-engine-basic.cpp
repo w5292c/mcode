@@ -26,6 +26,7 @@
 
 #include "mvars.h"
 #include "hw-uart.h"
+#include "mstring.h"
 #include "wrap-mocks.h"
 
 #include <gtest/gtest.h>
@@ -40,15 +41,28 @@ typedef enum {
   EGsmStateReadingSmsHeader,
 } TGsmState;
 
+typedef enum {
+  EGsmStateFlagNone = 0,
+  EGsmStateFlagAtReady = 1,
+  EGsmStateFlagSmsReady = 2,
+  EGsmStateFlagCallReady = 4,
+  EGsmStateFlagPinReady = 8,
+  EGsmStateFlagAllReady = 15,
+} TGsmStateFlags;
+
 void gsm_sms_send_body(void);
 void gsm_uart2_handler(const char *data, size_t length);
 void gsm_handle_new_sms(const char *args, size_t length);
 void gsm_read_sms_handle_body(const char *data, size_t length);
 void gsm_read_sms_handle_header(const char *data, size_t length);
 void gsm_read_sms_handle_response(const char *data, size_t length);
+}
 
 extern "C" TGsmState TheGsmState;
-}
+extern "C" TGsmStateFlags TheGsmFlags;
+
+static bool TheHwGsmInitSent = false;
+static bool TheLastPowerRequest = false;
 
 using namespace testing;
 
@@ -56,14 +70,42 @@ class GsmBasic : public Test
 {
 protected:
   void SetUp() override {
+    TheHwGsmInitSent = false;
+    TheLastPowerRequest = false;
+    gsm_init();
+    gsm_set_callback(gsm_callback);
+    io_set_ostream_handler(alt_uart_write_char);
     collected_text_reset();
     collected_alt_text_reset();
+    _event = false;
+    _type = MGsmEventNone;
+    memset(_from, 0, sizeof (_from));
+    memset(_body, 0, sizeof (_body));
   }
   void TearDown() override {
     collected_text_reset();
     collected_alt_text_reset();
+    io_set_ostream_handler(NULL);
+    gsm_set_callback(NULL);
+    gsm_deinit();
   }
+  static void gsm_callback(MGsmEvent type, const char *from, const char *body) {
+    _event = true;
+    _type = type;
+    strcpy(_from, from);
+    strcpy(_body, body);
+  }
+
+  static bool _event;
+  static MGsmEvent _type;
+  static char _from[100];
+  static char _body[512];
 };
+
+bool GsmBasic::_event = false;
+MGsmEvent GsmBasic::_type = MGsmEventNone;
+char GsmBasic::_from[100] = {0};
+char GsmBasic::_body[512] = {0};
 
 TEST_F(GsmBasic, GsmReadSmsHandleHeader)
 {
@@ -71,19 +113,12 @@ TEST_F(GsmBasic, GsmReadSmsHandleHeader)
   const char header[] = "+CMGR: \"REC READ\",\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:25:13+12\"";
   size_t length = sizeof (header) - 1;
 
-  size_t phone_length = 0;
-  char *phone = mvar_str(0, 1, &phone_length);
-  memset(phone, 0, phone_length);
-
   TheGsmState = EGsmStateReadingSmsHeader;
   gsm_read_sms_handle_header(header, length);
-  ASSERT_EQ(TheGsmState, EGsmStateReadingSmsBody);
 
-  char *const phone_out = mvar_str(0, 1, NULL);
-  const size_t phone_out_length = strlen(phone_out);
-  ASSERT_EQ(phone, phone_out);
-  ASSERT_EQ(phone_out_length, 12);
-  ASSERT_STREQ(phone_out, "+98875310123");
+  ASSERT_EQ(TheGsmState, EGsmStateReadingSmsBody);
+  ASSERT_EQ(collected_alt_text_length(), 12);
+  ASSERT_STREQ(collected_alt_text(), "+98875310123");
 }
 
 TEST_F(GsmBasic, GsmReadSmsHandleBody)
@@ -92,25 +127,68 @@ TEST_F(GsmBasic, GsmReadSmsHandleBody)
   const char header[] = "005400650073007400200053004D0053003A00200061006200630064";
   size_t length = sizeof (header) - 1;
 
-  size_t body_length = 0;
-  char *const body = mvar_str(1, 2, &body_length);
-  memset(body, 0, body_length);
-
   TheGsmState = EGsmStateReadingSmsBody;
   gsm_read_sms_handle_body(header, length);
+
   ASSERT_EQ(TheGsmState, EGsmStateIdle);
+  ASSERT_EQ(collected_alt_text_length(), 14);
+  ASSERT_STREQ(collected_alt_text(), "Test SMS: abcd");
+}
 
-  char *const body_out = mvar_str(1, 2, NULL);
-  const size_t body_out_length = strlen(body_out);
+TEST_F(GsmBasic, DoubleInit)
+{
+  gsm_init();
+  gsm_init();
+}
 
-  ASSERT_EQ(body_out_length, 14);
-  ASSERT_STREQ(body_out, "Test SMS: abcd");
+TEST_F(GsmBasic, DoubleDeInit)
+{
+  gsm_deinit();
+  gsm_deinit();
+}
+
+TEST_F(GsmBasic, PowerOn)
+{
+  TheLastPowerRequest = false;
+  gsm_power(true);
+
+  ASSERT_TRUE(TheLastPowerRequest);
+}
+
+TEST_F(GsmBasic, PowerOff)
+{
+  TheLastPowerRequest = true;
+  gsm_power(false);
+
+  ASSERT_FALSE(TheLastPowerRequest);
+}
+
+TEST_F(GsmBasic, SendCmd)
+{
+  TheGsmState = EGsmStateIdle;
+  TheGsmFlags = EGsmStateFlagAtReady;
+  gsm_send_cmd("AT");
+
+  ASSERT_EQ(collected_alt_text_length(), 2);
+  ASSERT_STREQ(collected_alt_text(), "AT");
+}
+
+TEST_F(GsmBasic, SendCmdRaw)
+{
+  TheGsmState = EGsmStateIdle;
+  TheGsmFlags = EGsmStateFlagAtReady;
+  gsm_send_cmd_raw("AT");
+
+  ASSERT_EQ(collected_alt_text_length(), 2);
+  ASSERT_STREQ(collected_alt_text(), "AT");
 }
 
 void hw_gsm_init(void)
 {
+  TheHwGsmInitSent = true;
 }
 
 void hw_gsm_power(bool on)
 {
+  TheLastPowerRequest = on;
 }
