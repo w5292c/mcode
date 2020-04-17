@@ -24,6 +24,7 @@
 
 #include "gsm-engine.h"
 
+#include "mvars.h"
 #include "hw-uart.h"
 #include "wrap-mocks.h"
 
@@ -47,7 +48,6 @@ void gsm_handle_new_sms(const char *args, size_t length);
 void gsm_read_sms_handle_body(const char *data, size_t length);
 void gsm_read_sms_handle_header(const char *data, size_t length);
 void gsm_read_sms_handle_response(const char *data, size_t length);
-//const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args);
 
 extern "C" TGsmState TheGsmState;
 }
@@ -73,12 +73,19 @@ TEST_F(GsmBasic, GsmReadSmsHandleHeader)
   const char header[] = "+CMGR: \"REC READ\",\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:25:13+12\"";
   size_t length = sizeof (header) - 1;
 
+  size_t phone_length = 0;
+  char *phone = mvar_str(0, 1, &phone_length);
+  memset(phone, 0, phone_length);
+
   TheGsmState = EGsmStateReadingSmsHeader;
   gsm_read_sms_handle_header(header, length);
   ASSERT_EQ(TheGsmState, EGsmStateReadingSmsBody);
 
-  ASSERT_EQ(collected_text_length(), 21);
-  ASSERT_STREQ(collected_text(), "Phone: +98875310123\r\n");
+  char *const phone_out = mvar_str(0, 1, NULL);
+  const size_t phone_out_length = strlen(phone_out);
+  ASSERT_EQ(phone, phone_out);
+  ASSERT_EQ(phone_out_length, 12);
+  ASSERT_STREQ(phone_out, "+98875310123");
 }
 
 TEST_F(GsmBasic, GsmReadSmsHandleBody)
@@ -87,12 +94,19 @@ TEST_F(GsmBasic, GsmReadSmsHandleBody)
   const char header[] = "005400650073007400200053004D0053003A00200061006200630064";
   size_t length = sizeof (header) - 1;
 
+  size_t body_length = 0;
+  char *const body = mvar_str(1, 2, &body_length);
+  memset(body, 0, body_length);
+
   TheGsmState = EGsmStateReadingSmsBody;
   gsm_read_sms_handle_body(header, length);
   ASSERT_EQ(TheGsmState, EGsmStateIdle);
 
-  ASSERT_EQ(collected_text_length(), 27);
-  ASSERT_STREQ(collected_text(), "SMS body [Test SMS: abcd]\r\n");
+  char *const body_out = mvar_str(1, 2, NULL);
+  const size_t body_out_length = strlen(body_out);
+
+  ASSERT_EQ(body_out_length, 14);
+  ASSERT_STREQ(body_out, "Test SMS: abcd");
 }
 
 void hw_gsm_init(void)

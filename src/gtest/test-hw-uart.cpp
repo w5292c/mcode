@@ -115,8 +115,8 @@ TEST_F(HwUart2, uart2_receiver)
   ASSERT_FALSE(_invoked);
   uart2_report_new_sample();
   ASSERT_TRUE(_invoked);
-  ASSERT_EQ(_buffer_length, 1);
-  ASSERT_STREQ(_buffer, "A");
+  ASSERT_EQ(_buffer_length, 5);
+  ASSERT_STREQ(_buffer, "OK\raA");
   memset(_buffer, 0, sizeof (_buffer));
   _buffer_length = 0;
   _invoked = false;
@@ -183,4 +183,36 @@ TEST_F(HwUart2, uart2_receiver)
   ASSERT_TRUE(_invoked);
   ASSERT_EQ(_buffer_length, 2);
   ASSERT_STREQ(_buffer, "G6");
+
+  // 5th case
+  memset(_buffer, 0, sizeof (_buffer));
+  _buffer_length = 0;
+  _invoked = false;
+  uart2_report_new_sample();
+  ASSERT_FALSE(_invoked);
+  uart2_handle_new_sample('O');
+  uart2_handle_new_sample('>');
+  uart2_handle_new_sample(' ');
+  uart2_handle_new_sample('\r');
+  uart2_report_new_sample();
+  ASSERT_FALSE(_invoked);
+  uart2_handle_new_sample('\n');
+  ASSERT_FALSE(_invoked);
+  uart2_report_new_sample();
+  ASSERT_TRUE(_invoked);
+  ASSERT_EQ(_buffer_length, 3);
+  ASSERT_STREQ(_buffer, "O> ");
+  memset(_buffer, 0, sizeof (_buffer));
+  _buffer_length = 0;
+  _invoked = false;
+  uart2_report_new_sample();
+  ASSERT_FALSE(_invoked);
+  uart2_handle_new_sample('>');
+  uart2_report_new_sample();
+  ASSERT_FALSE(_invoked);
+  uart2_handle_new_sample(' ');
+  uart2_report_new_sample();
+  ASSERT_TRUE(_invoked);
+  ASSERT_EQ(_buffer_length, 2);
+  ASSERT_STREQ(_buffer, "> ");
 }
