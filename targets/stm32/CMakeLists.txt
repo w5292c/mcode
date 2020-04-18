@@ -133,7 +133,7 @@ ELSE ()
     OUTPUT_VARIABLE MCODE_DIRTY
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  if ( ${MCODE_DIRTY} STREQUAL "" )
+  if ( "x${MCODE_DIRTY}" STREQUAL "x" )
     set ( MCODE_DIRTY_INTERNAL "-()" )
   else ()
     set ( MCODE_DIRTY_INTERNAL "-(*)" )
