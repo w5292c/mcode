@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-
 #include "gsm-engine.h"
 
 #include "mvars.h"
@@ -36,6 +35,17 @@
 #include <string.h>
 
 #define MCODE_SMS_MAX_LENGTH (140)
+
+/*
+ * States flow:
+ * * Got new SMS notification: store the index in NVM (n0:2) (0-th bit for index '0');
+ * * In IDLE state: check NVM (n0:2) for new SMS flags:
+ *                  if yes - read SMS and store in s0:1, s1:2;
+ * * When the SMS is read to s0:1, s1:2: configure the output to be stored in s3:1
+ *   and execute it in Command Engine;
+ * * Send s3:1 in SMS to the original address;
+ * * Go to IDLE for now, check if we need to delete the incoming SMS;
+ */
 
 typedef enum {
   EGsmStateNull = 0,
@@ -157,9 +167,9 @@ bool gsm_send_cmd(const char *cmd)
 
   io_ostream_handler_push(uart2_write_char);
   mprintexpr(cmd, -1);
+  mputch('\r');
   io_ostream_handler_pop();
 
-  uart2_write_char('\r');
   return true;
 }
 
@@ -168,9 +178,8 @@ void gsm_send_cmd_raw(const char *cmd)
   /* No state check for RAW variant */
   io_ostream_handler_push(uart2_write_char);
   mprintexpr(cmd, -1);
+  mputch('\r');
   io_ostream_handler_pop();
-
-  uart2_write_char('\r');
 }
 
 bool gsm_send_sms(const char *address, const char *body)
@@ -195,7 +204,7 @@ bool gsm_send_sms(const char *address, const char *body)
   io_ostream_handler_push(uart2_write_char);
   mprintstr(PSTR("AT+CMGS=\""));
   mprintstrhex16encoded(address, strlen(address));
-  mprintstr(PSTR("\"\r"));
+  mputch('\r');
   io_ostream_handler_pop();
   TheGsmState = EGsmStateSendingSmsAddress;
 
@@ -309,10 +318,11 @@ void gsm_sms_send_body(void)
   TheGsmState = EGsmStateIdle;
   io_ostream_handler_push(uart2_write_char);
   mprintstrhex16encoded(TheMsgBuffer, strlen(TheMsgBuffer));
-  memset(TheMsgBuffer, 0, sizeof (TheMsgBuffer));
-  uart2_write_char(0x1a);
-  uart2_write_char('\r');
+  mputch('\e');
+  mputch('\r');
   io_ostream_handler_pop();
+
+  memset(TheMsgBuffer, 0, sizeof (TheMsgBuffer));
 }
 
 const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args)
@@ -389,24 +399,22 @@ bool gsm_read_sms(int index)
   }
 
   TheGsmState = EGsmStateReadingSmsHeader;
-  io_set_ostream_handler(uart2_write_char);
-  mprintstr("AT+CMGR=");
+  io_ostream_handler_push(uart2_write_char);
+  mprintstr(PSTR("AT+CMGR="));
   mprint_uintd(index, 1);
-  mprintstr("\r");
-  io_set_ostream_handler(NULL);
+  mputch('\r');
+  io_ostream_handler_pop();
 
   return true;
 }
 
 void gsm_read_sms_handle_response(const char *data, size_t length)
 {
-  io_set_ostream_handler(mvar_putch);
   if (EGsmStateReadingSmsHeader == TheGsmState) {
     gsm_read_sms_handle_header(data, length);
   } else if (EGsmStateReadingSmsBody == TheGsmState) {
     gsm_read_sms_handle_body(data, length);
   }
-  io_set_ostream_handler(NULL);
 }
 
 void gsm_read_sms_handle_header(const char *data, size_t length)
