@@ -28,6 +28,7 @@
 #include "hw-uart.h"
 #include "mglobal.h"
 #include "mparser.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "line-editor-uart.h"
 
@@ -381,13 +382,46 @@ const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args)
 
 void gsm_handle_new_sms(const char *args, size_t length)
 {
-  mprintstr(PSTR("\r- New SMS event, args: "));
-  if (args) {
-    mprintstr(PSTR("\""));
-    mprintbytes(args, length);
-    mprintstrln(PSTR("\""));
-  } else {
-    mprintstrln(PSTR("<null>"));
+  uint32_t value;
+  TokenType type;
+  const char *token;
+  /* Possible input: ["SM",6] */
+
+  type = next_token(&args, &length, &token, &value);
+  if (TokenString != type) {
+    /* Wrong new SMS indication */
+    mcode_errno_set(EGeneral);
+    return;
+  }
+  type = next_token(&args, &length, &token, &value);
+  if (TokenPunct != type || ',' != value) {
+    /* Wrong new SMS indication */
+    mcode_errno_set(EGeneral);
+    return;
+  }
+  type = next_token(&args, &length, &token, &value);
+  if (TokenInt != type) {
+    /* Wrong new SMS indication */
+    mcode_errno_set(EGeneral);
+    return;
+  }
+  type = next_token(&args, &length, &token, &value);
+  if (TokenEnd != type) {
+    /* Wrong new SMS indication */
+    mcode_errno_set(EGeneral);
+    return;
+  }
+
+  /* The new SMS index should be in 'value' here */
+  mprintstr(PSTR("- New SMS, index: "));
+  mprint_uintd(value, 1);
+  mprint(MStringNewLine);
+  if (value < 64) {
+    uint16_t flags;
+    const int n = value / 16;
+    flags = mvar_nvm_get(n);
+    flags |= (1u << (value % 16));
+    mvar_nvm_set(n, flags);
   }
 }
 
