@@ -304,14 +304,6 @@ void gsm_uart2_handler(const char *data, size_t length)
       break;
     case EAtCmdIdSmsSent:
       gsm_handle_sms_sent(args, next - args - 1);
-      mprintstr(PSTR("\r- SMS sent event, args: "));
-      if (args) {
-        mprintstr(PSTR("\""));
-        mprintbytes(args, next - args - 1);
-        mprintstrln(PSTR("\""));
-      } else {
-        mprintstrln(PSTR("<null>"));
-      }
       break;
     case EAtCmdIdSmsReadyForBody:
       if (EGsmStateSendingSmsAddress == TheGsmState) {

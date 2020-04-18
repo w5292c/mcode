@@ -91,7 +91,7 @@ void mvar_putch(char ch);
  * @param[in] count The number of blocks for the output string variables for \c mvar_putch requests
  * @note The \c index and \c count are checked for correctness before applying, if we pass invalid
  *       values, they are rounded to the nearest correct values
- * @note This request also resets the variable buffer, feeling with with \0 character
+ * @note This request also resets the variable buffer, feeling with with \0 characters
  */
 void mvar_putch_config(int index, int count);
 
