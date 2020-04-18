@@ -36,6 +36,8 @@ void main_request_exit(void);
 uint16_t main_base_width(void);
 uint16_t main_base_height(void);
 
+const char *main_version(void);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

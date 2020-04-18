@@ -42,6 +42,9 @@
 #ifdef MCODE_DEBUG_BLINKING
 static void main_tick(void);
 #endif /* MCODE_DEBUG_BLINKING */
+#ifdef MCODE_GIT_HASH
+static const char TheVersion[] = MCODE_GIT_HASH_STR;
+#endif /* MCODE_GIT_HASH */
 
 int main(void)
 {
@@ -53,7 +56,12 @@ int main(void)
   leds_init();
   hw_uart_init();
   lcd_init(240, 320);
-  mprintstrln(PSTR("ARM variant started."));
+  mprintstrln("ARM variant started.");
+#ifdef MCODE_GIT_HASH
+  mprintstr("Code version: [");
+  mprintstr(TheVersion);
+  mprintstrln("]");
+#endif /* MCODE_GIT_HASH */
 #ifdef MCODE_DEBUG_BLINKING
   scheduler_add(main_tick);
 #endif /* MCODE_DEBUG_BLINKING */
@@ -136,3 +144,10 @@ void main_tick(void)
   if (++TheCase > 2) TheCase = 0;
 }
 #endif /* MCODE_DEBUG_BLINKING */
+
+#ifdef MCODE_GIT_HASH
+const char *main_version(void)
+{
+  return TheVersion;
+}
+#endif /* MCODE_GIT_HASH */
