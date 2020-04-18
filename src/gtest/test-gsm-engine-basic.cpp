@@ -26,6 +26,7 @@
 
 #include "mvars.h"
 #include "hw-uart.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "wrap-mocks.h"
 
@@ -71,7 +72,19 @@ typedef enum {
   EAtCmdIdSmsReadyForBody,
 } TAtCmdId;
 
+typedef enum {
+  EEngineIdle = 0,
+  EEngineReadSms,
+  EEngineReadSmsDone,
+  EEngineExecSms,
+  EEngineExecSmsDone,
+  EEngineSendSms,
+  EEngineSendSmsDone,
+} TEngineState;
+
+bool gsm_periodic_task(void);
 void gsm_sms_send_body(void);
+void gsm_prepare_response(void);
 void gsm_uart2_handler(const char *data, size_t length);
 void gsm_handle_new_sms(const char *args, size_t length);
 void gsm_read_sms_handle_body(const char *data, size_t length);
@@ -80,6 +93,8 @@ void gsm_read_sms_handle_response(const char *data, size_t length);
 const char *gsm_parse_response(const char *rsp, TAtCmdId *id, const char **args);
 }
 
+extern "C" uint32_t TheEngineIndex;
+extern "C" uint32_t TheEngineState;
 extern "C" TGsmState TheGsmState;
 extern "C" TGsmStateFlags TheGsmFlags;
 extern "C" char TheMsgBuffer[MCODE_SMS_MAX_LENGTH];
@@ -165,6 +180,18 @@ protected:
   size_t body_var_length() {
     return strlen(body_var_str());
   }
+  const char *phone_var2_str() {
+    return mvar_str(3, 1, NULL);
+  }
+  size_t phone_var2_length() {
+    return strlen(phone_var2_str());
+  }
+  const char *body_var2_str() {
+    return mvar_str(4, 2, NULL);
+  }
+  size_t body_var2_length() {
+    return strlen(body_var2_str());
+  }
 };
 
 bool GsmBasic::_event = false;
@@ -184,6 +211,54 @@ TEST_F(SmsReadHandling, GsmReadSmsHandleHeader)
   ASSERT_EQ(TheGsmState, EGsmStateReadingSmsBody);
   ASSERT_EQ(phone_var_length(), 12);
   ASSERT_STREQ(phone_var_str(), "+98875310123");
+}
+
+TEST_F(SmsReadHandling, GsmReadSmsHandleHeaderWrongSignNegative)
+{
+  bool result;
+  const char header[] = "-CMGR: \"REC READ\",\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:25:13+12\"";
+  size_t length = sizeof (header) - 1;
+
+  TheGsmState = EGsmStateReadingSmsHeader;
+  gsm_read_sms_handle_header(header, length);
+
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmReadSmsHandleHeaderWrongSyntaxNegative)
+{
+  bool result;
+  const char header[] = "+\"CMGR\": \"REC READ\",\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:25:13+12\"";
+  size_t length = sizeof (header) - 1;
+
+  TheGsmState = EGsmStateReadingSmsHeader;
+  gsm_read_sms_handle_header(header, length);
+
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmReadSmsHandleHeaderWrongSeparatorNegative)
+{
+  bool result;
+  const char header[] = "+CMGR; \"REC READ\",\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:25:13+12\"";
+  size_t length = sizeof (header) - 1;
+
+  TheGsmState = EGsmStateReadingSmsHeader;
+  gsm_read_sms_handle_header(header, length);
+
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmReadSmsHandleHeaderNoSpaceNegative)
+{
+  bool result;
+  const char header[] = "+CMGR:\"REC READ\",\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:25:13+12\"";
+  size_t length = sizeof (header) - 1;
+
+  TheGsmState = EGsmStateReadingSmsHeader;
+  gsm_read_sms_handle_header(header, length);
+
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
 }
 
 TEST_F(SmsReadHandling, GsmReadSmsResponseHandleHeader)
@@ -212,6 +287,30 @@ TEST_F(SmsReadHandling, GsmReadSmsUart2ResponseHandleHeader)
   ASSERT_EQ(TheGsmState, EGsmStateReadingSmsBody);
   ASSERT_EQ(phone_var_length(), 12);
   ASSERT_STREQ(phone_var_str(), "+98875310123");
+}
+
+TEST_F(SmsReadHandling, GsmReadSmsUart2ResponseHandleHeaderStatusAsIdNegative)
+{
+  bool result;
+  const char header[] = "+CMGR: REC READ,\"002B00390038003800370035003300310030003100320033\",\"\",\"20/01/08,10:25:13+12\"";
+  size_t length = sizeof (header) - 1;
+
+  TheGsmState = EGsmStateReadingSmsHeader;
+  gsm_uart2_handler(header, length);
+
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmReadSmsUart2ResponseHandleHeaderPhoneAsNumberNegative)
+{
+  bool result;
+  const char header[] = "+CMGR: \"REC READ\",70001112233,\"\",\"20/01/08,10:25:13+12\"";
+  size_t length = sizeof (header) - 1;
+
+  TheGsmState = EGsmStateReadingSmsHeader;
+  gsm_uart2_handler(header, length);
+
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
 }
 
 TEST_F(SmsReadHandling, GsmReadSmsHandleBody)
@@ -256,6 +355,22 @@ TEST_F(SmsReadHandling, GsmReadUart2ResponseHandleBody)
   ASSERT_STREQ(body_var_str(), "Test SMS: abcd");
 }
 
+TEST_F(SmsReadHandling, GsmReadUart2ResponseHandleBodyWithEngineRequest)
+{
+  bool result;
+  const char header[] = "005400650073007400200053004D0053003A00200061006200630064";
+  size_t length = sizeof (header) - 1;
+
+  TheEngineState = EEngineReadSms;
+  TheGsmState = EGsmStateReadingSmsBody;
+  gsm_uart2_handler(header, length);
+
+  ASSERT_EQ(TheEngineState, EEngineReadSmsDone);
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+  ASSERT_EQ(body_var2_length(), 14);
+  ASSERT_STREQ(body_var2_str(), "Test SMS: abcd");
+}
+
 TEST_F(GsmBasic, DoubleInit)
 {
   gsm_init();
@@ -286,10 +401,27 @@ TEST_F(GsmBasic, PowerOff)
 
 TEST_F(GsmBasic, SendCmd)
 {
-  gsm_send_cmd("AT");
+  bool res = gsm_send_cmd("AT");
 
+  ASSERT_TRUE(res);
   ASSERT_EQ(collected_text2_length(), 3);
   ASSERT_STREQ(collected_text2(), "AT\r");
+}
+
+TEST_F(GsmBasic, SendCmdWrongStateNegative)
+{
+  TheGsmState = EGsmStateNull;
+  bool res = gsm_send_cmd("AT");
+
+  ASSERT_FALSE(res);
+}
+
+TEST_F(GsmBasic, SendCmdWrongFlagsNegative)
+{
+  TheGsmFlags = (TGsmStateFlags)(~EGsmStateFlagAtReady);
+  bool res = gsm_send_cmd("AT");
+
+  ASSERT_FALSE(res);
 }
 
 TEST_F(GsmBasic, SendCmdRaw)
@@ -329,6 +461,25 @@ TEST_F(SmsReadHandling, GsmSendSmsPositive)
   ASSERT_EQ(collected_text2_length(), 59);
   ASSERT_EQ(TheGsmState, EGsmStateSendingSmsAddress);
   ASSERT_STREQ(collected_text2(), "AT+CMGS=\"002B00370030003000300031003100310032003200330033\"\r");
+}
+
+TEST_F(SmsReadHandling, GsmSendSmsWrongStateNegative)
+{
+  TheGsmState = EGsmStateNull;
+  TheGsmFlags = (TGsmStateFlags)(EGsmStateFlagAtReady |
+                                 EGsmStateFlagSmsReady | EGsmStateFlagPinReady);
+
+  bool res = gsm_send_sms("+70001112233", "ABCD");
+  ASSERT_FALSE(res);
+}
+
+TEST_F(SmsReadHandling, GsmSendSmsWrongFlagsNegative)
+{
+  TheGsmState = EGsmStateIdle;
+  TheGsmFlags = (TGsmStateFlags)(EGsmStateFlagAtReady | EGsmStateFlagSmsReady);
+
+  bool res = gsm_send_sms("+70001112233", "ABCD");
+  ASSERT_FALSE(res);
 }
 
 TEST_F(SmsReadHandling, GsmSendSmsBodyPositive)
@@ -448,6 +599,15 @@ TEST_F(SmsReadHandling, GsmSendModemRspSmsSent)
   gsm_uart2_handler("+CMGS: 5", 8);
 }
 
+TEST_F(SmsReadHandling, GsmSendModemRspSmsSentWithEngineRequest)
+{
+  TheEngineState = EEngineSendSms;
+
+  gsm_uart2_handler("+CMGS: 5", 8);
+
+  ASSERT_EQ(TheEngineState, EEngineSendSmsDone);
+}
+
 TEST_F(SmsReadHandling, GsmSendModemRspSmsSentNoInfo)
 {
   gsm_uart2_handler("+CMGS", 5);
@@ -489,9 +649,55 @@ TEST_F(SmsReadHandling, GsmSendModemRspUnknownReponse)
 TEST_F(SmsReadHandling, GsmSendModemRspNewSmsIndication)
 {
   TheGsmState = EGsmStateIdle;
+  mcode_errno_set(ESuccess);
 
   gsm_uart2_handler("+CMTI: \"SM\",3", 13);
 
+  ASSERT_EQ(mcode_errno(), ESuccess);
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmSendModemRspNewSmsIndicationStorageAsIdNegative)
+{
+  TheGsmState = EGsmStateIdle;
+  mcode_errno_set(ESuccess);
+
+  gsm_uart2_handler("+CMTI: SM,3", 11);
+
+  ASSERT_EQ(mcode_errno(), EGeneral);
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmSendModemRspNewSmsIndicationWrongSeparatorNegative)
+{
+  TheGsmState = EGsmStateIdle;
+  mcode_errno_set(ESuccess);
+
+  gsm_uart2_handler("+CMTI: \"SM\".3", 13);
+
+  ASSERT_EQ(mcode_errno(), EGeneral);
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmSendModemRspNewSmsIndicationStringIndexNegative)
+{
+  TheGsmState = EGsmStateIdle;
+  mcode_errno_set(ESuccess);
+
+  gsm_uart2_handler("+CMTI: \"SM\",\"3\"", 15);
+
+  ASSERT_EQ(mcode_errno(), EGeneral);
+  ASSERT_EQ(TheGsmState, EGsmStateIdle);
+}
+
+TEST_F(SmsReadHandling, GsmSendModemRspNewSmsIndicationExtraParamNegative)
+{
+  TheGsmState = EGsmStateIdle;
+  mcode_errno_set(ESuccess);
+
+  gsm_uart2_handler("+CMTI: \"SM\",3,0", 15);
+
+  ASSERT_EQ(mcode_errno(), EGeneral);
   ASSERT_EQ(TheGsmState, EGsmStateIdle);
 }
 
@@ -508,6 +714,78 @@ TEST_F(SmsReadHandling, GsmParseReponseNullReponse)
 {
   TAtCmdId cmd_id;
   gsm_parse_response(NULL, &cmd_id, NULL);
+}
+
+TEST_F(SmsReadHandling, EngineIdle)
+{
+  mvar_nvm_set(0, 0);
+  mvar_nvm_set(1, 0);
+  TheEngineState = EEngineIdle;
+  bool res = gsm_periodic_task();
+  ASSERT_TRUE(res);
+}
+
+TEST_F(SmsReadHandling, EngineReadSmsDone)
+{
+  mvar_nvm_set(0, 0);
+  mvar_nvm_set(1, 0);
+  TheEngineState = EEngineReadSmsDone;
+  bool res = gsm_periodic_task();
+  ASSERT_TRUE(res);
+}
+
+TEST_F(SmsReadHandling, EngineReadSms)
+{
+  mvar_nvm_set(0, 0);
+  mvar_nvm_set(1, 0);
+  TheEngineState = EEngineReadSms;
+  bool res = gsm_periodic_task();
+  ASSERT_TRUE(res);
+}
+
+TEST_F(SmsReadHandling, EngineExecSmsDone)
+{
+  mvar_nvm_set(0, 0);
+  mvar_nvm_set(1, 0);
+  TheEngineState = EEngineExecSmsDone;
+  bool res = gsm_periodic_task();
+  ASSERT_TRUE(res);
+}
+
+TEST_F(SmsReadHandling, EngineExecSms)
+{
+  mvar_nvm_set(0, 0);
+  mvar_nvm_set(1, 0);
+  TheEngineState = EEngineExecSms;
+  bool res = gsm_periodic_task();
+  ASSERT_TRUE(res);
+}
+
+TEST_F(SmsReadHandling, EngineSendSmsDone)
+{
+  mvar_nvm_set(0, 0);
+  mvar_nvm_set(1, 0);
+  TheEngineState = EEngineSendSmsDone;
+  bool res = gsm_periodic_task();
+  ASSERT_TRUE(res);
+}
+
+TEST_F(SmsReadHandling, EngineSendSms)
+{
+  mvar_nvm_set(0, 0);
+  mvar_nvm_set(1, 0);
+  TheEngineState = EEngineSendSms;
+  bool res = gsm_periodic_task();
+  ASSERT_TRUE(res);
+}
+
+TEST_F(SmsReadHandling, PrepareReponse)
+{
+  char *str = mvar_str(6, 2, NULL);
+  strcpy(str, "OK\r\n");
+  gsm_prepare_response();
+
+  ASSERT_STREQ(mvar_str(6, 2, NULL), "OK\n");
 }
 
 void hw_gsm_init(void)

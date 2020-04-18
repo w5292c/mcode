@@ -117,6 +117,7 @@ int TimerTestAddHandler::_handler2_count = 0;
 
 TEST_F(TimerTestBasic, MPrintStrSimple)
 {
+  usleep(100000);
 }
 
 TEST_F(TimerTestAddHandler, MPrintStrSimple)
