@@ -134,7 +134,7 @@ ELSE ()
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
   if ( "x${MCODE_DIRTY}" STREQUAL "x" )
-    set ( MCODE_DIRTY_INTERNAL "-()" )
+    set ( MCODE_DIRTY_INTERNAL "-(C)" )
   else ()
     set ( MCODE_DIRTY_INTERNAL "-(*)" )
   endif ()
