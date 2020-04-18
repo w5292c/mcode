@@ -23,6 +23,7 @@
  */
 
 #include "mvars.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "wrap-mocks.h"
 
@@ -492,4 +493,12 @@ TEST_F(PutchVarBasic_s0_z, SmallCount)
   mvar_putch('A');
   const void *result = memchr(_buffer, 'A', _length);
   ASSERT_EQ(result, (const void *)NULL);
+}
+
+TEST_F(VarsBasic, StatusErrno)
+{
+  mcode_errno_set(ESuccess);
+  ASSERT_EQ(mcode_errno(), ESuccess);
+  mcode_errno_set(EAccessDenied);
+  ASSERT_EQ(mcode_errno(), EAccessDenied);
 }
