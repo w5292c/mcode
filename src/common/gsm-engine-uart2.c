@@ -25,11 +25,13 @@
 #include "gsm-engine.h"
 
 #include "mvars.h"
+#include "mtimer.h"
 #include "hw-uart.h"
 #include "mglobal.h"
 #include "mparser.h"
 #include "mstatus.h"
 #include "mstring.h"
+#include "cmd-engine.h"
 #include "line-editor-uart.h"
 
 #include <stddef.h>
@@ -85,6 +87,16 @@ typedef enum {
   EAtCmdIdSmsReadyForBody,
 } TAtCmdId;
 
+typedef enum {
+  EEngineIdle = 0,
+  EEngineReadSms,
+  EEngineReadSmsDone,
+  EEngineExecSms,
+  EEngineExecSmsDone,
+  EEngineSendSms,
+  EEngineSendSmsDone,
+} TEngineState;
+
 typedef struct {
   const char *rspBase;
   TAtCmdId cmdId;
@@ -108,14 +120,23 @@ static const TGsmResponses TheGsmResponses[] = {
   { NULL, EAtCmdIdNull },
 };
 
+static uint32_t TheEngineIndex = 0;
+static uint32_t TheEngineState = 0;
 static gsm_callback TheGsmCallback = NULL;
 static TGsmState TheGsmState = EGsmStateNull;
 static char TheMsgBuffer[MCODE_SMS_MAX_LENGTH] = {0};
 static TGsmStateFlags TheGsmFlags = EGsmStateFlagNone;
 
+static bool gsm_periodic_task(void);
 static void gsm_sms_send_body(void);
+static void gsm_sms_sent_task(void);
+static void gsm_prepare_response(void);
+static void gsm_exec_new_sms_task(void);
+static void gsm_check_new_sms_task(void);
+static void gsm_send_sms_response_task(void);
 static void gsm_uart2_handler(const char *data, size_t length);
 static void gsm_handle_new_sms(const char *args, size_t length);
+static void gsm_handle_sms_sent(const char *args, size_t length);
 static void gsm_read_sms_handle_body(const char *data, size_t length);
 static void gsm_read_sms_handle_header(const char *data, size_t length);
 static void gsm_read_sms_handle_response(const char *data, size_t length);
@@ -132,6 +153,8 @@ void gsm_init(void)
 
   TheGsmState = EGsmStateNull;
 
+  /* Schedule the periodic task to start in 30 seconds and repeat each 20 seconds after that */
+  mtimer_add_periodic(gsm_periodic_task, 30000, 20000);
   hw_uart2_set_callback(gsm_uart2_handler);
 }
 
@@ -205,6 +228,7 @@ bool gsm_send_sms(const char *address, const char *body)
   io_ostream_handler_push(uart2_write_char);
   mprintstr(PSTR("AT+CMGS=\""));
   mprintstrhex16encoded(address, strlen(address));
+  mprintstr(PSTR("\""));
   mputch('\r');
   io_ostream_handler_pop();
   TheGsmState = EGsmStateSendingSmsAddress;
@@ -279,6 +303,7 @@ void gsm_uart2_handler(const char *data, size_t length)
       }
       break;
     case EAtCmdIdSmsSent:
+      gsm_handle_sms_sent(args, next - args - 1);
       mprintstr(PSTR("\r- SMS sent event, args: "));
       if (args) {
         mprintstr(PSTR("\""));
@@ -316,10 +341,9 @@ void gsm_uart2_handler(const char *data, size_t length)
 
 void gsm_sms_send_body(void)
 {
-  TheGsmState = EGsmStateIdle;
   io_ostream_handler_push(uart2_write_char);
   mprintstrhex16encoded(TheMsgBuffer, strlen(TheMsgBuffer));
-  mputch('\e');
+  mputch('\x1a');
   mputch('\r');
   io_ostream_handler_pop();
 
@@ -416,7 +440,7 @@ void gsm_handle_new_sms(const char *args, size_t length)
   mprintstr(PSTR("- New SMS, index: "));
   mprint_uintd(value, 1);
   mprint(MStringNewLine);
-  if (value < 64) {
+  if (value < 32) {
     uint16_t flags;
     const int n = value / 16;
     flags = mvar_nvm_get(n);
@@ -498,7 +522,7 @@ void gsm_read_sms_handle_header(const char *data, size_t length)
     }
     /* At this point we have the phone number UCS2-encoded in 'token'/'value'(length)
      * Need to check the phone number at this point */
-    mvar_putch_config(0, 1);
+    mvar_putch_config(0 + 3*(TheEngineState == EEngineReadSms), 1);
     io_ostream_handler_push(mvar_putch);
     mprinthexencodedstr16(token, value);
     io_ostream_handler_pop();
@@ -516,11 +540,159 @@ void gsm_read_sms_handle_body(const char *data, size_t length)
    * Example body:
    * > 005400650073007400200053004D0053003A00200061006200630064
    */
-  mvar_putch_config(1, 2);
+  mvar_putch_config(1 + 3*(TheEngineState == EEngineReadSms), 2);
   io_ostream_handler_push(mvar_putch);
   mprinthexencodedstr16(data, length);
   io_ostream_handler_pop();
 
   /* Finished handling the SMS */
   TheGsmState = EGsmStateIdle;
+  if (TheEngineState == EEngineReadSms) {
+    TheEngineState = EEngineReadSmsDone;
+  }
+}
+
+void gsm_handle_sms_sent(const char *args, size_t length)
+{
+  mprintstr(PSTR("\r- SMS sent event, args: "));
+  if (args) {
+    mprintstr(PSTR("["));
+    mprintbytes(args, length);
+    mprintstrln(PSTR("]"));
+  } else {
+    mprintstrln(PSTR("<null>"));
+  }
+
+  TheGsmState = EGsmStateIdle;
+
+  if (EEngineSendSms == TheEngineState) {
+    TheEngineState = EEngineSendSmsDone;
+  }
+}
+
+bool gsm_periodic_task(void)
+{
+  switch (TheEngineState) {
+  case EEngineIdle:
+    gsm_check_new_sms_task();
+    break;
+  case EEngineReadSmsDone:
+    gsm_exec_new_sms_task();
+    break;
+  case EEngineExecSmsDone:
+    gsm_send_sms_response_task();
+    break;
+  case EEngineSendSmsDone:
+    gsm_sms_sent_task();
+    break;
+  default:
+  case EEngineSendSms:
+    break;
+  case EEngineExecSms:
+    break;
+  case EEngineReadSms:
+    break;
+  }
+
+  return true;
+}
+
+void gsm_check_new_sms_task(void)
+{
+  bool res;
+  int index;
+  uint32_t value;
+
+  value = mvar_nvm_get(0);
+  if (!value) {
+    value |= ((mvar_nvm_get(1))<<16);
+    if (!value) {
+      /* No new SMS detected */
+      return;
+    }
+  }
+  index = __builtin_ffs(value) - 1;
+  res = gsm_read_sms(index);
+  if (res) {
+    TheEngineIndex = index;
+    TheEngineState = EEngineReadSms;
+  }
+}
+
+void gsm_exec_new_sms_task(void)
+{
+  uint16_t value;
+  bool start_cmd;
+  const char *prog;
+  size_t prog_length;
+
+  TheEngineState = EEngineExecSms;
+
+  /* Get the program to execute */
+  prog = mvar_str(4, 2, NULL);
+  prog_length = strlen(prog);
+
+  /* Execute the program, collect the output in s6:2 */
+  mvar_putch_config(6, 2);
+  io_ostream_handler_push(mvar_putch);
+  cmd_engine_exec_prog(prog, prog_length, &start_cmd);
+  io_ostream_handler_pop();
+
+  TheEngineState = EEngineExecSmsDone;
+
+  /* As soon as we have executed the commands, reset the flag in NVM */
+  if (TheEngineIndex < 32) {
+    value = mvar_nvm_get(TheEngineIndex >= 16);
+    value = value & ~(1u << (TheEngineIndex % 16));
+    mvar_nvm_set(TheEngineIndex >= 16, value);
+  }
+}
+
+void gsm_send_sms_response_task(void)
+{
+  bool res;
+  const char *resp;
+  size_t resp_length;
+
+  gsm_prepare_response();
+  resp = mvar_str(6, 2, NULL);
+  resp_length = strlen(resp);
+  if (!resp_length) {
+    /* Nothing to send, move to IDLE */
+    TheEngineState = EEngineIdle;
+    return;
+  }
+
+  res = gsm_send_sms(mvar_str(3, 1, NULL), resp);
+  if (res) {
+    TheEngineState = EEngineSendSms;
+  }
+}
+
+void gsm_sms_sent_task(void)
+{
+  TheEngineState = EEngineIdle;
+}
+
+void gsm_prepare_response(void)
+{
+  /* Remove '\r' chars */
+  char ch;
+  char *str;
+  size_t length;
+
+  str = mvar_str(6, 2, NULL);
+  length = strlen(str);
+  do {
+    ch = *str;
+    if (!ch) {
+      break;
+    }
+    if ('\r' == ch) {
+      memmove(str, str + 1, length);
+    } else {
+      ++str;
+    }
+    --length;
+  } while (true);
 }
