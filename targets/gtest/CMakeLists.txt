@@ -25,8 +25,10 @@ set (
   ${MCODE_TOP}/src/common/utils.c
   ${MCODE_TOP}/src/common/mtimer.c
   ${MCODE_TOP}/src/common/mparser.c
+  ${MCODE_TOP}/src/common/mstatus.c
   ${MCODE_TOP}/src/common/mstring.c
   ${MCODE_TOP}/src/common/hw-uart.c
+  ${MCODE_TOP}/src/common/cmd-engine.c
   ${MCODE_TOP}/src/common/gsm-engine-uart2.c
   ${MCODE_TOP}/src/common/line-editor-uart.c
 )
@@ -43,6 +45,7 @@ set (
   ${MCODE_TOP}/src/emu/hw-nvm.c
   ${MCODE_TOP}/src/emu/hw-uart.c
   ${MCODE_TOP}/src/emu/scheduler.c
+  ${MCODE_TOP}/src/common/cmd-help.c
   ${MCODE_TOP}/src/gtest/wrap-mocks.cpp
   ${MCODE_TOP}/src/gtest/gtest-main.cpp
   ${MCODE_TOP}/src/emu/persistent-store.c

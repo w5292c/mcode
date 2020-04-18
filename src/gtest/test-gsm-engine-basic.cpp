@@ -326,9 +326,9 @@ TEST_F(SmsReadHandling, GsmSendSmsPositive)
   bool res = gsm_send_sms("+70001112233", "ABCD");
   ASSERT_TRUE(res);
   ASSERT_STREQ(TheMsgBuffer, "ABCD");
-  ASSERT_EQ(collected_text2_length(), 58);
+  ASSERT_EQ(collected_text2_length(), 59);
   ASSERT_EQ(TheGsmState, EGsmStateSendingSmsAddress);
-  ASSERT_STREQ(collected_text2(), "AT+CMGS=\"002B00370030003000300031003100310032003200330033\r");
+  ASSERT_STREQ(collected_text2(), "AT+CMGS=\"002B00370030003000300031003100310032003200330033\"\r");
 }
 
 TEST_F(SmsReadHandling, GsmSendSmsBodyPositive)
@@ -340,7 +340,7 @@ TEST_F(SmsReadHandling, GsmSendSmsBodyPositive)
 
   ASSERT_EQ(collected_text2_length(), 18);
   ASSERT_EQ(TheGsmState, EGsmStateIdle);
-  ASSERT_STREQ(collected_text2(), "0041004200430044\e\r");
+  ASSERT_STREQ(collected_text2(), "0041004200430044\x1a\r");
 }
 
 TEST_F(SmsReadHandling, GsmSendModemRspNull)
@@ -463,7 +463,7 @@ TEST_F(SmsReadHandling, GsmSendModemRspReadyForBody)
 
   ASSERT_EQ(collected_text2_length(), 18);
   ASSERT_EQ(TheGsmState, EGsmStateSendingAtCmd);
-  ASSERT_STREQ(collected_text2(), "0041004200430044\e\r");
+  ASSERT_STREQ(collected_text2(), "0041004200430044\x1a\r");
 }
 
 TEST_F(SmsReadHandling, GsmSendModemRspReadyForBodyNegative)
