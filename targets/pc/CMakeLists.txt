@@ -134,6 +134,32 @@ if ( MCODE_PROG )
   )
 endif ( MCODE_PROG )
 
+set ( MCODE_ENABLE_GIT_HASH 1 )
+
+IF ( ${MCODE_ENABLE_GIT_HASH} EQUAL 0 )
+  message ( "-- No build-time git hash" )
+ELSE ()
+  execute_process (
+    COMMAND git log -1
+    COMMAND grep "commit"
+    COMMAND gawk "{ print $2 }"
+    OUTPUT_VARIABLE MCODE_GIT_HASH_INTERNAL
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  execute_process (
+    COMMAND git status --porcelain
+    OUTPUT_VARIABLE MCODE_DIRTY
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  if ( "x${MCODE_DIRTY}" STREQUAL "x" )
+    set ( MCODE_DIRTY_INTERNAL "-(C)" )
+  else ()
+    set ( MCODE_DIRTY_INTERNAL "-(*)" )
+  endif ()
+  set ( MCODE_GIT_HASH "${MCODE_GIT_HASH_INTERNAL}${MCODE_DIRTY_INTERNAL}" )
+  message ( "-- Git hash: ${MCODE_GIT_HASH}" )
+ENDIF ()
+
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )
 configure_file ( ${MCODE_TOP}/msim-config.h.in ${PROJECT_BINARY_DIR}/include-simulator/mcode-config.h )
 

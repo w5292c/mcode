@@ -41,6 +41,10 @@
 #include <QStringList>
 #include <QApplication>
 
+#ifdef MCODE_GIT_HASH
+static const char TheVersion[] = MCODE_GIT_HASH_STR;
+#endif /* MCODE_GIT_HASH */
+
 static uint16_t TheWidth = 240;
 static uint16_t TheHeight = 320;
 
@@ -91,9 +95,12 @@ int main(int argc, char **argv)
   console_init();
 
   /* Write some 'hello' text */
-  mprintstr(PSTR("main: ready\r\nTest value: ["));
-  mprint_uintd(0x12afu, 0);
-  mprintstrln(PSTR("]"));
+  mprintstrln("EMU variant started.");
+#ifdef MCODE_GIT_HASH
+  mprintstr("Code version: [");
+  mprintstr(TheVersion);
+  mprintstrln("]");
+#endif /* MCODE_GIT_HASH */
   /* start the command engine, and switch to the scheduler, it never exits */
   cmd_engine_start();
 
@@ -143,3 +150,10 @@ uint16_t main_base_height(void)
 {
   return TheHeight;
 }
+
+#ifdef MCODE_GIT_HASH
+const char *main_version(void)
+{
+  return TheVersion;
+}
+#endif /* MCODE_GIT_HASH */
