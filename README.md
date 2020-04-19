@@ -50,22 +50,22 @@ The following packages required for building code for EMU Target:
 
 ### Build steps for EMU target
 Here are the steps to build the application for EMU target:
-$ cd good-directory-for-building/
-$ git https://w5292c@github.com/w5292c/mcode.git
-$ cd mcode/
-$ mkdir build/
-$ cd build/
-$ cmake ../targets/pc/
-$ make
+* $ cd good-directory-for-building/
+* $ git https://w5292c@github.com/w5292c/mcode.git
+* $ cd mcode/
+* $ mkdir build/
+* $ cd build/
+* $ cmake ../targets/pc/
+* $ make
 After these steps, the following executable are created:
 * console-test: the Main Application that accepts commands in the console;
 * mcode-simulator: the Modem Simulator, the Main Application can communicate with it;
 The both applications should be launched and they will communicate with each other.
 In the main application, the following commands can be launched first (in the application console):
-$ help
->>> Supported commands: [supported-commands-list]
-$ help help
->>> Help test for specific command, 'help' in our case
+* $ help
+* >>> Supported commands: [supported-commands-list]
+* $ help help
+* >>> Help test for specific command, 'help' in our case
 The Modem Simulator also supports console, it supports different list of commands,
 'help' is supported. The old Command Engine supports additional commands, they can
 be inspected with the 'help-old' command.
@@ -74,12 +74,12 @@ Use 'poweroff' command (in the application console) to exit the Main and Modem S
 ### Build steps for GTest/CUnit targets
 The code supports GTest (new) and CUnit (old, can be removed soon) targets for Unit Tests.
 Here are the steps for building for GTest/CUnit:
-$ # git-cloning and build directory creating is the same as for 'EMU',
-$ # so we are supposed to be in mcode/build directory initially
-$ cmake ../targets/cunit/ # Use this command to configure for CUnit target OR
-$ cmake ../targets/gtest/ # Use this command to configure for GTest target INSTEAD;
-$ make
-$ make cov # This is supported only for GTest target, this creates 'html/index.html' with coverage
+* $ # git-cloning and build directory creating is the same as for 'EMU',
+* $ # so we are supposed to be in mcode/build directory initially
+* $ cmake ../targets/cunit/ # Use this command to configure for CUnit target OR
+* $ cmake ../targets/gtest/ # Use this command to configure for GTest target INSTEAD;
+* $ make
+* $ make cov # This is supported in GTest target, this creates 'html/index.html' with coverage
 
 ### Installing Build Dependencies for AVR Target
 In order to build for AVR target, the corresponding tools should be installed, like
@@ -96,11 +96,11 @@ Custom HW boards I am using (based on ATMega32A) are descibed here:
 
 ### Build steps for AVR target
 Here are the steps:
-$ # git-cloning and build directory creating is the same as for 'EMU',
-$ # so we are supposed to be in mcode/build directory initially
-$ cmake ../targets/avr-tv/ # Custom ATMega32A board without LCD OR
-$ cmake ../targets/avr/    # Custom ATMega32A board with LCD INSTEAD;
-$ make
+* $ # git-cloning and build directory creating is the same as for 'EMU',
+* $ # so we are supposed to be in mcode/build directory initially
+* $ cmake ../targets/avr-tv/ # Custom ATMega32A board without LCD OR
+* $ cmake ../targets/avr/    # Custom ATMega32A board with LCD INSTEAD;
+* $ make
 
 ### Deployment steps for AVR target
 If the bootloader is already in place, one can just launch the bootloader
