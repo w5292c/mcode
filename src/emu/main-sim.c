@@ -43,6 +43,10 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#ifdef MCODE_GIT_HASH
+static const char TheVersion[] = MCODE_GIT_HASH_STR;
+#endif /* MCODE_GIT_HASH */
+
 static bool TheRunRequest = false;
 
 static int TheInPipe = 0;
@@ -238,3 +242,10 @@ void main_request_exit(void)
 {
   TheRunRequest = false;
 }
+
+#ifdef MCODE_GIT_HASH
+const char *main_version(void)
+{
+  return TheVersion;
+}
+#endif /* MCODE_GIT_HASH */

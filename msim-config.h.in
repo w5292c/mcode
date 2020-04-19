@@ -27,3 +27,7 @@
 
 /* Enable programming engine */
 #cmakedefine MCODE_PROG
+
+/* GIT hash */
+#cmakedefine MCODE_GIT_HASH
+#define MCODE_GIT_HASH_STR "@MCODE_GIT_HASH@"
