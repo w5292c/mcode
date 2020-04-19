@@ -47,3 +47,20 @@ FUNCTION ( enable_git_version enable )
     message ( "-- Git hash: ${MCODE_GIT_HASH}" )
   ENDIF ()
 ENDFUNCTION ( enable_git_version )
+
+FUNCTION ( enable_random_numbers COUNT )
+  IF ( ${COUNT} EQUAL 0 )
+    message ( "-- No build-time random data" )
+  ELSE ()
+    message ( "-- Build-time random data support: ${COUNT} bytes" )
+    set ( MCODE_RANDOM_DATA ON BOOL PARENT_SCOPE )
+    execute_process (
+      COMMAND dd if=/dev/urandom count=1 bs=${COUNT} status=none
+      COMMAND hexdump -v -f ${MCODE_TOP}/hexdump.format
+      OUTPUT_VARIABLE MCODE_RANDOM_BYTES
+    )
+    set ( MCODE_RANDOM_BYTES_COUNT ${COUNT} PARENT_SCOPE )
+    set ( MCODE_RANDOM_BYTES ${MCODE_RANDOM_BYTES} PARENT_SCOPE )
+    message ( "-- Random bytes: ${MCODE_RANDOM_BYTES}" )
+  ENDIF ()
+ENDFUNCTION ( enable_random_numbers )

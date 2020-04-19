@@ -31,7 +31,6 @@
 #include "mcode-config.h"
 
 #include "hw-uart.h"
-#include "gsm-engine-uart2.c"
 
 #include "librock_sha256.c"
 
@@ -77,7 +76,6 @@ static void mcode_mparse_next_errors(void);
 static void mcode_parser_parser_tests(void);
 static void mcode_parser_string_tests(void);
 static void mcode_security_sha256_tests(void);
-static void mcode_common_gsm_engine_send_cmd_raw_tests(void);
 
 static void mcode_hw_uart_handler_test(char *data, size_t length);
 static const char *mcode_handler_simple(MParserEvent event, const char *str, size_t length, int32_t value);
@@ -121,10 +119,6 @@ int main(void)
     return CU_get_error();
   }
   if (!CU_add_test(pSuite, "MCODE PDU test cases", mcode_pdu_tests)) {
-    CU_cleanup_registry();
-    return CU_get_error();
-  }
-  if (!CU_add_test(pSuite, "GSM engine send raw test cases", mcode_common_gsm_engine_send_cmd_raw_tests)) {
     CU_cleanup_registry();
     return CU_get_error();
   }
@@ -395,39 +389,6 @@ void mcode_pdu_tests(void)
   CU_ASSERT_STRING_EQUAL(buffer, "send-info 1532, \"done\", 84");
 }
 
-void mcode_common_gsm_engine_send_cmd_raw_tests(void)
-{
-  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
-  TheTestBufferLength = 0;
-
-  /* Simple 4-character string */
-  CU_ASSERT_EQUAL(TheTestBufferLength, 0);
-  gsm_send_cmd_raw("abcd");
-  CU_ASSERT_EQUAL(TheTestBufferLength, 5);
-  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "abcd\r");
-
-  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
-  TheTestBufferLength = 0;
-  /* Escape sequences */
-  gsm_send_cmd_raw("\\a\\b\\r\\n\\e\\v\\t\\f\\\\\\0");
-  CU_ASSERT_EQUAL(TheTestBufferLength, 11);
-  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "\a\b\r\n\e\v\t\f\\\0");
-  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 3], '\\');
-  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 2], '\0');
-  CU_ASSERT_EQUAL(TheTestBuffer[TheTestBufferLength - 1], '\r');
-
-  memset(TheTestBuffer, 0, sizeof (TheTestBuffer));
-  TheTestBufferLength = 0;
-  /* Zero-character in the middle of a string */
-  gsm_send_cmd_raw("prefix\\0postfix");
-  CU_ASSERT_EQUAL(TheTestBufferLength, 15);
-  CU_ASSERT_STRING_EQUAL(TheTestBuffer, "prefix");
-  CU_ASSERT_EQUAL(TheTestBuffer[5], 'x');
-  CU_ASSERT_EQUAL(TheTestBuffer[6], '\0');
-  CU_ASSERT_EQUAL(TheTestBuffer[7], 'p');
-  CU_ASSERT_STRING_EQUAL(TheTestBuffer + 7, "postfix\r");
-}
-
 void mcode_security_sha256_tests(void)
 {
   const uint8_t empty_str_expected_sha256[] = {
@@ -465,19 +426,11 @@ void uart2_write_char(char ch)
   TheTestBuffer[TheTestBufferLength++] = ch;
 }
 
-void hw_gsm_init(void)
-{
-}
-
 void hw_uart2_set_callback(hw_uart_handler cb)
 {
 }
 
 void mcode_hw_uart_handler_test(char *data, size_t length)
-{
-}
-
-void hw_gsm_power(bool on)
 {
 }
 
