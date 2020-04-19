@@ -130,7 +130,8 @@ const char *mcode_phone(void)
 
 void mcode_phone_set(const char *phone)
 {
-//  memcpy();
+  memset(ThePhoneNumber, 0, sizeof (ThePhoneNumber));
+  strncpy(ThePhoneNumber, phone, MCODE_PHONE_NUMBER_MAX_LENGTH - 1);
 }
 
 void mvar_print(const char *var, size_t length)
