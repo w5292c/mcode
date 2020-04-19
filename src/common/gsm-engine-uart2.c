@@ -618,6 +618,12 @@ void gsm_exec_new_sms_task(void)
   const char *prog;
   size_t prog_length;
 
+  if (strcmp(mcode_phone(), mvar_str(3, 1, NULL))) {
+    /* Phones do not match, move to IDLE state */
+    TheEngineState = EEngineIdle;
+    return;
+  }
+
   TheEngineState = EEngineExecSms;
 
   /* Get the program to execute */
