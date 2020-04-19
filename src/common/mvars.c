@@ -46,7 +46,7 @@ typedef struct {
 } SpecialVarNameMap;
 
 static const SpecialVarNameMap TheSpeciaVarsMap[] = {
-  { "errno", ESpecialVarErrno, },
+  { "ecode", ESpecialVarErrno, },
   { "phone", ESpecialVarPhone, },
   { NULL, ESpecialVarNone, },
 };
