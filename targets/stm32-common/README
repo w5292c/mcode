@@ -2,3 +2,13 @@ Building stm32-cmake
 ====================
 Use the script in this directory to build 'stm32-cmake', like this:
 $ GITHUB_ROOT=<path-to-your-project-directory> ./build-stm32-cmake.sh
+
+Here, <path-to-your-project-directory> is the directory that you want to use
+for cloning a couple of git repositories during building.
+For example, I use the following directory:
+* /home/alex/projects/github/
+It may contain, for example, the following sub-folders
+(the script above will clone 'stm32-spd' and 'stm32-cmake'):
+* /home/alex/projects/github/mcode/
+* /home/alex/projects/github/stm32-spd/
+* /home/alex/projects/github/stm32-cmake/
