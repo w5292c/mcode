@@ -251,7 +251,7 @@ void mprintbytes_R(const char *string, size_t length)
 void mprintexpr(const char *str, size_t length)
 {
   char ch;
-  char chs[5];
+  char chs[8];
   bool escape = false;
   bool variable = false;
 

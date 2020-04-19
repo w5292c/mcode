@@ -50,7 +50,11 @@ typedef enum _MVarType {
   VarTypeNvm,
   VarTypeString,
   VarTypeLabel,
+  VarTypeSpecial,
 } MVarType;
+
+const char *mcode_phone(void);
+void mcode_phone_set(const char *phone);
 
 uint32_t mvar_int_get(int index);
 void mvar_int_set(int index, uint32_t value);

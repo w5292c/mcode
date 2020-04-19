@@ -125,3 +125,7 @@
 /* GIT hash */
 #cmakedefine MCODE_GIT_HASH
 #define MCODE_GIT_HASH_STR "@MCODE_GIT_HASH@"
+
+/* Default phone number */
+#cmakedefine MCODE_DEFAULT_PHONE_NUMBER
+#define MCODE_DEFAULT_PHONE_NUMBER_STR "@MCODE_DEFAULT_PHONE_NUMBER@"

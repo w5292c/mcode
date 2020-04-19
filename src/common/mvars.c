@@ -26,15 +26,44 @@
 
 #include "utils.h"
 #include "hw-nvm.h"
+#include "mparser.h"
+#include "mstatus.h"
 #include "mstring.h"
 
 #include <string.h>
+
+#define MCODE_PHONE_NUMBER_MAX_LENGTH (16)
+
+typedef enum _TSpecialVarType {
+  ESpecialVarNone,
+  ESpecialVarErrno,
+  ESpecialVarPhone,
+} TSpecialVarType;
+
+typedef struct {
+  char *name;
+  TSpecialVarType type;
+} SpecialVarNameMap;
+
+static const SpecialVarNameMap TheSpeciaVarsMap[] = {
+  { "errno", ESpecialVarErrno, },
+  { "phone", ESpecialVarPhone, },
+  { NULL, ESpecialVarNone, },
+};
 
 static char *TheStringPutchPointer = NULL;
 static const char *TheStringPutchPointerEnd = NULL;
 static uint32_t TheIntBuffers[PROG_INTVARS_COUNT] = {0};
 static const char *TheLabelVars[MCODE_LABELS_COUNT] = {NULL};
 static char TheStringBuffers[PROG_STRVARS_COUNT][PROG_STRVAR_LENGTH] = {{0}};
+static char ThePhoneNumber[MCODE_PHONE_NUMBER_MAX_LENGTH] =
+#ifdef MCODE_DEFAULT_PHONE_NUMBER
+  MCODE_DEFAULT_PHONE_NUMBER_STR;
+#else /* MCODE_DEFAULT_PHONE_NUMBER */
+  "";
+#endif /* MCODE_DEFAULT_PHONE_NUMBER */
+
+static TSpecialVarType mvar_check_special(const char *name, size_t length);
 
 uint32_t mvar_int_get(int index)
 {
@@ -94,6 +123,16 @@ char *mvar_str(int index, int count, size_t *length)
   }
 }
 
+const char *mcode_phone(void)
+{
+  return ThePhoneNumber;
+}
+
+void mcode_phone_set(const char *phone)
+{
+//  memcpy();
+}
+
 void mvar_print(const char *var, size_t length)
 {
   size_t idx = 0;
@@ -125,7 +164,7 @@ void mvar_print(const char *var, size_t length)
     const uint64_t value = (uint64_t)(uintptr_t)mvar_label(idx);
     mprintstr("0x");
     mprint_uint64(value, true);
-  } else {
+  } else if (VarTypeNvm == type) {
     uint32_t value = 0;
     if (VarTypeNvm == type) {
       value = mvar_nvm_get(idx);
@@ -137,6 +176,21 @@ void mvar_print(const char *var, size_t length)
       value = mvar_int_get(idx);
     }
     mprint_uintd(value, 1);
+  } else {
+    /* VarTypeSpecial */
+    TSpecialVarType type;
+
+    type = mvar_check_special(var, length);
+    switch (type) {
+    case ESpecialVarErrno:
+      mprint_uintd(mcode_errno(), 1);
+      break;
+    case ESpecialVarPhone:
+      mprintstr_R(mcode_phone());
+      break;
+    default:
+      break;
+    }
   }
 }
 
@@ -187,7 +241,13 @@ MVarType var_parse_name(const char *name, size_t length, size_t *index, size_t *
   size_t idx = 0;
   size_t cnt = 1;
   bool skip = false;
-  if (!name || length < 1 || length > 4) {
+  if (!name || length < 1) {
+    return VarTypeNone;
+  }
+  if (ESpecialVarNone != mvar_check_special(name, length)) {
+    return VarTypeSpecial;
+  }
+  if (length > 4) {
     return VarTypeNone;
   }
 
@@ -253,6 +313,18 @@ MVarType var_parse_name(const char *name, size_t length, size_t *index, size_t *
   }
 
   return type;
+}
+
+TSpecialVarType mvar_check_special(const char *name, size_t length)
+{
+  const SpecialVarNameMap *item;
+
+  for (item = TheSpeciaVarsMap; item->name; ++item) {
+    if (!mparser_strcmp(name, length, item->name)) {
+      return item->type;
+    }
+  }
+  return ESpecialVarNone;
 }
 
 void mvar_putch(char ch)

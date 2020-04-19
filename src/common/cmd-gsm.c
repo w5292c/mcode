@@ -25,6 +25,7 @@
 #include "cmd-iface.h"
 #include "cmd-engine.h"
 
+#include "mvars.h"
 #include "mglobal.h"
 #include "mparser.h"
 #include "mstatus.h"
@@ -37,26 +38,17 @@
 CMD_IMPL("sms-read", TheRd, "Read SMS to s0:1 (phone) and s1:2 (body)", cmd_gsm_read_sms, NULL, 0);
 
 #define MCODE_GSM_RSP_BUFFER_MAX_LENGTH (80)
-#define MCODE_GSM_PHONE_NUMBER_MAX_LENGTH (16)
-
-static char TheNumberBuffer[MCODE_GSM_PHONE_NUMBER_MAX_LENGTH] = {0};
 
 static void cmd_gsm_show_phone_number(void);
 static void cmd_gsm_power(const char *args);
 static void cmd_gsm_send_sms(const char *body);
 static void cmd_engine_send_at_command(const char *args);
-static void cmd_gsm_store_phone_number(const char *number);
 static void cmd_engine_send_raw_at_command(const char *args);
 static void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *body);
 
 void cmd_engine_gsm_init(void)
 {
   gsm_set_callback(cmd_gsm_event_handler);
-
-#ifdef __linux__
-  /* Set the test phone number for Emulator target */
-  cmd_gsm_store_phone_number("+70001112233");
-#endif /* __linux__ */
 }
 
 void cmd_engine_gsm_deinit(void)
@@ -85,7 +77,7 @@ bool cmd_engine_gsm_command(const char *command, bool *startCmd)
     cmd_gsm_send_sms(command + 9);
     return true;
   } else if (!strncmp_P(command, PSTR("phone-set "), 10)) {
-    cmd_gsm_store_phone_number(command + 10);
+    mcode_phone_set(command + 10);
     return true;
   } else if (!strcmp_P(command, PSTR("phone"))) {
     cmd_gsm_show_phone_number();
@@ -134,30 +126,20 @@ bool cmd_gsm_read_sms(const TCmdData *data, const char *args,
 
 void cmd_gsm_send_sms(const char *body)
 {
-  if (!strlen(TheNumberBuffer)) {
+  if (!strlen(mcode_phone())) {
     mprintstrln(PSTR("Error: no phone number, use 'phone-set' first"));
     return;
   }
 
-  if (!gsm_send_sms(TheNumberBuffer, body)) {
+  if (!gsm_send_sms(mcode_phone(), body)) {
     mprintstrln(PSTR("Error: failed sanding SMS"));
   }
-}
-
-void cmd_gsm_store_phone_number(const char *number)
-{
-  const size_t length = strlen(number);
-  if (length > MCODE_GSM_PHONE_NUMBER_MAX_LENGTH - 1) {
-    mprintstrln(PSTR("Error: phone number is too long"));
-    return;
-  }
-  strcpy(TheNumberBuffer, number);
 }
 
 void cmd_gsm_show_phone_number(void)
 {
   mprintstr(PSTR("Current phone number: \""));
-  mprintstr_R(TheNumberBuffer);
+  mprintstr_R(mcode_phone());
   mprintstrln(PSTR("\""));
 }
 
