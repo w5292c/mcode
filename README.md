@@ -66,6 +66,7 @@ In the main application, the following commands can be launched first (in the ap
 * >>> Supported commands: [supported-commands-list]
 * $ help help
 * >>> Help test for specific command, 'help' in our case.
+
 The Modem Simulator also supports console, it supports different list of commands,
 'help' is supported. The old Command Engine supports additional commands, they can
 be inspected with the 'help-old' command.
