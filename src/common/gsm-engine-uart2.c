@@ -620,6 +620,11 @@ void gsm_exec_new_sms_task(void)
 
   if (strcmp(mcode_phone(), mvar_str(3, 1, NULL))) {
     /* Phones do not match, move to IDLE state */
+    if (TheEngineIndex < 32) {
+      value = mvar_nvm_get(TheEngineIndex >= 16);
+      value = value & ~(1u << (TheEngineIndex % 16));
+      mvar_nvm_set(TheEngineIndex >= 16, value);
+    }
     TheEngineState = EEngineIdle;
     return;
   }
