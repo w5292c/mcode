@@ -22,10 +22,12 @@
 
 cmake_minimum_required (VERSION 2.8)
 
+include ( ${CMAKE_CURRENT_SOURCE_DIR}/../common/mcode-stm32.cmake )
+
+mcode_setup_env()
+
 project (console-test)
 ENABLE_LANGUAGE(ASM)
-
-include ( ${CMAKE_CURRENT_SOURCE_DIR}/../common/mcode-common.cmake )
 
 FIND_PACKAGE(CMSIS REQUIRED)
 FIND_PACKAGE(StdPeriphLib REQUIRED)
