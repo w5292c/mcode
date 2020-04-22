@@ -47,6 +47,9 @@ CMD_IMPL("poweroff", ThePoweroff, "Power off system", cmd_system_poweroff, NULL,
 #ifdef MCODE_GIT_HASH
 CMD_IMPL("version", TheVer, "Show the code version", cmd_system_version, NULL, 0);
 #endif /* MCODE_GIT_HASH */
+#ifdef MCODE_ID
+CMD_IMPL("uid", TheId, "Show device ID", cmd_system_id, NULL, 0);
+#endif /* MCODE_ID */
 
 bool cmd_system_ut(const TCmdData *data, const char *args,
                    size_t args_len, bool *start_cmd)
@@ -156,3 +159,15 @@ bool cmd_system_version(const TCmdData *data, const char *args, size_t args_len,
   return true;
 }
 #endif /* MCODE_GIT_HASH */
+
+#ifdef MCODE_ID
+bool cmd_system_id(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
+{
+  mprint_uint32(mcode_id(0), false);
+  mprint_uint32(mcode_id(1), false);
+  mprint_uint32(mcode_id(2), false);
+  mprint(MStringNewLine);
+
+  return true;
+}
+#endif /* MCODE_ID */

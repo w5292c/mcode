@@ -103,6 +103,9 @@
 /* Enable using the new Command Engine */
 #cmakedefine MCODE_NEW_ENGINE
 
+/* Unique Device ID support */
+#cmakedefine MCODE_ID
+
 /*
  * Enable old parser code, it is obsolete, should not be used,
  * probably, will be removed soon

@@ -30,6 +30,18 @@
 
 #include <stm32f10x.h>
 
+#define UNIQUE_DEVICE_ID_BASE (UINT32_C(0x1FFFF7E8))
+
+typedef struct
+{
+  __IO uint16_t UID0;
+  __IO uint16_t UID1;
+  __IO uint32_t UID2;
+  __IO uint32_t UID3;
+} STM32_UniqueDeviceID;
+
+#define UNIQUE_DEVICE_ID                ((const STM32_UniqueDeviceID *)UNIQUE_DEVICE_ID_BASE)
+
 static void system_mtick(void);
 
 void system_init(void)
@@ -102,4 +114,19 @@ void system_mtick(void)
   /* Power-off condition detected, wait for power button release */
   state = 1;
   leds_set(1, true);
+}
+
+uint32_t mcode_id(int index)
+{
+  switch (index)
+  {
+  case 0:
+    return UNIQUE_DEVICE_ID->UID0 | (UNIQUE_DEVICE_ID->UID1 << 16);
+  case 1:
+    return UNIQUE_DEVICE_ID->UID2;
+  case 2:
+    return UNIQUE_DEVICE_ID->UID3;
+  default:
+    return 0;
+  }
 }

@@ -25,6 +25,8 @@
 #ifndef MCODE_SYSTEM_H
 #define MCODE_SYSTEM_H
 
+#include <stdint.h>
+
 /**
  * Initialize the system
  */
@@ -49,5 +51,12 @@ void poweroff(void);
  * Request to launch the bootloader code
  */
 void bootloader(void);
+
+/**
+ * Get the Unique Device ID
+ * @param[in] index The ID index to get
+ * @param The Unique Device ID
+ */
+uint32_t mcode_id(int index);
 
 #endif /* MCODE_SYSTEM_H */
