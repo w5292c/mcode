@@ -106,6 +106,9 @@
 /* Unique Device ID support */
 #cmakedefine MCODE_ID
 
+/* Support for getting Core Frequency */
+#cmakedefine MCODE_FREQ
+
 /*
  * Enable old parser code, it is obsolete, should not be used,
  * probably, will be removed soon

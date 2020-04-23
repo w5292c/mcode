@@ -26,6 +26,7 @@
 
 #include "utils.h"
 #include "hw-nvm.h"
+#include "system.h"
 #include "mparser.h"
 #include "mstatus.h"
 #include "mstring.h"
@@ -38,6 +39,7 @@ typedef enum _TSpecialVarType {
   ESpecialVarNone,
   ESpecialVarErrno,
   ESpecialVarPhone,
+  ESpecialVarFreq,
 } TSpecialVarType;
 
 typedef struct {
@@ -48,6 +50,9 @@ typedef struct {
 static const SpecialVarNameMap TheSpeciaVarsMap[] = {
   { "ecode", ESpecialVarErrno, },
   { "phone", ESpecialVarPhone, },
+#ifdef MCODE_FREQ
+  { "freq", ESpecialVarFreq },
+#endif /* MCODE_FREQ */
   { NULL, ESpecialVarNone, },
 };
 
@@ -189,6 +194,11 @@ void mvar_print(const char *var, size_t length)
     case ESpecialVarPhone:
       mprintstr_R(mcode_phone());
       break;
+#ifdef MCODE_FREQ
+    case ESpecialVarFreq:
+      mprint_uintd(mcode_freq(), 1);
+      break;
+#endif /* MCODE_FREQ */
     default:
       break;
     }

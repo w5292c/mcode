@@ -202,6 +202,10 @@ void cmd_engine_exec_line(const char *line, size_t length, bool *start_cmd)
       uint8_t index = value>>16;
       if (VarTypeLabel == type) {
         mvar_label_set(index, token);
+      } else {
+        mvar_print(token, value&0xffu);
+        mprint(MStringNewLine);
+        break;
       }
     } else if (TokenId == type) {
       const char *args;

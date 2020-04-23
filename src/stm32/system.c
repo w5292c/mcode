@@ -130,3 +130,9 @@ uint32_t mcode_id(int index)
     return 0;
   }
 }
+
+uint32_t mcode_freq(void)
+{
+  SystemCoreClockUpdate();
+  return SystemCoreClock;
+}

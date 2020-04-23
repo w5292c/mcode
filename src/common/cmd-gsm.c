@@ -39,7 +39,6 @@ CMD_IMPL("sms-read", TheRd, "Read SMS to s0:1 (phone) and s1:2 (body)", cmd_gsm_
 
 #define MCODE_GSM_RSP_BUFFER_MAX_LENGTH (80)
 
-static void cmd_gsm_show_phone_number(void);
 static void cmd_gsm_power(const char *args);
 static void cmd_gsm_send_sms(const char *body);
 static void cmd_engine_send_at_command(const char *args);
@@ -61,7 +60,6 @@ void cmd_engine_gsm_help(void)
   mprintstrln(PSTR("> gsm-power <on/off> - Turn GSM power ON/OFF"));
   mprintstrln(PSTR("> at <AT-COMMAND> - Send generic AT-command to GSM module"));
   mprintstrln(PSTR("> send-sms <MSG-BODY> - Send SMS with <MSG-BODY> text"));
-  mprintstrln(PSTR("> phone - Show the current phone number for sending SMSes"));
   mprintstrln(PSTR("> phone-set <PHONE-NUMBER> - Store the phone number for sending SMS"));
 }
 
@@ -78,9 +76,6 @@ bool cmd_engine_gsm_command(const char *command, bool *startCmd)
     return true;
   } else if (!strncmp_P(command, PSTR("phone-set "), 10)) {
     mcode_phone_set(command + 10);
-    return true;
-  } else if (!strcmp_P(command, PSTR("phone"))) {
-    cmd_gsm_show_phone_number();
     return true;
   } else if (!strncmp_P(command, PSTR("gsm-power "), 10)) {
     cmd_gsm_power(command + 10);
@@ -134,13 +129,6 @@ void cmd_gsm_send_sms(const char *body)
   if (!gsm_send_sms(mcode_phone(), body)) {
     mprintstrln(PSTR("Error: failed sanding SMS"));
   }
-}
-
-void cmd_gsm_show_phone_number(void)
-{
-  mprintstr(PSTR("Current phone number: \""));
-  mprintstr_R(mcode_phone());
-  mprintstrln(PSTR("\""));
 }
 
 void cmd_gsm_event_handler(MGsmEvent type, const char *from, const char *body)
