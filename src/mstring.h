@@ -112,6 +112,12 @@ void mprintbytesln(const char *str, size_t length);
  */
 void mprintstrhex16encoded(const char *str, size_t length);
 void mprinthexencodedstr16(const char *str, size_t length);
+/**
+ * Print the binary input data in hex encoding
+ * @param[in] data The input data to print
+ * @param[in] length The length of the data
+ */
+void mprinthexencodeddata8(const void *data, size_t length);
 
 void mprintstr_R(const char *string);
 void mprintbytes_R(const char *str, size_t length);

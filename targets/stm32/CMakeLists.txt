@@ -146,6 +146,7 @@ endif ( MCODE_PROG )
 
 set ( MCODE_ENABLE_GIT_HASH 1 )
 
+enable_random_numbers ( 16 )
 enable_git_version ( ${MCODE_ENABLE_GIT_HASH} )
 
 configure_file ( ${MCODE_TOP}/mcode-config.h.in ${PROJECT_BINARY_DIR}/include/mcode-config.h )

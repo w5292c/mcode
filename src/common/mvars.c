@@ -40,6 +40,7 @@ typedef enum _TSpecialVarType {
   ESpecialVarErrno,
   ESpecialVarPhone,
   ESpecialVarFreq,
+  ESpecialVarRand,
 } TSpecialVarType;
 
 typedef struct {
@@ -53,6 +54,9 @@ static const SpecialVarNameMap TheSpeciaVarsMap[] = {
 #ifdef MCODE_FREQ
   { "freq", ESpecialVarFreq },
 #endif /* MCODE_FREQ */
+#ifdef MCODE_RANDOM_DATA
+  { "rand", ESpecialVarRand },
+#endif /* MCODE_RANDOM_DATA */
   { NULL, ESpecialVarNone, },
 };
 
@@ -67,6 +71,10 @@ static char ThePhoneNumber[MCODE_PHONE_NUMBER_MAX_LENGTH] =
 #else /* MCODE_DEFAULT_PHONE_NUMBER */
   "";
 #endif /* MCODE_DEFAULT_PHONE_NUMBER */
+
+#ifdef MCODE_RANDOM_DATA
+const uint8_t TheRandData[MCODE_RANDOM_BYTES_COUNT] = MCODE_RANDOM_BYTES;
+#endif /* MCODE_RANDOM_DATA */
 
 static TSpecialVarType mvar_check_special(const char *name, size_t length);
 
@@ -199,6 +207,11 @@ void mvar_print(const char *var, size_t length)
       mprint_uintd(mcode_freq(), 1);
       break;
 #endif /* MCODE_FREQ */
+#ifdef MCODE_RANDOM_DATA
+    case ESpecialVarRand:
+      mprinthexencodeddata8(mcode_rand(), MCODE_RANDOM_BYTES_COUNT);
+      break;
+#endif /* MCODE_RANDOM_DATA */
     default:
       break;
     }
@@ -361,3 +374,10 @@ void mvar_putch_config(int index, int count)
     TheStringPutchPointerEnd = NULL;
   }
 }
+
+#ifdef MCODE_RANDOM_DATA
+const uint8_t *mcode_rand(void)
+{
+  return TheRandData;
+}
+#endif /* MCODE_RANDOM_DATA */

@@ -65,4 +65,11 @@ uint32_t mcode_id(int index);
  */
 uint32_t mcode_freq(void);
 
+/**
+ * The build-time random data
+ * @return The pointer to the random data in binary format
+ * @note The length of the random data is \c MCODE_RANDOM_BYTES_COUNT
+ */
+const uint8_t *mcode_rand(void);
+
 #endif /* MCODE_SYSTEM_H */

@@ -409,6 +409,14 @@ void mprinthexencodedstr16(const char *str, size_t length)
   }
 }
 
+void mprinthexencodeddata8(const void *data, size_t length)
+{
+  const uint8_t *ptr = data;
+  while (length--) {
+    mprint_uint8(*ptr++, false);
+  }
+}
+
 const char *mstring(uint8_t id)
 {
   switch (id) {
