@@ -71,6 +71,11 @@ bool char_is_numeric(char ch)
   return ch >= '0' && ch <= '9';
 }
 
+bool char_is_letter(char ch)
+{
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
 bool char_is_hex(char ch)
 {
   if (char_is_numeric(ch)) {

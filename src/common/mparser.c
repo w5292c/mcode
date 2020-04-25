@@ -196,11 +196,6 @@ bool mparser_is_whitespace(char ch)
   return ' ' == ch || '\t' == ch || '\v' == ch;
 }
 
-bool mparser_is_letter(char ch)
-{
-  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
-}
-
 TokenType next_token(const char **str, size_t *length, const char **token, uint32_t *value)
 {
   char ch;
@@ -315,7 +310,7 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
   }
 
   /* Check for an ID token */
-  if (mparser_is_letter(ch)) {
+  if (char_is_letter(ch)) {
     /* Store the beginning of the token */
     addr = ptr;
     for (++ptr; len > 0; --len, ++ptr) {

@@ -178,7 +178,7 @@ void mvar_print(const char *var, size_t length)
     const uint64_t value = (uint64_t)(uintptr_t)mvar_label(idx);
     mprintstr("0x");
     mprint_uint64(value, true);
-  } else if (VarTypeNvm == type) {
+  } else if (VarTypeNvm == type || VarTypeInt == type) {
     uint32_t value = 0;
     if (VarTypeNvm == type) {
       value = mvar_nvm_get(idx);

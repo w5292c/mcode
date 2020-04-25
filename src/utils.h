@@ -42,6 +42,7 @@ uint16_t glob_str_to_uint16(const char *pHexString);
 bool char_is_whitespace(char ch);
 bool char_is_numeric(char ch);
 bool char_is_hex(char ch);
+bool char_is_letter(char ch);
 
 char nibble_to_char(uint8_t nibble);
 

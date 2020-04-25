@@ -251,9 +251,8 @@ void mprintbytes_R(const char *string, size_t length)
 void mprintexpr(const char *str, size_t length)
 {
   char ch;
-  char chs[8];
+  MVarType type;
   bool escape = false;
-  bool variable = false;
 
   /* Check the inputs */
   if (!str || !length) {
@@ -268,38 +267,55 @@ void mprintexpr(const char *str, size_t length)
     /* Get another character */
     ch =*str++;
     --length;
-
-    if (variable) {
-      size_t len;
-      MVarType type;
-
-      strncat(chs, &ch, 1);
-      len = strlen(chs);
-      type = var_parse_name(chs, len, NULL, NULL);
-      if (VarTypeNone == type) {
-        if (len > 1) {
-          /* We reached the end of the variable name, print it */
-          mvar_print(chs, len - 1);
-        } else if ('$' == ch) {
-          escape = true;
-        }
-        variable = false;
-        /* Fall through (no continue), so, we can handle the current character */
-      } else if (VarTypeNone != type && 4 == len) {
-        mvar_print(chs, len);
-        variable = false;
-        continue;
-      } else {
-        continue;
-      }
-    }
     if (!ch) {
       break;
     }
-    if (!variable && !escape && '$' == ch) {
-      variable = true;
-      memset(chs, 0, sizeof (chs));
-      continue;
+
+    /* Fake loop, make it possible to use 'break' to skip this block, handling variables */
+    while (!escape && '$' == ch) {
+      size_t i;
+      const char *ptr;
+
+      if (!length) {
+        /* last character in a string is '$', just print it */
+        break;
+      }
+      /* Begin of a variable detected */
+      ptr = str;
+      ch = *ptr++;
+      if ('$' == ch) {
+        /* '$$' detected, print only one of them */
+        str = ptr;
+        --length;
+        break;
+      }
+      /* Check if the item after '$' may look like a variable name */
+      if (!char_is_letter(ch) && '_' != ch) {
+        /* This does not look like a variable, just print '$' as usual character */
+        ch = '$';
+        break;
+      }
+      /* Detect 1st char that may not appear in a variable */
+      for (i = 0; i < length; ++i) {
+        ch = *ptr;
+        if (!char_is_letter(ch) && ch != ':' && ch != '_' && !char_is_numeric(ch)) {
+          break;
+        }
+        ++ptr;
+      }
+      /* Now, check if we detected the variable name */
+      type = var_parse_name(str, ptr - str, NULL, NULL);
+      if (VarTypeNone != type) {
+        mvar_print(str, ptr - str);
+        /* update the pointers to the next character */
+        length -= ptr - str;
+        str = ptr + 1;
+      } else {
+        /* This is not a variable, just print '$' as a usual characterr */
+        ch = '$';
+        break;
+      }
+      break;
     }
     if (!escape && '\\' == ch) {
       escape = true;
