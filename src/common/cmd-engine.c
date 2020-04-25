@@ -229,7 +229,7 @@ void cmd_engine_exec_line(const char *line, size_t length, bool *start_cmd)
       cmd_engine_exec_command(command, command_length, args, args_length, start_cmd);
       break;
     }
-  } while (TokenEnd != type);
+  } while (TokenEnd != type && TokenError != type);
 }
 
 void cmd_engine_exec_command(const char *cmd, size_t cmd_len,
