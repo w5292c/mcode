@@ -228,6 +228,11 @@ void cmd_engine_exec_line(const char *line, size_t length, bool *start_cmd)
 
       cmd_engine_exec_command(command, command_length, args, args_length, start_cmd);
       break;
+    } else if (TokenString == type) {
+      /* Print the string, if one is given */
+      mprintexpr(token, value);
+      mprint(MStringNewLine);
+      break;
     }
   } while (TokenEnd != type && TokenError != type);
 }
