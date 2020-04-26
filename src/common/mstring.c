@@ -251,8 +251,8 @@ void mprintbytes_R(const char *string, size_t length)
 void mprintexpr(const char *str, size_t length)
 {
   char ch;
-  MVarType type;
   bool escape = false;
+  MVarType type = VarTypeNone;
 
   /* Check the inputs */
   if (!str || !length) {
@@ -304,18 +304,23 @@ void mprintexpr(const char *str, size_t length)
         ++ptr;
       }
       /* Now, check if we detected the variable name */
-      type = var_parse_name(str, ptr - str, NULL, NULL);
+      i = ptr - str;
+      type = var_parse_name(str, i, NULL, NULL);
       if (VarTypeNone != type) {
-        mvar_print(str, ptr - str);
+        mvar_print(str, i);
         /* update the pointers to the next character */
-        length -= ptr - str;
-        str = ptr + 1;
+        length -= i;
+        str = ptr;
       } else {
         /* This is not a variable, just print '$' as a usual characterr */
         ch = '$';
         break;
       }
       break;
+    }
+    if (VarTypeNone != type) {
+      type = VarTypeNone;
+      continue;
     }
     if (!escape && '\\' == ch) {
       escape = true;
