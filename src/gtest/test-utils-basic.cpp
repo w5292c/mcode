@@ -59,7 +59,7 @@ TEST_F(UtilsBasic, MCharIsNumeric)
 {
   int ch;
   for (ch = 0; ch < 256; ++ch) {
-    ASSERT_EQ(char_is_numeric(ch), is_numeric(ch)) << "Character: [" << (char)ch << "], code: " << ch;
+    ASSERT_EQ(char_is_digit(ch), is_numeric(ch)) << "Character: [" << (char)ch << "], code: " << ch;
   }
 }
 

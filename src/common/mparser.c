@@ -33,7 +33,6 @@
 #include <stdbool.h>
 
 static inline bool mparser_is_punct(char ch);
-static inline bool mparser_is_number(char ch);
 static inline bool mparser_is_whitespace(char ch);
 
 #ifdef MCODE_OLD_PARSER
@@ -77,7 +76,7 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler handler
         /** @todo check if need to handle the return value here */
         (*handler)(EParserEventPunct, str, 1, ch);
         ++str; --length;
-      } else if (mparser_is_number(ch)) {
+      } else if (char_is_digit(ch)) {
         number = ch - '0';
         parsingState = EParsingStateNumber;
         ptr = str++;
@@ -122,7 +121,7 @@ void mparser_parse(const char *str, size_t length, mparser_event_handler handler
       }
       break;
     case EParsingStateNumber:
-      if (mparser_is_number(ch)) {
+      if (char_is_digit(ch)) {
         number *= 10;
         number += ch - '0';
         ++str;
@@ -184,11 +183,6 @@ int mparser_strcmp_P(const char *str, size_t length, const char *str2)
 bool mparser_is_punct(char ch)
 {
   return ',' == ch || ';' == ch || ':' == ch || '+' == ch;
-}
-
-bool mparser_is_number(char ch)
-{
-  return '0' <= ch && '9' >= ch;
 }
 
 bool mparser_is_whitespace(char ch)
@@ -269,13 +263,13 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
   }
 
   /* Check for a number token */
-  if (mparser_is_number(ch)) {
+  if (char_is_digit(ch)) {
     addr = ptr;
     val = ch - '0';
     /* Search for the closing the current number */
     for (++ptr, --len; len > 0; --len, ++ptr) {
       const char next_ch = *ptr;
-      if (mparser_is_number(next_ch)) {
+      if (char_is_digit(next_ch)) {
         val *= 10;
         val += next_ch - '0';
       } else if (mparser_is_punct(next_ch) || mparser_is_whitespace(next_ch) ||
@@ -310,7 +304,7 @@ TokenType next_token(const char **str, size_t *length, const char **token, uint3
   }
 
   /* Check for an ID token */
-  if (char_is_letter(ch)) {
+  if (char_is_alpha(ch)) {
     /* Store the beginning of the token */
     addr = ptr;
     for (++ptr; len > 0; --len, ++ptr) {

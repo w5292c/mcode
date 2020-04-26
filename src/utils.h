@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,9 @@ uint8_t glob_get_byte(const char *pData);
 uint16_t glob_str_to_uint16(const char *pHexString);
 
 bool char_is_whitespace(char ch);
-bool char_is_numeric(char ch);
+bool char_is_digit(char ch);
 bool char_is_hex(char ch);
-bool char_is_letter(char ch);
+bool char_is_alpha(char ch);
 
 char nibble_to_char(uint8_t nibble);
 

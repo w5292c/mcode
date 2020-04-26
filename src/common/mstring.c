@@ -290,7 +290,7 @@ void mprintexpr(const char *str, size_t length)
         break;
       }
       /* Check if the item after '$' may look like a variable name */
-      if (!char_is_letter(ch) && '_' != ch) {
+      if (!char_is_alpha(ch) && '_' != ch) {
         /* This does not look like a variable, just print '$' as usual character */
         ch = '$';
         break;
@@ -298,7 +298,7 @@ void mprintexpr(const char *str, size_t length)
       /* Detect 1st char that may not appear in a variable */
       for (i = 0; i < length; ++i) {
         ch = *ptr;
-        if (!char_is_letter(ch) && ch != ':' && ch != '_' && !char_is_numeric(ch)) {
+        if (!char_is_alpha(ch) && ch != ':' && ch != '_' && !char_is_digit(ch)) {
           break;
         }
         ++ptr;

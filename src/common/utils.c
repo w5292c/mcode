@@ -66,19 +66,19 @@ bool char_is_whitespace(char ch)
     '\000' == ch);
 }
 
-bool char_is_numeric(char ch)
+bool char_is_digit(char ch)
 {
   return ch >= '0' && ch <= '9';
 }
 
-bool char_is_letter(char ch)
+bool char_is_alpha(char ch)
 {
   return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
 bool char_is_hex(char ch)
 {
-  if (char_is_numeric(ch)) {
+  if (char_is_digit(ch)) {
     return 1;
   } else {
     /* convert to the upper case */
@@ -142,7 +142,7 @@ const char *string_next_decimal_number(const char *str, uint16_t *value)
       if (!ch) {
         str = NULL;
         break;
-      } else if (!char_is_numeric(ch)) {
+      } else if (!char_is_digit(ch)) {
         break;
       } else {
         hasValue = true;
