@@ -44,9 +44,6 @@ CMD_IMPL("errno", TheErrno, "Print/reset error code", cmd_system_errno, NULL, 0)
 CMD_IMPL("sleep", TheSleep, "Sleep for <milli-seconds>", cmd_system_sleep, NULL, 0);
 CMD_IMPL("reboot", TheReboot, "Reboot system", cmd_system_reboot, NULL, 0);
 CMD_IMPL("poweroff", ThePoweroff, "Power off system", cmd_system_poweroff, NULL, 0);
-#ifdef MCODE_GIT_HASH
-CMD_IMPL("version", TheVer, "Show the code version", cmd_system_version, NULL, 0);
-#endif /* MCODE_GIT_HASH */
 #ifdef MCODE_ID
 CMD_IMPL("uid", TheId, "Show device ID", cmd_system_id, NULL, 0);
 #endif /* MCODE_ID */
@@ -149,16 +146,6 @@ bool cmd_system_poweroff(const TCmdData *data, const char *args, size_t args_len
   *start_cmd = false;
   return true;
 }
-
-#ifdef MCODE_GIT_HASH
-bool cmd_system_version(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
-{
-  mprintstr(PSTR("Code version: ["));
-  mprintstr(main_version());
-  mprintstrln(PSTR("]"));
-  return true;
-}
-#endif /* MCODE_GIT_HASH */
 
 #ifdef MCODE_ID
 bool cmd_system_id(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)

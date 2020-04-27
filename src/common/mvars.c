@@ -24,6 +24,7 @@
 
 #include "mvars.h"
 
+#include "main.h"
 #include "utils.h"
 #include "hw-nvm.h"
 #include "system.h"
@@ -41,6 +42,7 @@ typedef enum _TSpecialVarType {
   ESpecialVarPhone,
   ESpecialVarFreq,
   ESpecialVarRand,
+  ESpecialVarVersion,
 } TSpecialVarType;
 
 typedef struct {
@@ -57,6 +59,9 @@ static const SpecialVarNameMap TheSpeciaVarsMap[] = {
 #ifdef MCODE_RANDOM_DATA
   { "rand", ESpecialVarRand },
 #endif /* MCODE_RANDOM_DATA */
+#ifdef MCODE_GIT_HASH
+  { "version", ESpecialVarVersion },
+#endif /* MCODE_GIT_HASH */
   { NULL, ESpecialVarNone, },
 };
 
@@ -212,6 +217,11 @@ void mvar_print(const char *var, size_t length)
       mprinthexencodeddata8(mcode_rand(), MCODE_RANDOM_BYTES_COUNT);
       break;
 #endif /* MCODE_RANDOM_DATA */
+#ifdef MCODE_GIT_HASH
+    case ESpecialVarVersion:
+      mprintstr(main_version());
+      break;
+#endif /* MCODE_GIT_HASH */
     default:
       break;
     }
