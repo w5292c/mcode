@@ -111,11 +111,17 @@ void mprintbytesln(const char *str, size_t length);
  * @param[in] length The length of the input string to be encoded/printed
  */
 void mprintstrhex16encoded(const char *str, size_t length);
+/**
+ * Decode HEX16-encoded string and print result
+ * @param[in] str The HEX16 encoded string to decode and print
+ * @param[in] length The length of the input string or \c -1 to use the whole string
+ * @note Only ASCII encoded characters are supported
+ */
 void mprinthexencodedstr16(const char *str, size_t length);
 /**
- * Print the binary input data in hex encoding
+ * Print the binary input data in hex8 encoding
  * @param[in] data The input data to print
- * @param[in] length The length of the data
+ * @param[in] length The length of the data or \c -1 if input data is a \c null-terminated string
  */
 void mprinthexencodeddata8(const void *data, size_t length);
 

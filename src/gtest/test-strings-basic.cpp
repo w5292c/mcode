@@ -23,6 +23,7 @@
  */
 
 #include "mvars.h"
+#include "mstatus.h"
 #include "mstring.h"
 #include "wrap-mocks.h"
 
@@ -316,6 +317,16 @@ TEST_F(StringBasic, PrintHexEncodedString16BasicWithWrongChars)
   ASSERT_STREQ(collected_text(), expected);
 }
 
+TEST_F(StringBasic, PrinHexEncodedData8)
+{
+  const char *const expected = "3031323341424344";
+  const char *const original = "0123ABCD";
+
+  mprinthexencodeddata8(original, -1);
+
+  ASSERT_STREQ(collected_text(), expected);
+}
+
 TEST_F(AltStringBasic, MAltStringRSimple)
 {
   mprintstr_R("abc");
@@ -581,6 +592,43 @@ TEST_F(StringWithVars, ExprWithIntNoVariable)
   mprintexpr("prefix $$ postfix", -1);
 
   ASSERT_STREQ(collected_text(), "prefix $ postfix");
+}
+
+TEST_F(StringBasic, PrintSpecialVarErrno)
+{
+  mcode_errno_set(12345);
+  const char *const expected = "begin 12345 end";
+  const char *const original = "begin $ecode end";
+
+  mprintexpr(original, -1);
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, PrintDollarAtEnd)
+{
+  const char *const expected = "begin $";
+  const char *const original = "begin $";
+
+  mprintexpr(original, -1);
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, PrintDollarFollowedPercent)
+{
+  const char *const expected = "begin $%";
+  const char *const original = "begin $%";
+
+  mprintexpr(original, -1);
+  ASSERT_STREQ(collected_text(), expected);
+}
+
+TEST_F(StringBasic, PrintDollarNoVar)
+{
+  const char *const expected = "begin $_";
+  const char *const original = "begin $_";
+
+  mprintexpr(original, -1);
+  ASSERT_STREQ(collected_text(), expected);
 }
 
 TEST_F(StringBasic, MPrintBytesR)
