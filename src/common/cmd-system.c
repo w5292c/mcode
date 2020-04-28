@@ -38,8 +38,6 @@
 #include "cmd-engine.h"
 
 CMD_IMPL("ut", TheUt, "Show uptime", cmd_system_ut, NULL, 0);
-CMD_IMPL("echo", TheEcho, "Echo input string", cmd_system_echo, NULL, 0);
-CMD_IMPL("expr", TheExpr, "Resolve/print input string", cmd_system_expr, NULL, 0);
 CMD_IMPL("errno", TheErrno, "Print/reset error code", cmd_system_errno, NULL, 0);
 CMD_IMPL("sleep", TheSleep, "Sleep for <milli-seconds>", cmd_system_sleep, NULL, 0);
 CMD_IMPL("reboot", TheReboot, "Reboot system", cmd_system_reboot, NULL, 0);
@@ -79,22 +77,6 @@ bool cmd_system_ut(const TCmdData *data, const char *args,
   mprint_uintd(seconds, 0);
   mprintstr(PSTR(", milli-seconds: "));
   mprint_uintd(milliSeconds, 0);
-  mprint(MStringNewLine);
-  return true;
-}
-
-bool cmd_system_echo(const TCmdData *data, const char *args,
-                     size_t args_len, bool *start_cmd)
-{
-  mprintbytes_R(args, args_len);
-  mprint(MStringNewLine);
-  return true;
-}
-
-bool cmd_system_expr(const TCmdData *data, const char *args,
-                     size_t args_len, bool *start_cmd)
-{
-  mprintexpr(args, -1);
   mprint(MStringNewLine);
   return true;
 }
