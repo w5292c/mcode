@@ -24,6 +24,7 @@
 
 #include "main.h"
 #include "mtick.h"
+#include "mvars.h"
 #include "hw-lcd.h"
 #include "mtimer.h"
 #include "mstring.h"
@@ -40,10 +41,6 @@
 #include <signal.h>
 #include <QStringList>
 #include <QApplication>
-
-#ifdef MCODE_GIT_HASH
-static const char TheVersion[] = MCODE_GIT_HASH_STR;
-#endif /* MCODE_GIT_HASH */
 
 static uint16_t TheWidth = 240;
 static uint16_t TheHeight = 320;
@@ -98,7 +95,7 @@ int main(int argc, char **argv)
   mprintstrln("EMU variant started.");
 #ifdef MCODE_GIT_HASH
   mprintstr("Code version: [");
-  mprintstr(TheVersion);
+  mprintstr(mcode_version());
   mprintstrln("]");
 #endif /* MCODE_GIT_HASH */
   /* start the command engine, and switch to the scheduler, it never exits */
@@ -150,10 +147,3 @@ uint16_t main_base_height(void)
 {
   return TheHeight;
 }
-
-#ifdef MCODE_GIT_HASH
-const char *main_version(void)
-{
-  return TheVersion;
-}
-#endif /* MCODE_GIT_HASH */

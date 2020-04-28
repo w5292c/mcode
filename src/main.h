@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Alexander Chumakov
+ * Copyright (c) 2014-2020 Alexander Chumakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,6 @@ void main_request_exit(void);
 
 uint16_t main_base_width(void);
 uint16_t main_base_height(void);
-
-const char *main_version(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

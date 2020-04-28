@@ -56,6 +56,8 @@ typedef enum _MVarType {
 const char *mcode_phone(void);
 void mcode_phone_set(const char *phone);
 
+const char *mcode_version(void);
+
 uint32_t mvar_int_get(int index);
 void mvar_int_set(int index, uint32_t value);
 

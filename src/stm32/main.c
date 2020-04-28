@@ -23,6 +23,7 @@
  */
 
 #include "mtick.h"
+#include "mvars.h"
 #include "hw-lcd.h"
 #include "hw-rtc.h"
 #include "mtimer.h"
@@ -42,9 +43,6 @@
 #ifdef MCODE_DEBUG_BLINKING
 static void main_tick(void);
 #endif /* MCODE_DEBUG_BLINKING */
-#ifdef MCODE_GIT_HASH
-static const char TheVersion[] = MCODE_GIT_HASH_STR;
-#endif /* MCODE_GIT_HASH */
 
 int main(void)
 {
@@ -59,7 +57,7 @@ int main(void)
   mprintstrln("ARM variant started.");
 #ifdef MCODE_GIT_HASH
   mprintstr("Code version: [");
-  mprintstr(TheVersion);
+  mprintstr(mcode_version());
   mprintstrln("]");
 #endif /* MCODE_GIT_HASH */
 #ifdef MCODE_DEBUG_BLINKING
@@ -144,10 +142,3 @@ void main_tick(void)
   if (++TheCase > 2) TheCase = 0;
 }
 #endif /* MCODE_DEBUG_BLINKING */
-
-#ifdef MCODE_GIT_HASH
-const char *main_version(void)
-{
-  return TheVersion;
-}
-#endif /* MCODE_GIT_HASH */

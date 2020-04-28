@@ -81,6 +81,10 @@ static char ThePhoneNumber[MCODE_PHONE_NUMBER_MAX_LENGTH] =
 const uint8_t TheRandData[MCODE_RANDOM_BYTES_COUNT] = MCODE_RANDOM_BYTES;
 #endif /* MCODE_RANDOM_DATA */
 
+#ifdef MCODE_GIT_HASH
+static const char TheVersion[] = MCODE_GIT_HASH_STR;
+#endif /* MCODE_GIT_HASH */
+
 static TSpecialVarType mvar_check_special(const char *name, size_t length);
 
 uint32_t mvar_int_get(int index)
@@ -219,7 +223,7 @@ void mvar_print(const char *var, size_t length)
 #endif /* MCODE_RANDOM_DATA */
 #ifdef MCODE_GIT_HASH
     case ESpecialVarVersion:
-      mprintstr(main_version());
+      mprintstr(mcode_version());
       break;
 #endif /* MCODE_GIT_HASH */
     default:
@@ -391,3 +395,10 @@ const uint8_t *mcode_rand(void)
   return TheRandData;
 }
 #endif /* MCODE_RANDOM_DATA */
+
+#ifdef MCODE_GIT_HASH
+const char *mcode_version(void)
+{
+  return TheVersion;
+}
+#endif /* MCODE_GIT_HASH */

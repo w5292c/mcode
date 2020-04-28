@@ -181,6 +181,40 @@ TEST_F(VarsBasic, StringVarPrint)
   ASSERT_STREQ(collected_text(), "test string");
 }
 
+TEST_F(VarsBasic, SpecialVarPrintErrno)
+{
+  mcode_errno_set(12345);
+
+  mvar_print("ecode", -1);
+
+  ASSERT_STREQ(collected_text(), "12345");
+}
+
+TEST_F(VarsBasic, SpecialVarPrintPhone)
+{
+  const char var_value[] = "+78887776655";
+  mcode_phone_set(var_value);
+
+  mvar_print("phone", -1);
+
+  ASSERT_STREQ(collected_text(), var_value);
+}
+
+TEST_F(VarsBasic, DISABLED_SpecialVarPrintFreq)
+{
+  mvar_print("freq", -1);
+}
+
+TEST_F(VarsBasic, SpecialVarPrintRand)
+{
+  mvar_print("rand", -1);
+}
+
+TEST_F(VarsBasic, SpecialVarPrintVersion)
+{
+  mvar_print("version", -1);
+}
+
 TEST_F(VarsBasic, StringVarPrintNoCount)
 {
   size_t length = 0;
@@ -415,6 +449,60 @@ TEST_F(VarsBasic, NvmVarParseVarNameFullNvm)
   ASSERT_EQ(type, VarTypeNvm);
 }
 
+TEST_F(VarsBasic, SpeciaVarErrno)
+{
+  MVarType type;
+  const char var_name[] = "ecode";
+
+  type = var_parse_name(var_name, strlen(var_name), NULL, NULL);
+  ASSERT_EQ(type, VarTypeSpecial);
+}
+
+TEST_F(VarsBasic, SpeciaVarPhone)
+{
+  MVarType type;
+  const char var_name[] = "phone";
+
+  type = var_parse_name(var_name, strlen(var_name), NULL, NULL);
+  ASSERT_EQ(type, VarTypeSpecial);
+}
+
+TEST_F(VarsBasic, SpeciaVarRand)
+{
+  MVarType type;
+  const char var_name[] = "rand";
+
+  type = var_parse_name(var_name, strlen(var_name), NULL, NULL);
+  ASSERT_EQ(type, VarTypeSpecial);
+}
+
+TEST_F(VarsBasic, SpeciaVarVersion)
+{
+  MVarType type;
+  const char var_name[] = "version";
+
+  type = var_parse_name(var_name, strlen(var_name), NULL, NULL);
+  ASSERT_EQ(type, VarTypeSpecial);
+}
+
+TEST_F(VarsBasic, DISABLED_SpeciaVarFreq)
+{
+  MVarType type;
+  const char var_name[] = "freq";
+
+  type = var_parse_name(var_name, strlen(var_name), NULL, NULL);
+  ASSERT_EQ(type, VarTypeSpecial);
+}
+
+TEST_F(VarsBasic, SpeciaVarNegative)
+{
+  MVarType type;
+  const char var_name[] = "xxxx";
+
+  type = var_parse_name(var_name, strlen(var_name), NULL, NULL);
+  ASSERT_EQ(type, VarTypeNone);
+}
+
 TEST_F(PutchStrBasic_s0_1, MVarPutchBasic)
 {
   mprintstrln("hello");
@@ -501,4 +589,11 @@ TEST_F(VarsBasic, StatusErrno)
   ASSERT_EQ(mcode_errno(), ESuccess);
   mcode_errno_set(EAccessDenied);
   ASSERT_EQ(mcode_errno(), EAccessDenied);
+}
+
+TEST_F(VarsBasic, Phone)
+{
+  const char phone[] = "+79998887766";
+  mcode_phone_set(phone);
+  ASSERT_STREQ(mcode_phone(), phone);
 }
