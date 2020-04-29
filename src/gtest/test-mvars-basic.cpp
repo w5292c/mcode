@@ -208,11 +208,15 @@ TEST_F(VarsBasic, DISABLED_SpecialVarPrintFreq)
 TEST_F(VarsBasic, SpecialVarPrintRand)
 {
   mvar_print("rand", -1);
+
+  ASSERT_THAT(collected_text(), MatchesRegex("([0-9A-F]){32}"));
 }
 
 TEST_F(VarsBasic, SpecialVarPrintVersion)
 {
   mvar_print("version", -1);
+
+  ASSERT_THAT(collected_text(), MatchesRegex("([0-9a-f]){40}-\\([\\*C]\\){1}"));
 }
 
 TEST_F(VarsBasic, StringVarPrintNoCount)
