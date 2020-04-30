@@ -80,8 +80,20 @@ void io_ostream_handler_push(ostream_handler handler);
  */
 void io_ostream_handler_pop(void);
 
+/**
+ * Return the string corresponding to the string ID passed in \c id
+ * @param[in] id The string ID to be returned
+ * @return The pointer to the string corresponding to the string ID passed in \c id
+ * @note If supported on a specific platform, the string will be stored in flash memory
+ */
 const char *mstring(uint8_t id);
 
+/**
+ * This is the single point to implement actual output a character in \c ch to UART1 device
+ * @param[in] ch The character to be sent to UART1 device for output
+ * @note This should be the only output point to UART1 device
+ * @note This is the default handler for output data
+ */
 void mputch(char ch);
 
 /**
