@@ -22,6 +22,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
+if test $(id -u) -eq 0; then
+  SUDO=''
+else
+  SUDO=sudo
+fi
+
 # Check the project directory first
 if [ -d "${GITHUB_ROOT}" ] ; then
   echo "Here is your project path: \"${GITHUB_ROOT}\""
@@ -84,7 +91,7 @@ if ! make ; then
   cd "${USER_PATH}"
   exit 1
 fi
-if ! sudo make install ; then
+if ! ${SUDO} make install ; then
   echo "'CMSIS' installation failed"
   cd "${USER_PATH}"
   exit 1
@@ -103,7 +110,7 @@ if ! make ; then
   cd "${USER_PATH}"
   exit 1
 fi
-if ! sudo make install ; then
+if ! ${SUDO} make install ; then
   echo "'stm32-cmake/stdperiph' installation failed"
   cd "${USER_PATH}"
   exit 1
