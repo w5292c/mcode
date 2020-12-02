@@ -19,5 +19,9 @@ ENV GITHUB_ROOT=/opt/repo
 ENV STM32_CMAKE_PATH=/opt/repo/stm32-cmake
 RUN /opt/repo/mcode/targets/stm32-common/build-stm32-cmake.sh
 
+VOLUME ["/opt/repo/output"]
+COPY build.sh /opt/repo/build
+
 # Enter the interactive shell
-CMD ["/bin/bash"]
+ENTRYPOINT ["/bin/bash"]
+CMD ["./build.sh"]

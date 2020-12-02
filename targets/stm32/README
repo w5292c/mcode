@@ -19,6 +19,12 @@ $ openocd -f interface/jlink.cfg -f target/stm32f1x.cfg -c "program console-test
 For MD devices, the command line shold be like this:
 $ openocd -f interface/stlink-v2.cfg -f target/stm32f1x_stlink.cfg -c "program console-test.hex verify reset"
 
+## Building the hex file using docker:
+1) Build the hex file and put it in ${PWD}/output
+$ cd <work-dir>
+$ mkdir -p ./output
+$ docker run -it -v ${PWD}/output:/opt/repo/output w5292c/mcode-stm32:00.00.02
+
 HW specs
 ========
 
