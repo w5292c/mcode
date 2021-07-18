@@ -1,0 +1,71 @@
+AVR HW configuration
+====================
+
+Attached HW
+===========
+
+Crystal
+=======
+Frequency: 7.3728MHz
+
+Flashing target with JTAG_mk1
+=============================
+$ avrdude -b 115200 -c jtagmkI -p m32 -P /dev/ttyUSB0 -U flash:w:console-test.flash.hex -U eeprom:w:console-test.eeprom.hex -U flash:w:bootloader.flash.hex
+
+Update firmware using internal bootloader
+=========================================
+1) Enter bootloader (in the privileged/non-root user mode):
+> bootloader
+OR
+> call 0x7c00
+2) Possible command line to update flash/EEPROM firmware:
+$ avrdude -b 115200 -c avr109 -p m32 -P /dev/ttyUSB0 -U flash:w:console-test.flash.hex -U eeprom:w:console-test.eeprom.hex
+
+GPIO pins allocation
+====================
+-----------------------------------------
+| PORT | BUSY | FUNC.    1 | FUNC.    2 |
+-----------------------------------------
+|  PA0 |      |            |            |
+|  PA1 |      |            |            |
+|  PA2 |      |            |            |
+|  PA3 |      |            |            |
+|  PA4 |      |            |            |
+|  PA5 |      |            |            |
+|  PA6 |      |            |            |
+|  PA7 |      |            |            |
+-----------------------------------------
+|  PB0 |      |            |            |
+|  PB1 |      |            |            |
+|  PB2 |      |            |            |
+|  PB3 |      |            |            |
+|  PB4 |      |            |            |
+|  PB5 |      |            |            |
+|  PB6 |      |            |            |
+|  PB7 |      |            |            |
+-----------------------------------------
+|  PC0 |    + | TWI:   SCL |            |
+|  PC1 |    + | TWI:   SDA |            |
+|  PC2 |    + | JTAG:  TCK | JTAG:  TCK |
+|  PC3 |    + | JTAG:  TMS | JTAG:  TMS |
+|  PC4 |    + | JTAG:  TDO | JTAG:  TDO |
+|  PC5 |    + | JTAG:  TDI | JTAG:  TDI |
+|  PC6 |      |            |            |
+|  PC7 |      |            |            |
+-----------------------------------------
+|  PD0 |    + | UART:  RXD | UART:  RXD |
+|  PD1 |    + | UART:  TXD | UART:  TXD |
+|  PD2 |      |            |            |
+|  PD3 |      |            |            |
+|  PD4 |      |            |            |
+|  PD5 |      |            |            |
+|  PD6 |      |            |            |
+|  PD7 |      |            |            |
+-----------------------------------------
+
+Default password
+================
+d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+
+TODO List
+=========
