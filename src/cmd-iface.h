@@ -37,8 +37,15 @@ extern "C" {
 #define CMD_USED __attribute__((used))
 #define CMD_SECTION __attribute__((section("command_section")))
 
+#ifdef __AVR__
+#define CMD_ENTRY_ALIGNMENT 2
+#else /* __AVR__ */
+#define CMD_ENTRY_ALIGNMENT 4
+#endif /* __AVR__ */
+
 #define CMD_ENTRY(base, name, help, handler, init_handler, level) \
-  static const TCmdData name CMD_SECTION CMD_USED __attribute__ ((aligned (4))) = { \
+  static const TCmdData name CMD_SECTION CMD_USED \
+      __attribute__ ((aligned (CMD_ENTRY_ALIGNMENT))) = { \
     base, \
     help, \
     handler, \

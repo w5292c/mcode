@@ -76,7 +76,7 @@ bool cmd_system_call(const TCmdData *data, const char *args, size_t args_len, bo
 bool cmd_system_bootloader(const TCmdData *data, const char *args, size_t args_len, bool *start_cmd)
 {
 #ifdef MCODE_COMMAND_MODES
-  if (CmdModeRoot != cmd_engine_get_mode()) {
+  if (CmdModeRoot != cmd_engine_get_mode() && CmdModeUser != cmd_engine_get_mode()) {
     mcode_errno_set(EAccessDenied);
     return true;
   }

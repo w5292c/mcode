@@ -234,7 +234,7 @@ add_custom_command (
   TARGET console-test
   POST_BUILD
   COMMAND avr-size console-test
-  COMMAND avr-objdump -h -S console-test > console-test.lst
+  COMMAND avr-objdump -h -j .text -j command_section -j .data -S console-test > console-test.lst
   COMMAND avr-objcopy -j .text -j command_section -j .data -O ihex console-test console-test.flash.hex
   COMMAND avr-objcopy --change-section-lma .eeprom=0 -O ihex -j .eeprom console-test console-test.eeprom.hex
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
